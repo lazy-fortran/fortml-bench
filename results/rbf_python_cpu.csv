@@ -1,0 +1,4 @@
+backend,device,residency,n_samples,n_features,dtype,threads,repetitions,setup_seconds,seconds_per_mvm,relative_error,status,torch_version,gpytorch_version,pykeops_version,cuda_device
+pytorch_dense,cpu,resident,2048,8,float64,16,12,0.09515438799280673,0.09569091116766988,2.3573397908075965e-15,pass,2.13.0+cu130,1.15.2,2.3,cpu
+keops,cpu,resident,2048,8,float64,16,12,0.09712184499949217,0.003955338002318361,1.4733373692547478e-15,pass,2.13.0+cu130,1.15.2,2.3,cpu
+gpytorch_keops,cpu,resident,2048,8,float64,16,12,0.1650962030107621,0.0034339731670722053,1.2018960939941226e-08,pass,2.13.0+cu130,1.15.2,2.3,cpu

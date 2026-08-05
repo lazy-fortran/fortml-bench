@@ -1,0 +1,33 @@
+# fortml-bench roadmap
+
+This repository owns reproducible cross-engine evidence for fortml. A result
+requires an independent oracle, matched mathematical work, recorded toolchain
+metadata, and a committed raw record.
+
+## Workloads
+
+- [x] Complete matched RBF MVM runs on CPU and GPU for Fortran, dense PyTorch,
+  KeOps, and GPyTorch with KeOps.
+- [ ] Add size sweeps that report runtime, peak memory, and the dense OOM
+  boundary.
+- [ ] Add matched preconditioned CG solves with the same tolerance, iteration
+  cap, diagonal shift, and stopping policy.
+- [ ] Add stochastic log-determinant and predictive-variance products.
+- [ ] Add exact small-GP training and prediction comparisons.
+- [ ] Add compact-support sparse and regular-grid workloads using fortsparse,
+  Toeplitz FFT, and Kronecker operators.
+- [ ] Add derivative-observation and derivative-prediction workloads.
+- [ ] Add multi-output and variational GP workloads.
+
+## Evidence
+
+- [x] Record gfortran and nvfortran compiler reports for the Fortran kernels.
+- [x] Record PyTorch, GPyTorch, KeOps, CUDA, driver, and GPU revisions.
+- [x] Generate comparison plots from committed CSV data.
+- [x] Upload the first released plot to Slopbox and record its URL.
+- [x] Establish the within-30-percent comparison against the best matched
+  competitor for the first RBF MVM workload, precision, and device.
+- [x] Publish a machine-readable CSV record and reproducibility script.
+
+The within-30-percent target is a measurement gate. It is never inferred from
+a different workload, precision, device, or residency policy.

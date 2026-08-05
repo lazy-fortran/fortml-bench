@@ -1,0 +1,3 @@
+backend,device,residency,n_samples,n_features,dtype,threads,repetitions,setup_seconds,seconds_per_mvm,relative_error,status,fortml_commit,fortnum_commit,correctness_oracle,compiler,flags
+fortml,cuda,transfer,2048,8,float64,unknown,12,,  1.0744083333333334E-03,0.0,pass,1d1afb5a543ae8a4dae8d1b0d4550ceeacb353bb,5fba327a2b49e105104e97271d4d9c6effac11aa,direct_RBF_pairwise_sum,nvfortran,-O3 -acc
+fortml,cuda,resident,2048,8,float64,unknown,12,,  1.1691583333333334E-03,0.0,pass,1d1afb5a543ae8a4dae8d1b0d4550ceeacb353bb,5fba327a2b49e105104e97271d4d9c6effac11aa,direct_RBF_pairwise_sum,nvfortran,-O3 -acc

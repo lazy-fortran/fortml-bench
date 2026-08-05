@@ -1,0 +1,15 @@
+[project]
+name = "fortml-bench"
+version = "0.1.0"
+description = "Matched CPU and GPU benchmarks for fortml, PyTorch, GPyTorch, and KeOps"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "matplotlib>=3.7",
+    "torch>=2.2,<3",
+    "gpytorch>=1.13,<2",
+    "pykeops>=2.2,<3",
+]
+
+[project.scripts]
+fortml-bench-rbf = "scripts.bench_rbf_mvm:main"

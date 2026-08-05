@@ -1,0 +1,13 @@
+backend,device,residency,n_samples,n_features,dtype,threads,repetitions,setup_seconds,seconds_per_mvm,relative_error,status,fortml_commit,fortnum_commit,correctness_oracle,compiler,flags,torch_version,gpytorch_version,pykeops_version,cuda_device
+fortml,cpu,cpu,2048,8,float64,16,12,,  3.7417890000000001E-03,0.0,pass,1d1afb5a543ae8a4dae8d1b0d4550ceeacb353bb,5fba327a2b49e105104e97271d4d9c6effac11aa,direct_RBF_pairwise_sum,gfortran,-O3 -march=native -fopenmp,,,,
+pytorch_dense,cpu,resident,2048,8,float64,16,12,0.09515438799280673,0.09569091116766988,2.3573397908075965e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+keops,cpu,resident,2048,8,float64,16,12,0.09712184499949217,0.003955338002318361,1.4733373692547478e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+gpytorch_keops,cpu,resident,2048,8,float64,16,12,0.1650962030107621,0.0034339731670722053,1.2018960939941226e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+fortml,cuda,transfer,2048,8,float64,unknown,12,,  1.0744083333333334E-03,0.0,pass,1d1afb5a543ae8a4dae8d1b0d4550ceeacb353bb,5fba327a2b49e105104e97271d4d9c6effac11aa,direct_RBF_pairwise_sum,nvfortran,-O3 -acc,,,,
+fortml,cuda,resident,2048,8,float64,unknown,12,,  1.1691583333333334E-03,0.0,pass,1d1afb5a543ae8a4dae8d1b0d4550ceeacb353bb,5fba327a2b49e105104e97271d4d9c6effac11aa,direct_RBF_pairwise_sum,nvfortran,-O3 -acc,,,,
+pytorch_dense,cuda,resident,2048,8,float64,1,12,0.11594892700668424,0.004478230664972216,1.0313361584783236e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+pytorch_dense,cuda,transfer,2048,8,float64,1,12,0.004585760005284101,0.004752221000671852,1.0313361584783236e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+keops,cuda,resident,2048,8,float64,1,12,0.005258067016256973,0.004022647333234393,1.4733373692547478e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+keops,cuda,transfer,2048,8,float64,1,12,0.0038516259810421616,0.003949103750831758,1.4733373692547478e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+gpytorch_keops,cuda,resident,2048,8,float64,1,12,0.1820112229906954,0.003654083666333463,1.2018961087274962e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+gpytorch_keops,cuda,transfer,2048,8,float64,1,12,0.003514511015964672,0.0037382180817076005,1.2018961087274962e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
