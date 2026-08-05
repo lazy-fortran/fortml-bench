@@ -83,6 +83,12 @@ written under `results/rbf_cg*`. For the full four-point sweep, run:
 
     ./scripts/run_cg_scaling.sh
 
+The `nvfortran` drivers also expose a native CUDA variant for the fixed
+eight-feature RBF kernel. Set `FORTML_NATIVE_CUDA=1` to compile the shared
+neighbor-tile kernel with `nvcc` and link it into the Fortran executable. The
+default lane remains OpenACC. Both variants run the direct pairwise oracle in
+the MVM benchmark, and the CG lane records the selected variant in its metadata.
+
 ## Validity boundary
 
 The first comparison is a kernel-product comparison. It does not claim that a

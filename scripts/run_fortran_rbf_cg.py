@@ -44,6 +44,7 @@ def main() -> None:
             }
         )
         if args.device == "cpu":
+            environment["FORTML_NATIVE_CUDA"] = "0"
             environment["FC"] = environment.get(
                 "FORTML_FC", environment.get("FC", "gfortran")
             )
@@ -92,6 +93,7 @@ def main() -> None:
         "flags",
         "compiler_version",
         "gpu",
+        "native_cuda_kernel",
     ]
     with args.output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=fields)
@@ -124,6 +126,7 @@ def main() -> None:
                 "flags": metadata.get("flags", ""),
                 "compiler_version": metadata.get("compiler_version", ""),
                 "gpu": metadata.get("gpu", ""),
+                "native_cuda_kernel": metadata.get("native_cuda_kernel", "0"),
             }
         )
 
