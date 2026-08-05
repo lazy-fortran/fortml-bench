@@ -183,6 +183,8 @@ def main() -> None:
     rows = []
     for backend, function in backends.items():
         for residency in ("resident", "transfer") if args.device == "cuda" else ("resident",):
+            if args.device == "cuda":
+                torch.cuda.empty_cache()
             try:
                 result, setup, elapsed = timed(
                     function,
@@ -198,17 +200,17 @@ def main() -> None:
                 if relative_error > (5.0e-5 if args.dtype == "float32" else 1.0e-6):
                     raise RuntimeError(f"independent oracle mismatch: {relative_error:g}")
                 status = "pass"
-            except (MemoryError, ImportError, OSError) as exc:
+            except (MemoryError, ImportError, OSError, RuntimeError) as exc:
                 message = str(exc).replace("\n", " ")
                 if "out of memory" in message.lower() or "memory" in message.lower():
                     status = "oom"
                 else:
+                    if isinstance(exc, RuntimeError):
+                        raise
                     status = "unsupported"
                 setup = math.nan
                 elapsed = math.nan
                 relative_error = math.nan
-            except RuntimeError:
-                raise
             rows.append(
                 {
                     "backend": backend,
@@ -231,6 +233,8 @@ def main() -> None:
                     else "cpu",
                 }
             )
+            if args.device == "cuda":
+                torch.cuda.empty_cache()
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=rows[0].keys())

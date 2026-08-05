@@ -52,6 +52,20 @@ The CPU lane defaults to physical cores and can be pinned explicitly:
 
     CPU_THREADS=16 ./scripts/run_suite.sh
 
+Run the five-size scaling sweep with:
+
+    ./scripts/run_scaling.sh
+
+It writes one merged CSV and separate log-log CPU and GPU plots under
+`results/`. Dense PyTorch capacity failures are recorded as `oom` so the
+matrix-free competitors remain visible at larger sizes.
+
+For operation-level counters, run `scripts/profile_rbf_mvm.sh`. It records
+CPU `perf stat` counters and NVIDIA Nsight Systems plus `NV_ACC_TIME`
+reports. The Python operation profiler records the corresponding operation
+tables for dense PyTorch, KeOps, and GPyTorch-KeOps. Nsight Compute is
+attempted when permissions allow it.
+
 ## Validity boundary
 
 The first comparison is a kernel-product comparison. It does not claim that a
@@ -62,6 +76,12 @@ Every result records the machine, compiler, flags, package versions, source
 revisions, precision, dimensions, residency mode, repetitions, setup time,
 runtime, peak memory where available, and correctness error. A missing or
 unsupported competitor is reported explicitly.
+
+The RBF constants are variance 1.4, lengthscale 0.7, and diagonal shift 0.08.
+All implementations use float64 and the same deterministic points and input
+vector. The Fortran, KeOps, and GPyTorch adapters are compared by the same
+blocked pairwise operator, with only storage, tiling, and execution backend
+changing.
 
 ## License
 

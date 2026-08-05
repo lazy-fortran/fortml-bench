@@ -12,8 +12,13 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--fortml", type=Path, default=Path("../fortml"))
     parser.add_argument("--device", choices=("cpu", "cuda"), required=True)
+    parser.add_argument("--n", type=int, default=2048)
+    parser.add_argument("--d", type=int, default=8)
+    parser.add_argument("--repetitions", type=int, default=12)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    if min(args.n, args.d, args.repetitions) < 1:
+        raise SystemExit("n, d, and repetitions must be positive")
     fortml = args.fortml.resolve()
     fortnum = (fortml.parent / "fortnum").resolve()
     fortml_commit = subprocess.check_output(
@@ -34,6 +39,9 @@ def main() -> None:
                     "TARGET": "fortml_bench_rbf_operator",
                     "OUT": str(scratch / "fortran.csv"),
                     "META": str(scratch / "fortran.meta"),
+                    "N_SAMPLES": str(args.n),
+                    "N_FEATURES": str(args.d),
+                    "REPETITIONS": str(args.repetitions),
                 }
             )
         else:
@@ -43,6 +51,9 @@ def main() -> None:
                 {
                     "OUT": str(scratch / "fortran.csv"),
                     "META": str(scratch / "fortran.meta"),
+                    "N_SAMPLES": str(args.n),
+                    "N_FEATURES": str(args.d),
+                    "REPETITIONS": str(args.repetitions),
                 }
             )
         subprocess.run([str(command)], check=True, env=environment, cwd=fortml)

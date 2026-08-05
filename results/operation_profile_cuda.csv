@@ -1,0 +1,159 @@
+backend,device,n_samples,n_features,dtype,relative_error,operation,calls,self_cpu_us,total_cpu_us,self_cuda_us,total_cuda_us,self_cpu_bytes,self_cuda_bytes,input_shapes
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,aten::unsqueeze,2,19.746999999999943,24.616999999999976,0.0,0.0,0,0,"[[1024, 8], []]"
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,aten::as_strided,2,4.870000000000033,4.870000000000033,0.0,0.0,0,0,"[[1024, 8], [], [], []]"
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,aten::sub,1,44.31400000000008,927.2370000000001,136.57600000000002,273.15200000000004,0,67108864,"[[1024, 1, 8], [1, 1024, 8], []]"
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,Activity Buffer Request,1,860.431,860.431,136.57600000000002,136.57600000000002,0,0,[]
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,cudaLaunchKernel,10,74.75999999999976,74.75999999999976,0.0,0.0,0,0,[]
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,"void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::CUDAFunctor_add<double> >(at::TensorIteratorBase&, at::native::CUDAFunctor_add<double> const&)::{lambda(int)#1}>(int, at::native::gpu_kernel_impl_nocast<at::native::CUDAFunctor_add<double> >(at::TensorIteratorBase&, at::native::CUDAFunctor_add<double> const&)::{lambda(int)#1})",1,0.0,0.0,136.57600000000002,136.57600000000002,0,0,[]
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,aten::pow,1,19.846000000000004,28.723999999999933,350.81600000000003,350.81600000000003,0,67108864,"[[1024, 1024, 8], []]"
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,aten::result_type,1,1.3730000000000473,1.3730000000000473,0.0,0.0,0,0,"[[1024, 1024, 8], []]"
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,aten::to,1,0.6520000000000437,0.6520000000000437,0.0,0.0,0,0,"[[1024, 1024, 8], [], [], [], []]"
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,[memory],18,0.0,0.0,0.0,0.0,0,-176185344,[]
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,aten::sum,1,17.723000000000184,24.486000000000104,367.10400000000004,367.10400000000004,0,8388608,"[[1024, 1024, 8], [], [], []]"
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,aten::as_strided,1,0.7019999999999982,0.7019999999999982,0.0,0.0,0,0,"[[1024, 1024], [], [], []]"
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,aten::mul,2,18.103000000000065,32.45100000000002,27.039999999999736,27.039999999999736,0,16777216,"[[1024, 1024], []]"
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,aten::div,1,10.098999999999933,15.048000000000002,9.663999999999987,9.663999999999987,0,8388608,"[[1024, 1024], []]"
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,"void at::native::vectorized_elementwise_kernel<2, at::native::(anonymous namespace)::pow_tensor_scalar_kernel_impl<double, double>(at::TensorIteratorBase&, double)::{lambda(double)#1}, std::array<char*, 2ul> >(int, at::native::(anonymous namespace)::pow_tensor_scalar_kernel_impl<double, double>(at::TensorIteratorBase&, double)::{lambda(double)#1}, std::array<char*, 2ul>)",1,0.0,0.0,350.81600000000003,350.81600000000003,0,0,[]
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,aten::exp,1,9.558999999999969,14.508000000000038,97.5039999999999,97.5039999999999,0,8388608,"[[1024, 1024]]"
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,aten::mul,1,6.192000000000007,10.038999999999987,2.463999999999942,2.463999999999942,0,8192,"[[1024], []]"
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,aten::matmul,1,2.8259999999997945,62.548,0.0,11.615999999999985,0,0,"[[1024, 1024], [1024]]"
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,aten::mv,1,7.334000000000515,59.72200000000021,0.0,11.615999999999985,0,0,"[[1024, 1024], [1024]]"
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,aten::empty,1,4.898999999999887,4.898999999999887,0.0,0.0,0,8192,"[[], [], [], [], [], []]"
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,aten::addmv_,1,41.136999999999716,47.488999999999805,11.615999999999985,11.615999999999985,0,0,"[[1024], [1024, 1024], [1024], [], []]"
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,aten::add,1,8.757000000000062,13.66599999999994,1.5039999999999054,1.5039999999999054,0,8192,"[[1024], [1024], []]"
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,cudaDeviceSynchronize,2,697.6539999999998,697.6539999999998,0.0,0.0,0,0,[]
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,"void at::native::reduce_kernel<512, 1, at::native::ReduceOp<double, at::native::func_wrapper_t<double, at::native::sum_functor<double, double, double>::operator()(at::TensorIterator&)::{lambda(double, double)#1}>, unsigned int, double, 4, 4> >(at::native::ReduceOp<double, at::native::func_wrapper_t<double, at::native::sum_functor<double, double, double>::operator()(at::TensorIterator&)::{lambda(double, double)#1}>, unsigned int, double, 4, 4>)",1,0.0,0.0,367.10400000000004,367.10400000000004,0,0,[]
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,"void at::native::vectorized_elementwise_kernel<2, at::native::AUnaryFunctor<double, double, double, at::native::binary_internal::MulFunctor<double> >, std::array<char*, 2ul> >(int, at::native::AUnaryFunctor<double, double, double, at::native::binary_internal::MulFunctor<double> >, std::array<char*, 2ul>)",3,0.0,0.0,29.503999999999678,29.503999999999678,0,0,[]
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,"void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<double, double, double, at::native::binary_internal::MulFunctor<double> >, std::array<char*, 2ul> >(int, at::native::BUnaryFunctor<double, double, double, at::native::binary_internal::MulFunctor<double> >, std::array<char*, 2ul>)",1,0.0,0.0,9.663999999999987,9.663999999999987,0,0,[]
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,"void at::native::vectorized_elementwise_kernel<2, at::native::exp_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#1}::operator()() const::{lambda(double)#1}, std::array<char*, 2ul> >(int, at::native::exp_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#1}::operator()() const::{lambda(double)#1}, std::array<char*, 2ul>)",1,0.0,0.0,97.5039999999999,97.5039999999999,0,0,[]
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,"void gemv2T_kernel_val<int, int, double, double, double, double, 128, 16, 4, 4, false, false, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<double const>, cublasGemvTensorStridedBatched<double const>, cublasGemvTensorStridedBatched<double>, double> >(cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<double const>, cublasGemvTensorStridedBatched<double const>, cublasGemvTensorStridedBatched<double>, double>, double, double)",1,0.0,0.0,11.615999999999985,11.615999999999985,0,0,[]
+pytorch_dense,cuda,1024,8,float64,1.0653850829138242e-15,"void at::native::vectorized_elementwise_kernel<2, at::native::CUDAFunctor_add<double>, std::array<char*, 3ul> >(int, at::native::CUDAFunctor_add<double>, std::array<char*, 3ul>)",1,0.0,0.0,1.5039999999999054,1.5039999999999054,0,0,[]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::unsqueeze,2,11.370999999999981,12.774000000000001,0.0,0.0,0,0,"[[1024, 8], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::as_strided,2,1.40300000000002,1.40300000000002,0.0,0.0,0,0,"[[1024, 8], [], [], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::squeeze,1,3.2560000000000286,3.5970000000000084,0.0,0.0,0,0,"[[1024, 1, 8], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::as_strided,1,0.34099999999997976,0.34099999999997976,0.0,0.0,0,0,"[[1024, 1, 8], [], [], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::squeeze,1,1.5530000000000257,1.8530000000000086,0.0,0.0,0,0,"[[1, 1024, 8], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::as_strided,1,0.29999999999998295,0.29999999999998295,0.0,0.0,0,0,"[[1, 1024, 8], [], [], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::view,3,5.139999999999901,5.139999999999901,0.0,0.0,0,0,"[[1024, 8], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::unsqueeze,1,1.2419999999999902,1.4629999999999939,0.0,0.0,0,0,"[[1024], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::as_strided,1,0.22100000000000364,0.22100000000000364,0.0,0.0,0,0,"[[1024], [], [], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::unsqueeze,1,1.15300000000002,1.3430000000000177,0.0,0.0,0,0,"[[1, 1024], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::as_strided,1,0.18999999999999773,0.18999999999999773,0.0,0.0,0,0,"[[1, 1024], [], [], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::squeeze,1,1.4639999999999986,1.7139999999999986,0.0,0.0,0,0,"[[1, 1024, 1], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::as_strided,1,0.25,0.25,0.0,0.0,0,0,"[[1, 1024, 1], [], [], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::view,3,3.747000000000128,3.747000000000128,0.0,0.0,0,0,"[[1024, 1], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,[memory],12,0.0,0.0,0.0,0.0,-40,-26112,[]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::mul,1,13.506000000000085,777.1750000000002,1.1199999999998909,2.2399999999997817,0,8192,"[[1024], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,Activity Buffer Request,1,750.7950000000001,750.7950000000001,1.1199999999998909,1.1199999999998909,0,0,[]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,cudaLaunchKernel,2,20.629000000000133,20.629000000000133,0.0,0.0,0,0,[]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,"void at::native::vectorized_elementwise_kernel<2, at::native::AUnaryFunctor<double, double, double, at::native::binary_internal::MulFunctor<double> >, std::array<char*, 2ul> >(int, at::native::AUnaryFunctor<double, double, double, at::native::binary_internal::MulFunctor<double> >, std::array<char*, 2ul>)",1,0.0,0.0,1.1199999999998909,1.1199999999998909,0,0,[]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::empty,5,13.724999999999454,13.724999999999454,0.0,0.0,40,8192,"[[], [], [], [], [], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::to,3,2.684999999999718,65.10199999999986,0.0,0.7680000000002565,0,0,"[[1], [], [], [], [], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::_to_copy,3,7.7550000000003365,62.417000000000144,0.0,0.7680000000002565,0,0,"[[1], [], [], [], [], [], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::empty_strided,3,13.234999999999673,13.234999999999673,0.0,0.0,0,1536,"[[], [], [], [], [], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::copy_,3,13.013999999999896,41.427000000000135,0.7680000000002565,0.7680000000002565,0,0,"[[1], [1], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,cudaStreamIsCapturing,3,1.3519999999998618,1.3519999999998618,0.0,0.0,0,0,[]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,cudaMemcpyAsync,3,17.834000000000287,17.834000000000287,0.0,0.0,0,0,[]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,cudaStreamSynchronize,3,9.22700000000009,9.22700000000009,0.0,0.0,0,0,[]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,Memcpy HtoD (Pageable -> Device),4,0.0,0.0,1.024000000000342,1.024000000000342,0,0,[]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::lift_fresh,3,0.45100000000002183,0.45100000000002183,0.0,0.0,0,0,[[1]]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::detach_,3,1.79300000000012,3.206000000000131,0.0,0.0,0,0,[[1]]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,detach_,3,1.413000000000011,1.413000000000011,0.0,0.0,0,0,[[1]]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::view,3,5.791999999999916,5.791999999999916,0.0,0.0,0,0,"[[1], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,GenredAutograd,1,1835.6780000000003,1862.309,1731.415,1731.415,0,0,"[[1024, 8], [1024, 8], [1], [1], [1], [1024, 1]]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,cuLaunchKernel,1,7.514000000000124,7.514000000000124,0.0,0.0,0,0,[]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,GpuConv1DOnDevice,1,0.0,0.0,1731.1589999999999,1731.1589999999999,0,0,[]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::to,1,0.21000000000003638,0.21000000000003638,0.0,0.0,0,0,"[[2], [], [], [], [], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::lift_fresh,1,0.1499999999996362,0.1499999999996362,0.0,0.0,0,0,[[2]]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::detach_,1,0.6509999999998399,1.2429999999999382,0.0,0.0,0,0,[[2]]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,detach_,1,0.5920000000000982,0.5920000000000982,0.0,0.0,0,0,[[2]]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::select,2,4.8390000000003965,5.851000000000113,0.0,0.0,0,0,"[[2], [], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::as_strided,2,1.0119999999997162,1.0119999999997162,0.0,0.0,0,0,"[[2], [], [], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::item,2,1.8850000000002183,2.4760000000001128,0.0,0.0,0,0,[[]]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::_local_scalar_dense,2,0.5909999999998945,0.5909999999998945,0.0,0.0,0,0,[[]]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::reshape,1,1.1320000000000618,2.8450000000002547,0.0,0.0,0,0,"[[1024, 1], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,aten::add,1,11.37099999999964,19.12599999999975,1.1520000000000437,1.1520000000000437,0,8192,"[[1024], [1024], []]"
+keops,cuda,1024,8,float64,2.1307701658276485e-15,"void at::native::vectorized_elementwise_kernel<2, at::native::CUDAFunctor_add<double>, std::array<char*, 3ul> >(int, at::native::CUDAFunctor_add<double>, std::array<char*, 3ul>)",1,0.0,0.0,1.1520000000000437,1.1520000000000437,0,0,[]
+keops,cuda,1024,8,float64,2.1307701658276485e-15,cudaDeviceSynchronize,2,4.026999999999589,4.026999999999589,0.0,0.0,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::empty,6,29.115999999999786,29.115999999999786,0.0,0.0,32,8192,"[[], [], [], [], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::to,8,4.660000000000025,983.2239999999997,0.0,1.0219999999997071,0,0,"[[], [], [], [], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::lift_fresh,3,0.44100000000005934,0.44100000000005934,0.0,0.0,0,0,[[]]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::to,8,3.31400000000005,13.644000000000034,0.0,0.0,0,0,"[[], [], [], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::ge,2,9.55800000000022,13.79600000000005,1.2160000000001219,1.2160000000001219,1,512,"[[], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::any,1,4.048999999999978,7.564999999999998,0.0,0.0,1,0,[[]]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::view_as,3,4.217999999999904,5.940999999999974,0.0,0.0,0,0,"[[], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::view,3,1.72300000000007,1.72300000000007,0.0,0.0,0,0,"[[], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::copy_,12,38.043000000000376,1889.6419999999998,2.4309999999998126,3.7079999999994016,-24,0,"[[], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,[memory],30,0.0,0.0,0.0,0.0,-18,-171008,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::is_nonzero,3,3.4069999999998686,30.437999999999988,0.0,0.7680000000000291,0,0,[[]]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::item,5,5.150000000000489,29.266000000000247,0.0,0.7680000000000291,0,0,[[]]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::_local_scalar_dense,5,8.627999999999702,24.115999999999758,0.7680000000000291,0.7680000000000291,0,0,[[]]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::zeros,1,6.551999999999964,7.875,0.0,0.0,0,0,"[[], [], [], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::zero_,1,0.271000000000015,0.271000000000015,0.0,0.0,0,0,"[[1, 1]]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::detach,1,0.8929999999999723,1.7939999999999827,0.0,0.0,0,0,"[[1, 1]]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,detach,1,0.9010000000000105,0.9010000000000105,0.0,0.0,0,0,"[[1, 1]]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::_to_copy,6,14.768999999999664,988.8939999999998,0.0,1.0219999999997071,0,0,"[[], [], [], [], [], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::empty_strided,8,26.140000000000043,26.140000000000043,0.0,0.0,32,2048,"[[], [], [], [], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::expand_as,3,2.925000000000182,12.884000000000015,0.0,0.0,0,0,"[[], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::expand,4,11.601999999999748,13.906999999999698,0.0,0.0,0,0,"[[], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::as_strided,4,2.30499999999995,2.30499999999995,0.0,0.0,0,0,"[[], [], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,Activity Buffer Request,1,865.281,865.281,0.25499999999988177,0.25499999999988177,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,cudaStreamIsCapturing,4,2.6849999999999454,2.6849999999999454,0.0,0.0,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,cudaMemcpyAsync,9,56.604999999999336,56.604999999999336,0.0,0.0,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,cudaStreamSynchronize,6,20.34900000000016,20.34900000000016,0.0,0.0,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,Memcpy HtoD (Pageable -> Device),5,0.0,0.0,1.2779999999997926,1.2779999999997926,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::to,1,0.8710000000000946,32.371000000000095,0.0,0.25500000000010914,0,0,"[[1, 1], [], [], [], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::_to_copy,2,4.808999999999969,35.20699999999988,0.0,0.25500000000010914,0,0,"[[1, 1], [], [], [], [], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::copy_,4,12.65300000000002,47.99000000000001,1.0870000000002165,1.3420000000003256,-8,0,"[[1, 1], [1, 1], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::to,1,0.5910000000001219,4.298000000000002,0.0,0.0,0,0,"[[1, 1], [], [], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::expand_as,1,0.7710000000001855,2.7450000000001182,0.0,0.0,0,0,"[[1, 1], [1, 1]]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::expand,1,1.2429999999999382,1.9739999999999327,0.0,0.0,0,0,"[[1, 1], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::as_strided,1,0.7309999999999945,0.7309999999999945,0.0,0.0,0,0,"[[1, 1], [], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::_has_compatible_shallow_copy_type,2,0.3300000000001546,0.3300000000001546,0.0,0.0,0,0,"[[1, 1], [1, 1]]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::neg,2,12.924999999999955,28.904999999999973,1.9200000000000728,1.9200000000000728,0,1024,[[]]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,cudaLaunchKernel,16,97.0930000000003,97.0930000000003,0.0,0.0,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,"void at::native::vectorized_elementwise_kernel<2, at::native::neg_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#6}::operator()() const::{lambda(double)#1}, std::array<char*, 2ul> >(int, at::native::neg_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#6}::operator()() const::{lambda(double)#1}, std::array<char*, 2ul>)",2,0.0,0.0,1.9200000000000728,1.9200000000000728,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::expm1,1,6.6720000000000255,11.951999999999998,1.5359999999998308,1.5359999999998308,0,512,[[]]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,"void at::native::vectorized_elementwise_kernel<2, at::native::expm1_kernel_cuda(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#1}::operator()() const::{lambda(double)#1}, std::array<char*, 2ul> >(int, at::native::expm1_kernel_cuda(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#1}::operator()() const::{lambda(double)#1}, std::array<char*, 2ul>)",1,0.0,0.0,1.5359999999998308,1.5359999999998308,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::log,1,5.399999999999864,10.288999999999987,1.759999999999991,1.759999999999991,0,512,[[]]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,"void at::native::vectorized_elementwise_kernel<2, at::native::log_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#1}::operator()() const::{lambda(double)#1}, std::array<char*, 2ul> >(int, at::native::log_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#1}::operator()() const::{lambda(double)#1}, std::array<char*, 2ul>)",1,0.0,0.0,1.759999999999991,1.759999999999991,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::add,1,6.069999999999709,9.947999999999865,1.0879999999999654,1.0879999999999654,0,512,"[[], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,"void at::native::vectorized_elementwise_kernel<2, at::native::CUDAFunctor_add<double>, std::array<char*, 3ul> >(int, at::native::CUDAFunctor_add<double>, std::array<char*, 3ul>)",2,0.0,0.0,2.30399999999986,2.30399999999986,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::softplus,2,14.557999999999993,25.82899999999995,5.023000000000138,5.023000000000138,0,1024,"[[], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,"void at::native::vectorized_elementwise_kernel<2, at::native::(anonymous namespace)::softplus_kernel(at::TensorIteratorBase&, c10::Scalar const&, c10::Scalar const&)::{lambda()#1}::operator()() const::{lambda()#1}::operator()() const::{lambda(double)#1}, std::array<char*, 2ul> >(int, at::native::(anonymous namespace)::softplus_kernel(at::TensorIteratorBase&, c10::Scalar const&, c10::Scalar const&)::{lambda()#1}::operator()() const::{lambda()#1}::operator()() const::{lambda(double)#1}, std::array<char*, 2ul>)",4,0.0,0.0,9.982999999999947,9.982999999999947,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::le,1,9.307999999999993,14.718000000000075,1.3130000000001019,1.3130000000001019,0,512,"[[], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,"void at::native::vectorized_elementwise_kernel<4, at::native::(anonymous namespace)::CompareFunctor<double>, std::array<char*, 3ul> >(int, at::native::(anonymous namespace)::CompareFunctor<double>, std::array<char*, 3ul>)",2,0.0,0.0,2.5290000000002237,2.5290000000002237,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::all,2,10.249000000000024,36.16799999999989,0.0,1.6639999999999873,0,1024,[[]]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,Memcpy DtoD (Device -> Device),3,0.0,0.0,2.4960000000000946,2.4960000000000946,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,Memcpy DtoH (Device -> Pinned),2,0.0,0.0,0.7680000000000291,0.7680000000000291,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::expand_as,1,1.4820000000001983,5.430000000000064,0.0,0.0,0,0,"[[], [1, 1]]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::unsqueeze,1,3.3159999999998035,3.95699999999988,0.0,0.0,0,0,"[[1024], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::as_strided,1,0.6410000000000764,0.6410000000000764,0.0,0.0,0,0,"[[1024], [], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::softplus,2,18.61500000000001,31.788999999999987,4.959999999999809,4.959999999999809,0,1024,"[[1, 1], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::div,2,14.166000000000167,30.397000000000162,2.9439999999997326,2.9439999999997326,0,131072,"[[1024, 8], [1, 1]]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,"void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<double, double, double, at::native::binary_internal::DivFunctor<double> > >(at::TensorIteratorBase&, at::native::BinaryFunctor<double, double, double, at::native::binary_internal::DivFunctor<double> > const&)::{lambda(int)#1}>(int, at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<double, double, double, at::native::binary_internal::DivFunctor<double> > >(at::TensorIteratorBase&, at::native::BinaryFunctor<double, double, double, at::native::binary_internal::DivFunctor<double> > const&)::{lambda(int)#1})",2,0.0,0.0,2.9439999999997326,2.9439999999997326,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,Matmul,1,262.6470000000006,1703.811,0.0,1296.4349999999995,-16,0,"[[1024, 1], [1024, 8], [1024, 8]]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::unsqueeze,2,5.560999999999922,6.902999999999793,0.0,0.0,0,0,"[[1024, 8], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::as_strided,2,1.3419999999998709,1.3419999999998709,0.0,0.0,0,0,"[[1024, 8], [], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::squeeze,1,2.8449999999998,3.245999999999867,0.0,0.0,0,0,"[[1024, 1, 8], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::as_strided,1,0.4010000000000673,0.4010000000000673,0.0,0.0,0,0,"[[1024, 1, 8], [], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::squeeze,1,1.5419999999999163,1.8129999999998745,0.0,0.0,0,0,"[[1, 1024, 8], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::as_strided,1,0.27099999999995816,0.27099999999995816,0.0,0.0,0,0,"[[1, 1024, 8], [], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::view,3,3.4760000000001128,3.4760000000001128,0.0,0.0,0,0,"[[1024, 8], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::view,4,4.28899999999976,4.28899999999976,0.0,0.0,0,0,"[[1024, 1], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::squeeze,1,1.8130000000001019,2.213999999999942,0.0,0.0,0,0,"[[1, 1024, 1], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::as_strided,1,0.40099999999983993,0.40099999999983993,0.0,0.0,0,0,"[[1, 1024, 1], [], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,GenredAutograd,1,1390.8980000000006,1420.9270000000001,1296.4349999999995,1296.4349999999995,0,0,"[[1024, 8], [1024, 8], [1024, 1]]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,cuLaunchKernel,1,7.7849999999998545,7.7849999999998545,0.0,0.0,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,GpuConv1DOnDevice,1,0.0,0.0,1296.1789999999996,1296.1789999999996,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::to,1,0.23999999999978172,0.23999999999978172,0.0,0.0,0,0,"[[2], [], [], [], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::lift_fresh,1,0.17099999999982174,0.17099999999982174,0.0,0.0,0,0,[[2]]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::detach_,1,0.7119999999999891,1.3130000000001019,0.0,0.0,0,0,[[2]]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,detach_,1,0.6010000000001128,0.6010000000001128,0.0,0.0,0,0,[[2]]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::select,2,4.799999999999727,5.760999999999967,0.0,0.0,0,0,"[[2], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::as_strided,2,0.9610000000002401,0.9610000000002401,0.0,0.0,0,0,"[[2], [], [], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::reshape,1,1.0909999999998945,2.7950000000000728,0.0,0.0,0,0,"[[1024, 1], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::mul,2,18.56399999999985,31.439000000000306,2.175999999999931,2.175999999999931,0,16384,"[[1024], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,"void at::native::vectorized_elementwise_kernel<2, at::native::AUnaryFunctor<double, double, double, at::native::binary_internal::MulFunctor<double> >, std::array<char*, 2ul> >(int, at::native::AUnaryFunctor<double, double, double, at::native::binary_internal::MulFunctor<double> >, std::array<char*, 2ul>)",2,0.0,0.0,2.175999999999931,2.175999999999931,0,0,[]
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,aten::add,1,5.811000000000149,9.677999999999884,1.2159999999998945,1.2159999999998945,0,8192,"[[1024], [1024], []]"
+gpytorch_keops,cuda,1024,8,float64,1.6151041826118317e-08,cudaDeviceSynchronize,2,3.8470000000002074,3.8470000000002074,0.0,0.0,0,0,[]

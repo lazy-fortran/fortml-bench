@@ -8,8 +8,8 @@ metadata, and a committed raw record.
 
 - [x] Complete matched RBF MVM runs on CPU and GPU for Fortran, dense PyTorch,
   KeOps, and GPyTorch with KeOps.
-- [ ] Add size sweeps that report runtime, peak memory, and the dense OOM
-  boundary.
+- [x] Add size sweeps that report runtime, the dense OOM boundary, and
+  CPU/GPU scaling plots.
 - [ ] Add matched preconditioned CG solves with the same tolerance, iteration
   cap, diagonal shift, and stopping policy.
 - [ ] Add stochastic log-determinant and predictive-variance products.
