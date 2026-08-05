@@ -1,0 +1,3 @@
+backend,device,residency,n_samples,n_features,rhs,repetitions,dtype,seconds_per_operation,status,fortml_commit,fortnum_commit,correctness_oracle,compiler,flags,compiler_version,native_cuda_kernel
+fortml_openacc,cpu,transfer,2048,8,1,3,float64,  3.2316813333333333E-03,pass,0b42a76b2b0ebc42cc17c0268350f7a58050d7f8,5fba327a2b49e105104e97271d4d9c6effac11aa,direct_RBF_pairwise_sum_for_each_RHS,gfortran,-O3 -fopenmp,GNU Fortran (GCC) 16.1.1 20260728,0
+fortml_openacc,cpu,resident,2048,8,1,3,float64,  3.1977006666666663E-03,pass,0b42a76b2b0ebc42cc17c0268350f7a58050d7f8,5fba327a2b49e105104e97271d4d9c6effac11aa,direct_RBF_pairwise_sum_for_each_RHS,gfortran,-O3 -fopenmp,GNU Fortran (GCC) 16.1.1 20260728,0

@@ -8,7 +8,7 @@ as OOM rather than treated as correctness passes.
 
 Fortran is within the 30-percent target of GPyTorch-KeOps on this workload.
 The current scaling sweep uses the contiguous sample-major kernel from fortml
-commit a205898. Its CPU lane uses nvfortran -O3 -mp and its GPU lane uses
+commit `81b0655`. Its CPU lane uses nvfortran -O3 -mp and its GPU lane uses
 nvfortran -O3 -acc. The CPU and GPU compiler, package, driver, source-commit, and
 numerical error fields are in rbf_mvm_scaling.csv.
 
@@ -95,9 +95,9 @@ solver workspace at the call boundary.
 All rows passed the independent blocked NumPy residual check. The 2,048-sample
 lane additionally compares against `numpy.linalg.solve`. The nvfortran/
 OpenACC FortML solve took 0.187 s per solve on the RTX 5060 Ti, compared with
-0.752 s for the explicit KeOps loop and 0.598 s for the matching
-GPyTorch-KeOps loop. The 16-thread CPU FortML result was 0.158 s, compared with
-0.720 s for KeOps and 0.569 s for GPyTorch-KeOps. This is matrix-free solver
+0.754 s for the explicit KeOps loop and 0.597 s for the matching
+GPyTorch-KeOps loop. The 16-thread CPU FortML result was 0.162 s, compared with
+0.735 s for KeOps and 0.568 s for GPyTorch-KeOps. This is matrix-free solver
 evidence. It does not cover preconditioned solves, stochastic log determinants,
 or full GP training.
 
@@ -107,15 +107,33 @@ GPU plot: `rbf_cg_scaling_cuda.png`
 
 The primary four-point sweep reaches 2,048 samples with all rows passing. The
 extended record `rbf_cg_scaling_extended.csv` adds 4,096 samples. FortML takes
-893.3 ms on CPU and 879.2 ms on CUDA at 4,096 samples. The corresponding KeOps
-and GPyTorch-KeOps times are 1,862.0/1,946.5 ms and 1,437.3/1,500.1 ms for
+828.7 ms on CPU and 872.4 ms on CUDA at 4,096 samples. The corresponding KeOps
+and GPyTorch-KeOps times are 1,841.5/1,876.3 ms and 1,431.8/1,445.8 ms for
 CPU/CUDA. Dense PyTorch is OOM at 4,096 on CUDA. The FortML CUDA doubling
-slope from 2,048 to 4,096 is 2.20, compared with 1.33 for KeOps and 1.31 for
-GPyTorch-KeOps. The two-row output tile lowers the FortML endpoint while a
-shared neighbor tile remains open as the next kernel-level optimization.
+slope from 2,048 to 4,096 is 2.22, compared with 1.31 for KeOps and 1.28 for
+GPyTorch-KeOps. The two-row output tile lowers the FortML endpoint. The
+optional native CUDA shared-neighbor tile is now profiled separately, with
+OpenACC retained as the default because both paths are within the same timing
+envelope on this GPU.
 
 Extended CPU plot: `rbf_cg_scaling_extended_cpu.png`
-https://box.sloppy.at/fd393.png
+https://box.sloppy.at/9cef6.png
 
 Extended GPU plot: `rbf_cg_scaling_extended_cuda.png`
-https://box.sloppy.at/dc1a3.png
+https://box.sloppy.at/4d9a5.png
+
+## Batched matrix-matrix products
+
+The fixed eight-feature native CUDA path also fuses up to eight right-hand
+sides. At 2,048 samples and four right-hand sides, the resident native kernel
+takes 1.363 ms, compared with 3.666 ms for the OpenACC matmat loop. At eight
+right-hand sides, the native path takes 1.405 ms, compared with 7.327 ms for
+OpenACC. Every row in `rbf_matmat.csv` passes the direct pairwise oracle for
+each right-hand side. The CPU, OpenACC, and native CUDA runs are produced by
+`scripts/run_matmat_suite.sh`.
+
+CUDA plot: `rbf_matmat_rhs_cuda.png`
+https://box.sloppy.at/aabb5.png
+
+CPU plot: `rbf_matmat_rhs_cpu.png`
+https://box.sloppy.at/98dcc.png

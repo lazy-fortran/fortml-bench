@@ -1,0 +1,3 @@
+backend,device,residency,n_samples,n_features,rhs,repetitions,dtype,seconds_per_operation,status,fortml_commit,fortnum_commit,correctness_oracle,compiler,flags,compiler_version,native_cuda_kernel
+fortml_openacc,cuda,transfer,2048,8,8,3,float64,  7.5792999999999998E-03,pass,0b42a76b2b0ebc42cc17c0268350f7a58050d7f8,5fba327a2b49e105104e97271d4d9c6effac11aa,direct_RBF_pairwise_sum_for_each_RHS,nvfortran,-O3 -acc,nvfortran 26.5-0 64-bit target on x86-64 Linux -tp znver3 ,0
+fortml_openacc,cuda,resident,2048,8,8,3,float64,  7.3266666666666662E-03,pass,0b42a76b2b0ebc42cc17c0268350f7a58050d7f8,5fba327a2b49e105104e97271d4d9c6effac11aa,direct_RBF_pairwise_sum_for_each_RHS,nvfortran,-O3 -acc,nvfortran 26.5-0 64-bit target on x86-64 Linux -tp znver3 ,0

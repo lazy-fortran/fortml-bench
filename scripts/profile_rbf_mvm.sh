@@ -11,6 +11,7 @@ features=${PROFILE_FEATURES:-8}
 cpu_repetitions=${PROFILE_CPU_REPETITIONS:-200}
 gpu_repetitions=${PROFILE_GPU_REPETITIONS:-12}
 cpu_threads=${CPU_THREADS:-$(lscpu -p=CORE 2>/dev/null | awk '!/^#/ {print $1}' | sort -u | wc -l)}
+native_cuda=${FORTML_NATIVE_CUDA:-0}
 test "$cpu_threads" -gt 0 || cpu_threads=1
 mkdir -p "$output"
 build=$(mktemp -d)
@@ -45,15 +46,33 @@ OMP_NUM_THREADS="$cpu_threads" perf stat -r 3 \
     >"$output/perf_cpu_output.txt" 2>"$output/perf_cpu.txt"
 
 if command -v nvfortran >/dev/null 2>&1 && command -v nsys >/dev/null 2>&1; then
-    nvfortran -O3 -acc -module "$build" -o "$build/rbf_gpu" \
-        "$fortnum/src/fortnum_kinds.f90" \
-        "$fortnum/src/fortnum_status.f90" \
-        "$fortnum/src/linalg/fortnum_krylov.f90" \
-        "$fortml/src/gp/fortml_kernels.f90" \
-        "$fortml/src/gp/fortml_linear_operator.f90" \
-        "$fortml/src/gp/fortml_cuda_rbf_stub.f90" \
-        "$fortml/src/gp/fortml_kernel_operator.f90" \
+    gpu_sources=(
+        "$fortnum/src/fortnum_kinds.f90"
+        "$fortnum/src/fortnum_status.f90"
+        "$fortnum/src/linalg/fortnum_krylov.f90"
+        "$fortml/src/gp/fortml_kernels.f90"
+        "$fortml/src/gp/fortml_linear_operator.f90"
+        "$fortml/src/gp/fortml_kernel_operator.f90"
         "$fortml/app/fortml_bench_rbf_operator.f90"
+    )
+    gpu_link_inputs=()
+    if [[ "$native_cuda" == "1" ]]; then
+        command -v nvcc >/dev/null 2>&1
+        cuda_root=${CUDA_HOME:-/opt/cuda}
+        nvcc_flags=${NVCCFLAGS:--O3 -arch=native}
+        nvcc $nvcc_flags -c "$fortml/src/gp/fortml_cuda_rbf.cu" \
+            -o "$build/fortml_cuda_rbf.o"
+        gpu_link_inputs=(
+            "$build/fortml_cuda_rbf.o"
+            "-L$cuda_root/lib64"
+            -lcudart
+            -c++libs
+        )
+    else
+        gpu_sources+=("$fortml/src/gp/fortml_cuda_rbf_stub.f90")
+    fi
+    nvfortran -O3 -acc -module "$build" -o "$build/rbf_gpu" \
+        "${gpu_sources[@]}" "${gpu_link_inputs[@]}"
     gpu_index=${GPU_INDEX:-1}
     CUDA_VISIBLE_DEVICES="$gpu_index" NV_ACC_TIME=1 nsys profile \
         --trace=cuda,nvtx,osrt --stats=true --force-overwrite=true \

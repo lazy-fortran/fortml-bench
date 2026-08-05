@@ -88,6 +88,10 @@ eight-feature RBF kernel. Set `FORTML_NATIVE_CUDA=1` to compile the shared
 neighbor-tile kernel with `nvcc` and link it into the Fortran executable. The
 default lane remains OpenACC. Both variants run the direct pairwise oracle in
 the MVM benchmark, and the CG lane records the selected variant in its metadata.
+The matmat benchmark uses the same switch and checks every right-hand side
+against the direct pairwise oracle. Run `scripts/run_matmat_suite.sh` for the
+CPU, OpenACC, and native CUDA lanes over one, two, four, and eight right-hand
+sides. It writes `results/rbf_matmat.csv` and resident-runtime plots.
 
 ## Validity boundary
 
