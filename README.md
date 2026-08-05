@@ -69,11 +69,26 @@ reports. The Python operation profiler records the corresponding operation
 tables for dense PyTorch, KeOps, and GPyTorch-KeOps. Nsight Compute is
 attempted when permissions allow it.
 
+Run the matched matrix-free CG workload with:
+
+    N_SAMPLES=2048 N_FEATURES=8 ./scripts/run_cg_suite.sh
+
+The CG suite uses float64, variance 1.4, lengthscale 0.7, diagonal shift 0.08,
+relative tolerance `1e-8`, and a 500-iteration cap. The Python lanes use one
+explicit CG recurrence around dense PyTorch, KeOps, and GPyTorch-KeOps MVMs.
+The FortML lane uses the specialized `nvfortran`/OpenACC RBF solve. Every
+result is checked with a blocked NumPy residual, and sizes up to `--oracle-n`
+also use an independent dense NumPy solve. Raw records and scaling plots are
+written under `results/rbf_cg*`. For the full four-point sweep, run:
+
+    ./scripts/run_cg_scaling.sh
+
 ## Validity boundary
 
 The first comparison is a kernel-product comparison. It does not claim that a
-full GP training run has the same cost. The next workload adds matched
-preconditioned CG solves and then GP marginal likelihood and prediction.
+full GP training run has the same cost. The separate CG workload adds a
+matched unpreconditioned matrix-free solve. Preconditioned CG, GP marginal
+likelihood, and prediction remain separate workloads.
 
 Every result records the machine, compiler, flags, package versions, source
 revisions, precision, dimensions, residency mode, repetitions, setup time,
@@ -84,7 +99,8 @@ The RBF constants are variance 1.4, lengthscale 0.7, and diagonal shift 0.08.
 All implementations use float64 and the same deterministic points and input
 vector. The Fortran, KeOps, and GPyTorch adapters are compared by the same
 blocked pairwise operator, with only storage, tiling, and execution backend
-changing.
+changing. CG rows use resident inputs. The FortML solver's internal Krylov
+workspace is allocated and mapped by its call boundary.
 
 ## License
 

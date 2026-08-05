@@ -10,8 +10,10 @@ metadata, and a committed raw record.
   KeOps, and GPyTorch with KeOps.
 - [x] Add size sweeps that report runtime, the dense OOM boundary, and
   CPU/GPU scaling plots.
-- [ ] Add matched preconditioned CG solves with the same tolerance, iteration
-  cap, diagonal shift, and stopping policy.
+- [x] Add matched matrix-free CG solves with the same float64 tolerance,
+  iteration cap, diagonal shift, unpreconditioned recurrence, and true-residual
+  stopping check for dense PyTorch, KeOps, GPyTorch-KeOps, and nvfortran
+  FortML.
 - [ ] Add stochastic log-determinant and predictive-variance products.
 - [ ] Add exact small-GP training and prediction comparisons.
 - [ ] Add compact-support sparse and regular-grid workloads using fortsparse,
