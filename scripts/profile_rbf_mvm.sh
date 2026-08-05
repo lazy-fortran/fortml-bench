@@ -33,6 +33,9 @@ $cpu_fc $cpu_flags "${cpu_module_flag[@]}" \
     -o "$build/rbf_cpu" \
     "$fortnum/src/fortnum_kinds.f90" \
     "$fortnum/src/fortnum_status.f90" \
+    "$fortnum/src/linalg/fortnum_krylov.f90" \
+    "$fortml/src/gp/fortml_kernels.f90" \
+    "$fortml/src/gp/fortml_linear_operator.f90" \
     "$fortml/src/gp/fortml_kernel_operator.f90" \
     "$fortml/app/fortml_bench_rbf_operator.f90"
 OMP_NUM_THREADS="$cpu_threads" perf stat -r 3 \
@@ -44,6 +47,9 @@ if command -v nvfortran >/dev/null 2>&1 && command -v nsys >/dev/null 2>&1; then
     nvfortran -O3 -acc -module "$build" -o "$build/rbf_gpu" \
         "$fortnum/src/fortnum_kinds.f90" \
         "$fortnum/src/fortnum_status.f90" \
+        "$fortnum/src/linalg/fortnum_krylov.f90" \
+        "$fortml/src/gp/fortml_kernels.f90" \
+        "$fortml/src/gp/fortml_linear_operator.f90" \
         "$fortml/src/gp/fortml_kernel_operator.f90" \
         "$fortml/app/fortml_bench_rbf_operator.f90"
     gpu_index=${GPU_INDEX:-1}
