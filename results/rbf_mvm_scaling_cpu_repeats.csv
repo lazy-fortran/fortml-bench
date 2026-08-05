@@ -1,0 +1,10 @@
+backend,device,residency,n_samples,n_features,dtype,threads,repetitions,seconds_per_mvm,relative_error,status,fortml_commit,fortnum_commit,correctness_oracle,compiler,flags,process_run
+fortml,cpu,cpu,4096,8,float64,16,5,0.00570702,0.0,pass,2a1ff4945124558e68f343cfd8f4c56825e6c608,5fba327a2b49e105104e97271d4d9c6effac11aa,direct_RBF_pairwise_sum,nvfortran,-O3 -mp,1
+fortml,cpu,cpu,4096,8,float64,16,5,0.00568718,0.0,pass,2a1ff4945124558e68f343cfd8f4c56825e6c608,5fba327a2b49e105104e97271d4d9c6effac11aa,direct_RBF_pairwise_sum,nvfortran,-O3 -mp,2
+fortml,cpu,cpu,4096,8,float64,16,5,0.00601620,0.0,pass,2a1ff4945124558e68f343cfd8f4c56825e6c608,5fba327a2b49e105104e97271d4d9c6effac11aa,direct_RBF_pairwise_sum,nvfortran,-O3 -mp,3
+fortml,cpu,cpu,8192,8,float64,16,5,0.01620158,0.0,pass,2a1ff4945124558e68f343cfd8f4c56825e6c608,5fba327a2b49e105104e97271d4d9c6effac11aa,direct_RBF_pairwise_sum,nvfortran,-O3 -mp,1
+fortml,cpu,cpu,8192,8,float64,16,5,0.01610616,0.0,pass,2a1ff4945124558e68f343cfd8f4c56825e6c608,5fba327a2b49e105104e97271d4d9c6effac11aa,direct_RBF_pairwise_sum,nvfortran,-O3 -mp,2
+fortml,cpu,cpu,8192,8,float64,16,5,0.02109880,0.0,pass,2a1ff4945124558e68f343cfd8f4c56825e6c608,5fba327a2b49e105104e97271d4d9c6effac11aa,direct_RBF_pairwise_sum,nvfortran,-O3 -mp,3
+fortml,cpu,cpu,16384,8,float64,16,5,0.05973338,0.0,pass,2a1ff4945124558e68f343cfd8f4c56825e6c608,5fba327a2b49e105104e97271d4d9c6effac11aa,direct_RBF_pairwise_sum,nvfortran,-O3 -mp,1
+fortml,cpu,cpu,16384,8,float64,16,5,0.07397822,0.0,pass,2a1ff4945124558e68f343cfd8f4c56825e6c608,5fba327a2b49e105104e97271d4d9c6effac11aa,direct_RBF_pairwise_sum,nvfortran,-O3 -mp,2
+fortml,cpu,cpu,16384,8,float64,16,5,0.05985058,0.0,pass,2a1ff4945124558e68f343cfd8f4c56825e6c608,5fba327a2b49e105104e97271d4d9c6effac11aa,direct_RBF_pairwise_sum,nvfortran,-O3 -mp,3

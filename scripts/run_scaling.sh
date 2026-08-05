@@ -6,6 +6,7 @@ python=${PYTHON:-$root/.venv/bin/python}
 fortml=${FORTML_DIR:-$root/../fortml}
 sizes=${SIZES:-"256 512 1024 2048 4096"}
 repetitions=${SCALING_REPETITIONS:-12}
+result_stem=${SCALING_RESULT_STEM:-rbf_mvm_scaling}
 cpu_threads=${CPU_THREADS:-$(lscpu -p=CORE 2>/dev/null | awk '!/^#/ {print $1}' | sort -u | wc -l)}
 test "$cpu_threads" -gt 0 || cpu_threads=1
 if [[ -n "${CPU_FC:-}" ]]; then
@@ -53,6 +54,6 @@ if "$python" -c 'import torch; raise SystemExit(0 if torch.cuda.is_available() e
 fi
 
 "$python" "$root/scripts/merge_results.py" \
-    "$root/results/rbf_mvm_scaling.csv" "${inputs[@]}"
+    "$root/results/${result_stem}.csv" "${inputs[@]}"
 "$python" "$root/scripts/plot_scaling.py" \
-    "$root/results/rbf_mvm_scaling.csv" "$root/results/rbf_mvm_scaling"
+    "$root/results/${result_stem}.csv" "$root/results/${result_stem}"

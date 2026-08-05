@@ -41,6 +41,43 @@ and 7.48 ms for KeOps. On the CPU lane, nvfortran Fortran takes 4.66 ms,
 compared with 6.22 ms for GPyTorch-KeOps and 7.56 ms for KeOps. The Fortran
 curve is lowest at every tested size on both devices.
 
+The dense PyTorch CPU curve is a dense-reference measurement. Its implementation
+materializes the full (N 	imes N 	imes D) difference tensor and two
+(N 	imes N) intermediates on every call. At 4,096 samples it takes 349 ms,
+whereas a diagnostic blocked PyTorch version still takes 327 ms. This confirms
+that setup time is not causing the offset. FortML and KeOps avoid those
+intermediates with fused matrix-free reductions, so dense PyTorch is not an
+apples-to-apples implementation of the same memory strategy.
+
 The operation-level comparison is in
 [OPERATION_PROFILE.md](OPERATION_PROFILE.md), with raw torch.profiler
 tables in operation_profile_cpu.csv and operation_profile_cuda.csv.
+
+## High-N slope check
+
+A follow-up sweep extended the same float64 workload to 8,192 and 16,384
+samples, with three timed repetitions per size. The merged record is in
+`rbf_mvm_scaling_extended.csv`. All non-OOM rows passed the independent
+blocked NumPy oracle.
+
+The resident GPU FortML timings were 4.054, 16.129, and 64.390 ms at
+4,096, 8,192, and 16,384 samples. The local doubling slopes are 1.992 and
+1.997, so the GPU curve is stably quadratic over the extended range. KeOps
+and GPyTorch-KeOps have slopes of about 1.5 on the last doubling, while
+dense PyTorch is OOM on the GPU from 4,096 onward.
+
+The first CPU sweep shows process-placement noise at 8,192 samples. Three
+additional unpinned nvfortran runs per size, recorded in
+`rbf_mvm_scaling_cpu_repeats.csv`, gave median FortML timings of
+5.707, 16.202, and 59.851 ms; their local slopes are 1.505 and 1.885 and
+are approaching the expected quadratic regime. The CPU result should
+therefore be read with the runtime-placement caveat until the cluster's CPU
+affinity policy is fixed.
+
+Extended CPU plot:
+
+https://box.sloppy.at/c7d09.png
+
+Extended GPU plot:
+
+https://box.sloppy.at/465d6.png
