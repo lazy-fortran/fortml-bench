@@ -115,7 +115,7 @@ GPyTorch-KeOps. The two-row output tile lowers the FortML endpoint while a
 shared neighbor tile remains open as the next kernel-level optimization.
 
 Extended CPU plot: `rbf_cg_scaling_extended_cpu.png`
-https://box.sloppy.at/1bd60.png
+https://box.sloppy.at/fd393.png
 
 Extended GPU plot: `rbf_cg_scaling_extended_cuda.png`
-https://box.sloppy.at/f5812.png
+https://box.sloppy.at/dc1a3.png
