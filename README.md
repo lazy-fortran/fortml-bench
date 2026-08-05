@@ -52,6 +52,9 @@ The CPU lane defaults to physical cores and can be pinned explicitly:
 
     CPU_THREADS=16 ./scripts/run_suite.sh
 
+When nvfortran is available, the CPU lane uses its host OpenMP path with
+nvfortran -O3 -mp. Set CPU_FC=gfortran to select the GNU Fortran fallback.
+
 Run the five-size scaling sweep with:
 
     ./scripts/run_scaling.sh

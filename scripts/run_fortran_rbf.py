@@ -34,7 +34,9 @@ def main() -> None:
             environment = os.environ.copy()
             environment.update(
                 {
-                    "FC": environment.get("FORTML_FC", "gfortran"),
+                    "FC": environment.get(
+                        "FORTML_FC", environment.get("FC", "gfortran")
+                    ),
                     "MODE": "cpu",
                     "TARGET": "fortml_bench_rbf_operator",
                     "OUT": str(scratch / "fortran.csv"),

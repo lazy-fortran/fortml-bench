@@ -4,8 +4,8 @@ Run date: 2026-08-05. The matched workload is 1024 samples, 8 features,
 float64, resident inputs, and the same variance, lengthscale, points, input
 vector, and independent NumPy oracle as the timing suite. Python operations
 were collected with torch.profiler after two warm-up calls. The Fortran CPU
-lane used perf stat over 300 MVMs and the GPU lane used Nsight Systems plus
-NV_ACC_TIME over 12 MVMs.
+lane used nvfortran -O3 -mp and perf stat over 300 MVMs. The GPU lane used
+nvfortran -O3 -acc, Nsight Systems, and NV_ACC_TIME over 12 MVMs.
 
 ## What each implementation executes
 
@@ -36,18 +36,18 @@ The Python CUDA trace reported these dominant self-device operations:
 
 The Fortran Nsight Systems trace reported 13 launches for the correctness
 call plus 12 timed resident calls. The kernel used grid [1024], block [128],
-and averaged 264.0 us per launch. NV_ACC_TIME measured 29 us of input copies
+and averaged 276.0 us per launch. NV_ACC_TIME measured 48 us of input copies
 and 16 us of output copyout for the whole profiled run. The Nsight Compute
 attempt was blocked by ERR_NVGPUCTRPERM, so occupancy, register count,
 warp-stall, and memory throughput counters still require GPU
 performance-counter permission on the cluster.
 
-The CPU perf stat run measured, amortized per MVM, approximately 26.3 million
-cycles, 40.8 million instructions, 80 thousand cache misses, and 1.47
-thousand branch misses. The low branch-miss count is consistent with a
-regular reduction loop. The main remaining CPU question is vector math
-throughput for the exponential and reuse across neighboring output rows,
-which needs a symbol-level profile on an otherwise idle node.
+The nvfortran CPU perf stat run measured, amortized per MVM, approximately
+15.0 million cycles, 42.0 million instructions, 42 thousand cache misses, and
+3.7 thousand branch misses. The regular reduction loop remains branch-light.
+The remaining CPU profiling question is vector math throughput for the
+exponential and reuse across neighboring output rows, which needs a
+symbol-level profile on an otherwise idle node.
 
 ## Inefficiencies found and fixed
 

@@ -15,7 +15,21 @@ test "$cpu_threads" -gt 0 || cpu_threads=1
 mkdir -p "$output"
 build=$(mktemp -d)
 
-gfortran -O3 -march=native -fopenmp -fno-math-errno -flto -fwhole-program -J "$build" \
+if [[ -n "${PROFILE_CPU_FC:-}" ]]; then
+    cpu_fc=$PROFILE_CPU_FC
+elif command -v nvfortran >/dev/null 2>&1; then
+    cpu_fc=nvfortran
+else
+    cpu_fc=gfortran
+fi
+if [[ "$cpu_fc" == "nvfortran" ]]; then
+    cpu_flags=${PROFILE_CPU_FLAGS:--O3 -mp}
+    cpu_module_flag=(-module "$build")
+else
+    cpu_flags=${PROFILE_CPU_FLAGS:--O3 -march=native -fopenmp -fno-math-errno -flto -fwhole-program}
+    cpu_module_flag=(-J "$build")
+fi
+$cpu_fc $cpu_flags "${cpu_module_flag[@]}" \
     -o "$build/rbf_cpu" \
     "$fortnum/src/fortnum_kinds.f90" \
     "$fortnum/src/fortnum_status.f90" \

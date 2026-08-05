@@ -3,11 +3,13 @@
 Run date: 2026-08-05. Workload: 2048 samples, 8 features, float64, 12 MVM
 repetitions. The CPU comparison uses 16 physical cores on an AMD Ryzen 9 5950X.
 The GPU comparison uses an NVIDIA GeForce RTX 5060 Ti. Every recorded row
-passed the independent blocked NumPy oracle.
+passed the independent blocked NumPy oracle. Capacity failures are recorded
+as OOM rather than treated as correctness passes.
 
 Fortran is within the 30-percent target of GPyTorch-KeOps on this workload.
 The current scaling sweep uses the contiguous sample-major kernel from fortml
-commit a205898. The CPU and GPU compiler, package, driver, source-commit, and
+commit a205898. Its CPU lane uses nvfortran -O3 -mp and its GPU lane uses
+nvfortran -O3 -acc. The CPU and GPU compiler, package, driver, source-commit, and
 numerical error fields are in rbf_mvm_scaling.csv.
 
 Plot:
@@ -27,18 +29,17 @@ GPyTorch-KeOps, and Fortran continue and pass the independent oracle.
 
 CPU plot:
 
-https://box.sloppy.at/d69f0.png
+https://box.sloppy.at/0f460.png
 
 GPU plot:
 
-https://box.sloppy.at/076a0.png
+https://box.sloppy.at/e1f7f.png
 
 The merged scaling data is in `rbf_mvm_scaling.csv`. At 4096 samples, Fortran
-takes 4.37 ms per resident GPU MVM, compared with 6.63 ms for GPyTorch-KeOps
-and 7.55 ms for KeOps. On the CPU lane, the same run takes 7.85 ms for
-Fortran, 6.27 ms for GPyTorch-KeOps, and 7.70 ms for KeOps. Thus the GPU
-curve is lowest throughout this sweep. The CPU endpoint remains within the
-30-percent target but is not yet the lowest point.
+takes 4.32 ms per resident GPU MVM, compared with 6.31 ms for GPyTorch-KeOps
+and 7.48 ms for KeOps. On the CPU lane, nvfortran Fortran takes 4.66 ms,
+compared with 6.22 ms for GPyTorch-KeOps and 7.56 ms for KeOps. The Fortran
+curve is lowest at every tested size on both devices.
 
 The operation-level comparison is in
 [OPERATION_PROFILE.md](OPERATION_PROFILE.md), with raw torch.profiler
