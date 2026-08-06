@@ -1,0 +1,43 @@
+backend,device,residency,n_samples,radius,rhs,dtype,threads,repetitions,setup_seconds,seconds_per_operation,relative_error,status,compiler,flags,torch_version,pykeops_version,cuda_device,nonzeros,storage_bytes,source_commit
+fortml_sparse,cpu,resident,512,8,4,float64,1,1000,0.0,1.7169900000000000E-05,0.0000000000000000E+00,pass,nvfortran,-O3 -acc,,,cpu,8632,107688,fortml=d6de372;fortsparse=3c19c978
+fortml_sparse,cuda,transfer,512,8,4,float64,1,1000,0.0,4.2622680000000004E-04,0.0000000000000000E+00,pass,nvfortran,-O3 -acc,,,NVIDIA GeForce RTX 5060 Ti,8632,107688,fortml=d6de372;fortsparse=3c19c978
+fortml_sparse,cuda,resident,512,8,4,float64,1,1000,0.0,4.8520999999999998E-05,0.0000000000000000E+00,pass,nvfortran,-O3 -acc,,,NVIDIA GeForce RTX 5060 Ti,8632,107688,fortml=d6de372;fortsparse=3c19c978
+fortml_sparse,cpu,resident,4096,8,4,float64,1,500,0.0,1.3102000000000000E-04,0.0000000000000000E+00,pass,nvfortran,-O3 -acc,,,cpu,69560,867496,fortml=d6de372;fortsparse=3c19c978
+fortml_sparse,cuda,transfer,4096,8,4,float64,1,500,0.0,5.9876818000000002E-03,0.0000000000000000E+00,pass,nvfortran,-O3 -acc,,,NVIDIA GeForce RTX 5060 Ti,69560,867496,fortml=d6de372;fortsparse=3c19c978
+fortml_sparse,cuda,resident,4096,8,4,float64,1,500,0.0,1.1909180000000000E-04,0.0000000000000000E+00,pass,nvfortran,-O3 -acc,,,NVIDIA GeForce RTX 5060 Ti,69560,867496,fortml=d6de372;fortsparse=3c19c978
+fortml_sparse,cpu,resident,8192,8,4,float64,1,250,0.0,2.7212800000000001E-04,0.0000000000000000E+00,pass,nvfortran,-O3 -acc,,,cpu,139192,1735848,fortml=d6de372;fortsparse=3c19c978
+fortml_sparse,cuda,transfer,8192,8,4,float64,1,250,0.0,4.5564555999999994E-03,0.0000000000000000E+00,pass,nvfortran,-O3 -acc,,,NVIDIA GeForce RTX 5060 Ti,139192,1735848,fortml=d6de372;fortsparse=3c19c978
+fortml_sparse,cuda,resident,8192,8,4,float64,1,250,0.0,2.1931159999999999E-04,0.0000000000000000E+00,pass,nvfortran,-O3 -acc,,,NVIDIA GeForce RTX 5060 Ti,139192,1735848,fortml=d6de372;fortsparse=3c19c978
+fortml_sparse,cpu,resident,16384,8,4,float64,1,100,0.0,5.1707000000000001E-04,0.0000000000000000E+00,pass,nvfortran,-O3 -acc,,,cpu,278456,3472552,fortml=d6de372;fortsparse=3c19c978
+fortml_sparse,cuda,transfer,16384,8,4,float64,1,100,0.0,8.4245610000000005E-03,0.0000000000000000E+00,pass,nvfortran,-O3 -acc,,,NVIDIA GeForce RTX 5060 Ti,278456,3472552,fortml=d6de372;fortsparse=3c19c978
+fortml_sparse,cuda,resident,16384,8,4,float64,1,100,0.0,4.1643800000000004E-04,0.0000000000000000E+00,pass,nvfortran,-O3 -acc,,,NVIDIA GeForce RTX 5060 Ti,278456,3472552,fortml=d6de372;fortsparse=3c19c978
+pytorch_dense,cpu,resident,128,8,4,float64,1,3,0.0007774450059514493,0.00028979267032506567,3.46817399092226e-16,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,cpu,2104,,fortml-bench=f307331
+keops,cpu,resident,128,8,4,float64,1,3,0.08926645701285452,0.0005328606639523059,1.855715314553544e-07,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,cpu,2104,,fortml-bench=f307331
+pytorch_dense,cpu,resident,16384,8,4,float64,1,4,6.248977253999328,6.234676917498291,2.9845277384609217e-16,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,cpu,278456,,fortml-bench=f307331
+keops,cpu,resident,16384,8,4,float64,1,4,0.13738773798104376,0.042836018750676885,1.8562425464800103e-07,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,cpu,278456,,fortml-bench=f307331
+pytorch_dense,cpu,resident,4096,8,4,float64,1,12,0.3976128499780316,0.3980116022503353,2.9861702512384273e-16,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,cpu,69560,,fortml-bench=f307331
+keops,cpu,resident,4096,8,4,float64,1,12,0.09972835698863491,0.00406498133330994,1.856243086003828e-07,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,cpu,69560,,fortml-bench=f307331
+pytorch_dense,cpu,resident,512,8,4,float64,1,20,0.007066354010021314,0.0034498307999456302,3.399647294499329e-16,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,cpu,8632,,fortml-bench=f307331
+keops,cpu,resident,512,8,4,float64,1,20,0.08483630898990668,0.000817840349918697,1.8564408408800503e-07,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,cpu,8632,,fortml-bench=f307331
+pytorch_dense,cpu,resident,8192,8,4,float64,1,3,1.558409876015503,1.5588222413304418,2.984535510603201e-16,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,cpu,139192,,fortml-bench=f307331
+keops,cpu,resident,8192,8,4,float64,1,3,0.10285574701265432,0.01454317033252058,1.8562425365031824e-07,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,cpu,139192,,fortml-bench=f307331
+pytorch_dense,cuda,resident,128,8,4,float64,1,3,0.06122703800792806,0.00019272667123004794,3.46817399092226e-16,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,2104,,fortml-bench=f307331
+pytorch_dense,cuda,transfer,128,8,4,float64,1,3,0.0006094980053603649,0.00018510533845983446,3.46817399092226e-16,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,2104,,fortml-bench=f307331
+keops,cuda,resident,128,8,4,float64,1,3,0.002078456018352881,0.0005337323333757619,1.855715314553544e-07,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,2104,,fortml-bench=f307331
+keops,cuda,transfer,128,8,4,float64,1,3,0.0006613860023207963,0.0005463863393136611,1.855715314553544e-07,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,2104,,fortml-bench=f307331
+pytorch_dense,cuda,resident,16384,8,4,float64,1,2,nan,nan,nan,oom,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,278456,,fortml-bench=f307331
+pytorch_dense,cuda,transfer,16384,8,4,float64,1,2,nan,nan,nan,oom,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,278456,,fortml-bench=f307331
+keops,cuda,resident,16384,8,4,float64,1,2,0.049289565009530634,0.04260637749393936,1.8562425464800103e-07,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,278456,,fortml-bench=f307331
+keops,cuda,transfer,16384,8,4,float64,1,2,0.042918299994198605,0.04291070099861827,1.8562425464800103e-07,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,278456,,fortml-bench=f307331
+pytorch_dense,cuda,resident,4096,8,4,float64,1,12,0.06195455600391142,0.014384426166846728,2.9861702512384273e-16,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,69560,,fortml-bench=f307331
+pytorch_dense,cuda,transfer,4096,8,4,float64,1,12,0.01487783098127693,0.01446789933349161,2.9861702512384273e-16,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,69560,,fortml-bench=f307331
+keops,cuda,resident,4096,8,4,float64,1,12,0.00556007499108091,0.003977097333214867,1.856243086003828e-07,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,69560,,fortml-bench=f307331
+keops,cuda,transfer,4096,8,4,float64,1,12,0.004167300998233259,0.004050489667861257,1.856243086003828e-07,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,69560,,fortml-bench=f307331
+pytorch_dense,cuda,resident,512,8,4,float64,1,20,0.05703283302136697,0.00013098380004521458,3.399647294499329e-16,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,8632,,fortml-bench=f307331
+pytorch_dense,cuda,transfer,512,8,4,float64,1,20,0.0006211209984030575,0.00018472305091563613,3.399647294499329e-16,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,8632,,fortml-bench=f307331
+keops,cuda,resident,512,8,4,float64,1,20,0.0023431750014424324,0.0008500846000970341,1.8564408408800503e-07,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,8632,,fortml-bench=f307331
+keops,cuda,transfer,512,8,4,float64,1,20,0.0009906369959935546,0.0009071360997040756,1.8564408408800503e-07,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,8632,,fortml-bench=f307331
+pytorch_dense,cuda,resident,8192,8,4,float64,1,4,nan,nan,nan,oom,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,139192,,fortml-bench=f307331
+pytorch_dense,cuda,transfer,8192,8,4,float64,1,4,nan,nan,nan,oom,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,139192,,fortml-bench=f307331
+keops,cuda,resident,8192,8,4,float64,1,4,0.016344383999239653,0.014468962748651393,1.8562425365031824e-07,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,139192,,fortml-bench=f307331
+keops,cuda,transfer,8192,8,4,float64,1,4,0.014890004007611424,0.014726210247317795,1.8562425365031824e-07,pass,python,torch.set_num_threads(1),2.13.0+cu130,2.3,NVIDIA GeForce RTX 5060 Ti,139192,,fortml-bench=f307331
