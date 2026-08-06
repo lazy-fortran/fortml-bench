@@ -1,1 +1,2 @@
 sweep,swept_value,method,n,m,n_experts,d,train_seconds,predict_seconds,peak_kib,smse,mnlpd,fortml_commit
+samples,8192,keops_gpu,8192,64,8,1,  5.33900145E+01,  1.13254255E-01,        4952.0,  1.86905561E-03,             NaN,810dcab57a18055d8c1545101871913933ac2416
