@@ -83,6 +83,25 @@ written under `results/rbf_cg*`. For the full four-point sweep, run:
 
     ./scripts/run_cg_scaling.sh
 
+The fused multi-right-hand-side CG workload uses four float64 right-hand sides
+and one batched kernel product per iteration. Run it with:
+
+    N_SAMPLES=2048 N_FEATURES=8 N_RHS=4 ./scripts/run_cg_multi_suite.sh
+
+It compares the FortML multi-RHS operator with batched dense PyTorch, KeOps,
+and GPyTorch-KeOps recurrences. The blocked NumPy matmat residual and the
+small dense multi-RHS solve are independent correctness oracles. Results are
+written to `results/rbf_cg_multi.csv`.
+
+The detailed record and plots are in
+[`results/rbf_cg_multi_scaling.md`](results/rbf_cg_multi_scaling.md).
+
+For sample-count scaling, run:
+
+    N_RHS=4 ./scripts/run_cg_multi_scaling.sh
+
+This writes multi-RHS CPU and GPU log-log plots beside the merged scaling CSV.
+
 The `nvfortran` drivers also expose a native CUDA variant for the fixed
 eight-feature RBF kernel. Set `FORTML_NATIVE_CUDA=1` to compile the shared
 neighbor-tile kernel with `nvcc` and link it into the Fortran executable. The
