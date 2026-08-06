@@ -139,6 +139,14 @@ blocked pairwise operator, with only storage, tiling, and execution backend
 changing. CG rows use resident inputs. The FortML solver's internal Krylov
 workspace is allocated and mapped by its call boundary.
 
+The first regular-grid structured workload is recorded in
+[`results/tensor_product_device.csv`](results/tensor_product_device.csv) with
+its interpretation in
+[`results/tensor_product_device.md`](results/tensor_product_device.md). It
+measures the resident OpenACC tensor contraction from fortnum; it is not a
+KeOps pairwise-kernel comparison. Compact-support sparse benchmarking through
+fortsparse remains open.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).

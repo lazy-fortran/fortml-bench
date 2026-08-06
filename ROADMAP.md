@@ -16,8 +16,10 @@ metadata, and a committed raw record.
   FortML.
 - [ ] Add stochastic log-determinant and predictive-variance products.
 - [ ] Add exact small-GP training and prediction comparisons.
-- [ ] Add compact-support sparse and regular-grid workloads using fortsparse,
-  Toeplitz FFT, and Kronecker operators.
+- [x] Add regular-grid Toeplitz/Kronecker evidence with independent dense or
+  structured oracles and resident OpenACC scaling records.
+- [ ] Add compact-support sparse workloads using `fortsparse`, with fill-in,
+  memory, and matched CPU/GPU diagnostics.
 - [ ] Add derivative-observation and derivative-prediction workloads.
 - [ ] Add multi-output and variational GP workloads.
 

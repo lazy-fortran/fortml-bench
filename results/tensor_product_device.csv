@@ -1,0 +1,7 @@
+source_repo,source_commit,backend,device,residency,n_samples,n_rhs,dtype,repetitions,host_seconds,device_transfer_seconds,device_resident_seconds,host_to_resident,transfer_to_resident,status,correctness_oracle,compiler,flags,gpu
+fortnum,73e8965,fortnum_tensor_product,cuda,host,512,4,float64,200,3.694050e-05,,,0.5662247,,pass,independent_dense_kronecker,nvfortran,-O3 -acc,GeForce RTX 5060 Ti
+fortnum,73e8965,fortnum_tensor_product,cuda,transfer,512,4,float64,200,,8.111500e-05,,0.5662247,1.243332,pass,independent_dense_kronecker,nvfortran,-O3 -acc,GeForce RTX 5060 Ti
+fortnum,73e8965,fortnum_tensor_product,cuda,resident,512,4,float64,200,,,6.524000e-05,0.5662247,1.243332,pass,independent_dense_kronecker,nvfortran,-O3 -acc,GeForce RTX 5060 Ti
+fortnum,73e8965,fortnum_tensor_product,cuda,host,4096,4,float64,60,8.427333e-04,,,6.683851,,pass,independent_tensor_contraction,nvfortran,-O3 -acc,GeForce RTX 5060 Ti
+fortnum,73e8965,fortnum_tensor_product,cuda,transfer,4096,4,float64,60,,1.779467e-04,,6.683851,1.411323,pass,independent_tensor_contraction,nvfortran,-O3 -acc,GeForce RTX 5060 Ti
+fortnum,73e8965,fortnum_tensor_product,cuda,resident,4096,4,float64,60,,,1.260850e-04,6.683851,1.411323,pass,independent_tensor_contraction,nvfortran,-O3 -acc,GeForce RTX 5060 Ti
