@@ -148,6 +148,70 @@ Standardized mean squared error against the true `sinc`, over `n`:
   (−0.86, −0.87), `poe`/`bcm` track the exact GP, and `moe` is the weakest of
   them.
 
+## Large-n measurement (8,192 to 131,072)
+
+The first sweep above reached only n = 1024 and used the default `fo` build
+profile, which is `-O0 -fcheck=all -fbacktrace`. Both were wrong for a
+performance claim: the sizes were too small for any asymptotic regime, and the
+timings were debug-build timings. This section supersedes it. Everything here
+is `-O3 -funroll-loops`, one core, best of one repetition, per-expert size held
+at 1024 so the local methods keep a fixed sub-problem, `m = 64` inducing
+points, `d = 1`. Raw data: `scalable_gp_large_merged.csv`.
+
+| n | full GP | SoR / DTC / FITC | VFE | local experts | matrix-free product |
+| --- | --- | --- | --- | --- | --- |
+| 8,192 | 56.5 s / 1029 MiB | 0.040 s / 18 MiB | 0.018 s / 10 MiB | 0.66 s / 85 MiB | 0.246 s / 5.1 MiB |
+| 16,384 | 364 s / 4101 MiB | 0.081 s / 30 MiB | 0.035 s / 14 MiB | 1.30 s / 150 MiB | 0.983 s / 5.4 MiB |
+| 32,768 | refused, 8.6 GB | 0.151 s / 55 MiB | 0.064 s / 22 MiB | 2.44 s / 278 MiB | 3.81 s / 6.0 MiB |
+| 65,536 | impossible | 0.325 s / 106 MiB | 0.158 s / 39 MiB | 4.94 s / 534 MiB | 15.4 s / ~6 MiB |
+| 131,072 | impossible, 137 GB | 0.653 s / 207 MiB | 0.413 s / 73 MiB | 11.0 s / 1047 MiB | 61.5 s / ~10 MiB |
+
+Measured slopes over that range:
+
+| method | train | peak memory | SMSE |
+| --- | --- | --- | --- |
+| full | +2.69 | +2.00 | -1.17 |
+| sor | +1.05 | +0.92 | -1.21 |
+| dtc | +1.03 | +0.92 | -1.21 |
+| fitc | +1.12 | +0.94 | **-1.24** |
+| vfe | +1.34 | +0.84 | -1.12 |
+| poe, gpoe, bcm, rbcm, grbcm, moe, nle | +0.95 to +0.98 | +0.92 | -0.48 to -0.59 |
+| keops matrix-free product | +2.68 | **+0.18** | exact |
+| sod | -0.43 | +0.16 | **+0.54** |
+| ski, 64-node grid | +2.13 | +0.57 | **+0.64** |
+
+The dense GP now measures the textbook `O(n^2)` memory exactly (+2.00) and
+refuses above 32,768 against an 8 GB budget. The sparse approximations measure
+`+1.03` time and `+0.92` memory - linear, as claimed - and have the best
+accuracy slope in the study. At n = 131,072 FITC reaches SMSE 6.76e-5 in
+0.653 s and 207 MiB; the exact GP would need 137 GB.
+
+The two positive accuracy slopes are the study's clearest negative results.
+`sod` and `ski` **degrade** as data grows, because each holds a fixed budget
+(subset size, grid size) while `n` rises. For SoD that is the review's own
+Section III-A point. For SKI it is an artifact of holding the grid at 64 nodes;
+`scalable_gp_ski_scaled.csv` repeats it with the grid at `n/8`.
+
+### Two defects that only appear above 32k
+
+Both were found by this sweep and are fixed on `fortml` main.
+
+* FITC and PITC could produce a slightly negative Nystrom residual
+  `k_ii - q_ii` once the two terms agree to working precision, which makes the
+  noise matrix indefinite and fails the whole factorization. The residual is
+  now clamped at zero, as GPflow and GPy do; the observation noise keeps the
+  matrix strictly positive.
+* The sparse posterior jitter was scaled to `K_mm` alone, but the matrix
+  actually factorized is `K_mm + K_mn L^-1 K_nm`, whose scale grows with `n`.
+  At n = 65,536 the data term reached `1e6` and a `1e-10` jitter became
+  meaningless, so FITC failed there while passing at 32,768. The jitter is now
+  relative to the matrix being factorized.
+
+A third defect, upstream in `fortnum`, blocked the device lane entirely: the
+generated FortAD derivative kernels carried no `!$acc routine seq`, so
+`nvfortran` refused every compute region that reaches them. Fixed in the
+generator and its 39 generated files.
+
 ## Is the KeOps-style matrix-free lane good enough on its own?
 
 On this evidence, **for accuracy yes, for cost no — and the crossover is what
