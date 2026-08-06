@@ -18,8 +18,9 @@ metadata, and a committed raw record.
 - [ ] Add exact small-GP training and prediction comparisons.
 - [x] Add regular-grid Toeplitz/Kronecker evidence with independent dense or
   structured oracles and resident OpenACC scaling records.
-- [ ] Add compact-support sparse workloads using `fortsparse`, with fill-in,
-  memory, and matched CPU/GPU diagnostics.
+- [x] Add compact-support sparse workloads using `fortsparse`, with stored
+  nonzero/storage diagnostics, independent row-wise oracles, and matched
+  float64 CPU/GPU measurements against dense PyTorch and KeOps.
 - [ ] Add derivative-observation and derivative-prediction workloads.
 - [ ] Add multi-output and variational GP workloads.
 

@@ -144,8 +144,12 @@ The first regular-grid structured workload is recorded in
 its interpretation in
 [`results/tensor_product_device.md`](results/tensor_product_device.md). It
 measures the resident OpenACC tensor contraction from fortnum; it is not a
-KeOps pairwise-kernel comparison. Compact-support sparse benchmarking through
-fortsparse remains open.
+KeOps pairwise-kernel comparison. The compact-support Wendland C2 workload is
+recorded in [`results/sparse_compact_support.csv`](results/sparse_compact_support.csv)
+with its scaling interpretation in
+[`results/sparse_compact_support.md`](results/sparse_compact_support.md). It
+compares the FortML resident CSR product with dense PyTorch and KeOps at
+matched float64 parameters; dense PyTorch OOM rows are retained explicitly.
 
 ## License
 
