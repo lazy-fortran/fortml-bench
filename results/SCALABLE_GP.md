@@ -192,6 +192,50 @@ The two positive accuracy slopes are the study's clearest negative results.
 Section III-A point. For SKI it is an artifact of holding the grid at 64 nodes;
 `scalable_gp_ski_scaled.csv` repeats it with the grid at `n/8`.
 
+### The device lane and the corrected SKI lane
+
+Two lanes needed a second run to be worth anything.
+
+**SKI held its grid at 64 nodes** in the sweep above, which measures a fixed
+budget rather than the method: its accuracy degrades at `+0.64` while the data
+grows. Rerun with the grid at `n/8`
+(`scalable_gp_ski_scaled.csv`):
+
+| n | grid | train | peak | SMSE |
+| --- | --- | --- | --- | --- |
+| 8,192 | 1,024 | 0.044 s | 5.0 MiB | 1.85e-3 |
+| 16,384 | 2,048 | 0.099 s | 6.2 MiB | 8.27e-4 |
+| 32,768 | 4,096 | 0.231 s | 8.0 MiB | 3.71e-4 |
+| 65,536 | 8,192 | 0.559 s | 11.2 MiB | 2.13e-4 |
+| 131,072 | 16,384 | 1.375 s | 19.0 MiB | 6.97e-5 |
+
+That is linear time, near-flat memory, and accuracy matching FITC's 6.76e-5 at
+**one tenth of its memory** - 19 MiB against 207 MiB. Held at a fixed grid SKI
+looks like the worst method in the study; scaled with the data it has the best
+memory-accuracy trade in it.
+
+**The device matrix-free lane** (`scalable_gp_device.csv`, nvfortran 26.5,
+`-O3 -acc -gpu=cc89`, RTX 5060 Ti, resident points, OpenACC Krylov products):
+
+| n | device solve | CPU solve | speed-up | peak | SMSE |
+| --- | --- | --- | --- | --- | --- |
+| 8,192 | 1.12 s | 53.4 s | 48x | 158 MiB | 1.869056e-3 |
+| 16,384 | 3.91 s | - | - | 158 MiB | 8.325399e-4 |
+| 32,768 | 17.0 s | - | - | 159 MiB | 3.788e-4 |
+| 65,536 | 82.7 s | - | - | 160 MiB | 2.138e-4 |
+
+The memory is flat: the 158 MiB is the CUDA runtime, not the problem. The
+accuracy is the exact GP's to seven digits where the exact GP can still be run
+(8.325399e-4 against the dense 8.325399e-4 at n = 16,384), which is the point -
+this lane is not an approximation.
+
+The first attempt at this lane produced numbers that were 48 times too slow,
+because `fo` shares `build/fo/bin` across compilers: a later gfortran build had
+silently replaced the nvfortran binary, so `FO_FC=nvfortran fo exec` ran the
+CPU one. `fo` now clears the native tree when the compiler changes
+(`fo` commit `e3cff00`); the device script rebuilds immediately before
+measuring and nothing else builds in between.
+
 ### Two defects that only appear above 32k
 
 Both were found by this sweep and are fixed on `fortml` main.
