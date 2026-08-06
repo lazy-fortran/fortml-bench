@@ -48,6 +48,41 @@ its local path. The checked-in first run is summarized in
 [`results/README.md`](results/README.md). Its raw CSV and plot are next to
 that note.
 
+## Complete model and GP-feature calls
+
+The small exact-GP and MLP harness separates fit, prediction, forward, and
+reverse-product timings. It checks complete outputs with independent NumPy
+implementations before timing and records unsupported FortML CUDA rows
+explicitly:
+
+```bash
+.venv/bin/python -B scripts/bench_model_workloads.py \
+    --output results/model_workloads.csv
+.venv/bin/python -B scripts/plot_model_workloads.py \
+    --input results/model_workloads.csv --output-dir results
+```
+
+The method-level GP harness covers stochastic log determinants, predictive
+variance, derivative observations, multi-output regression, and a variational
+ELBO plus prediction:
+
+```bash
+.venv/bin/python -B scripts/bench_gp_features.py \
+    --output results/gp_features.csv --plot results/gp_features.png
+```
+
+Both commands use the shared `../fortml/build/fo` directory. Run them
+serially, with no other `fo` build active. Workload definitions, validity
+boundaries, plots, and the recorded machine results are in
+[`results/MODEL_WORKLOADS.md`](results/MODEL_WORKLOADS.md) and
+[`results/GP_FEATURES.md`](results/GP_FEATURES.md).
+
+The scalable-model report also contains the current corrected GRBCM,
+contiguous-versus-clustered expert, and multidimensional-SKI records. Older
+GRBCM rows are superseded because they predate the communication-set and
+enhanced-expert correction. Use the raw CSVs and reproduction commands linked
+from [`results/SCALABLE_GP.md`](results/SCALABLE_GP.md).
+
 The CPU lane defaults to physical cores and can be pinned explicitly:
 
     CPU_THREADS=16 ./scripts/run_suite.sh
@@ -70,7 +105,7 @@ tables for dense PyTorch, KeOps, and GPyTorch-KeOps. Nsight Compute is
 attempted when permissions allow it.
 
 The standalone RBF driver selects the direct nvfortran operator build for its
-CPU lane when `FC=nvfortran`; this keeps the benchmark usable while the full
+CPU lane when `FC=nvfortran`. This keeps the benchmark usable while the full
 fpm dependency graph remains blocked by the documented FortAD 26.5 compiler
 ICE. GNU and other compiler selections continue through `benchmark/run.sh`.
 
@@ -137,8 +172,8 @@ expression without materializing its dense matrix:
 
 FortML recognizes this fixed RBF-plus-constant expression and executes one
 matrix-free row map/reduce, with an optional native CUDA kernel. The KeOps
-lane uses a LazyTensor reduction; the GPyTorch lane uses its KeOps RBF
-operator plus the same explicit constant rank-one term; dense PyTorch is a
+lane uses a LazyTensor reduction. The GPyTorch lane uses its KeOps RBF
+operator plus the same explicit constant rank-one term. Dense PyTorch is a
 materialized reference. All lanes use the same deterministic float64 inputs,
 constants, output oracle, and resident-versus-transfer policy. The blocked
 NumPy pairwise implementation is run before every timed competitor and is an
@@ -149,19 +184,19 @@ Run the matched sweep with five repetitions:
     REPETITIONS=5 ./scripts/run_composite_scaling.sh
 
 The default CPU build selects nvfortran with physical-core OpenMP when it is
-available; the GPU build uses nvfortran/OpenACC. Set `FORTML_NATIVE_CUDA=1`
+available. The GPU build uses nvfortran/OpenACC. Set `FORTML_NATIVE_CUDA=1`
 for the optional `nvcc` fixed-feature kernel. To extend an existing sweep to
 larger sizes, write to a separate directory and merge the resulting CSV:
 
     N_VALUES='8192 16384' REPETITIONS=2 \
-      RESULTS_DIR=/tmp/fortml-composite-high ./scripts/run_composite_scaling.sh
+    RESULTS_DIR=/mnt/storage/fortml-composite-high ./scripts/run_composite_scaling.sh
 
 The released extended record and plots are in
 [`results/composite_mvm_scaling_extended.csv`](results/composite_mvm_scaling_extended.csv),
 [`results/composite_mvm_scaling_extended_cpu.png`](results/composite_mvm_scaling_extended_cpu.png),
 [`results/composite_mvm_scaling_extended_cuda.png`](results/composite_mvm_scaling_extended_cuda.png),
 and [`results/composite_mvm_scaling.md`](results/composite_mvm_scaling.md).
-The high-N dense GPU failures remain in the CSV as `oom`; they are capacity
+The high-N dense GPU failures remain in the CSV as `oom`. They are capacity
 evidence, not timing points.
 
 ## Validity boundary
@@ -187,13 +222,13 @@ The first regular-grid structured workload is recorded in
 [`results/tensor_product_device.csv`](results/tensor_product_device.csv) with
 its interpretation in
 [`results/tensor_product_device.md`](results/tensor_product_device.md). It
-measures the resident OpenACC tensor contraction from fortnum; it is not a
+measures the resident OpenACC tensor contraction from fortnum. It is not a
 KeOps pairwise-kernel comparison. The compact-support Wendland C2 workload is
 recorded in [`results/sparse_compact_support.csv`](results/sparse_compact_support.csv)
 with its scaling interpretation in
 [`results/sparse_compact_support.md`](results/sparse_compact_support.md). It
 compares the FortML resident CSR product with dense PyTorch and KeOps at
-matched float64 parameters; dense PyTorch OOM rows are retained explicitly.
+matched float64 parameters. Dense PyTorch OOM rows are retained explicitly.
 
 ## License
 

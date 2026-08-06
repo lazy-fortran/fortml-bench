@@ -1,4 +1,19 @@
-# Recorded RBF MVM result
+# Benchmark results
+
+Complete-call studies:
+
+- [Exact GP and MLP workloads](MODEL_WORKLOADS.md)
+- [Stochastic, derivative, multi-output, and variational GP features](GP_FEATURES.md)
+- [Scalable-GP review comparison](SCALABLE_GP.md)
+
+The current scalable addenda are
+[`scalable_gp_grbcm_corrected.csv`](scalable_gp_grbcm_corrected.csv),
+[`scalable_gp_clustered.csv`](scalable_gp_clustered.csv), and
+[`scalable_gp_dimension_current.csv`](scalable_gp_dimension_current.csv), each
+with a matching training-time plot. Historical GRBCM rows are retained only as
+an audit trail and are superseded by the corrected record.
+
+## Recorded RBF MVM result
 
 Run date: 2026-08-06. Workload: 2048 samples, 8 features, float64, 12 MVM
 repetitions. The CPU comparison uses 16 physical cores on an AMD Ryzen 9 5950X.
@@ -17,8 +32,9 @@ Plot:
 https://box.sloppy.at/8ba9a.png
 
 The Slopbox URL is public and expires after three days. This result covers the
-RBF matrix-vector product only. Matched CG, log-determinant, and full GP
-training workloads remain roadmap items.
+RBF matrix-vector product only. Matched CG is documented below. Stochastic
+log-determinant evidence is in [GP_FEATURES.md](GP_FEATURES.md), and exact GP
+fit/prediction evidence is in [MODEL_WORKLOADS.md](MODEL_WORKLOADS.md).
 
 ## Scaling sweep
 

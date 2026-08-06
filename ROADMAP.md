@@ -15,8 +15,37 @@ the conclusion at n = 131,072.
 
 Headline: on the review's 1-D fixture at 131,072 points the exact matrix-free
 solve on a GPU takes 374 s against FITC's 0.708 s for the same accuracy
-(6.99e-5 against 6.76e-5), and the dense exact GP cannot run at all - it needs
-137 GB. SKI with its grid scaled to `n/8` matches that accuracy in 19 MiB.
+(6.99e-5 against 6.76e-5). A dense exact GP was not attempted at that size:
+the preflight allocation is about 137 GB. SKI with its grid scaled to `n/8`
+matches that accuracy in 19 MiB.
+
+The completion artifacts are:
+
+- [`results/MODEL_WORKLOADS.md`](results/MODEL_WORKLOADS.md), with raw
+  gfortran, nvfortran, PyTorch, and GPyTorch rows in
+  [`model_workloads.csv`](results/model_workloads.csv) and separate exact-GP
+  and MLP plots.
+- [`results/GP_FEATURES.md`](results/GP_FEATURES.md), with stochastic spectral,
+  derivative, multi-output, and variational rows in
+  [`gp_features.csv`](results/gp_features.csv) and its comparison plot.
+- [`results/SCALABLE_GP.md`](results/SCALABLE_GP.md), including corrected GRBCM
+  evidence in
+  [`scalable_gp_grbcm_corrected.csv`](results/scalable_gp_grbcm_corrected.csv),
+  contiguous/clustered evidence in
+  [`scalable_gp_clustered.csv`](results/scalable_gp_clustered.csv), and current
+  multidimensional-SKI evidence in
+  [`scalable_gp_dimension_current.csv`](results/scalable_gp_dimension_current.csv).
+
+The corrected GRBCM record replaces every older GRBCM claim. The partition
+record covers all seven local methods over five expert counts. The SKI record
+contains valid `d = 1, 2, 4` rows and an explicit grid-budget refusal at
+`d = 8`. It does not hide that configuration as a missing measurement.
+
+The 30-percent gate remains workload-specific. Among the new model calls,
+exact-GP prediction and the MLP VJP pass. Exact-GP fitting and MLP forward do
+not. Among the new GP-feature calls, multi-output and variational calls pass.
+Log determinant, predictive variance, and the derivative call do not. The
+individual ratios and timed-call definitions are in the two reports above.
 
 Two traps that produced wrong numbers in this repository and will again:
 
@@ -25,24 +54,28 @@ Two traps that produced wrong numbers in this repository and will again:
   sweep was one and had to be discarded.
 * `fo` shares `build/fo/bin` between compilers, so a device run can execute a
   host binary. Rebuild immediately before a device measurement and let nothing
-  else build in between; `scripts/` does this.
+  else build in between. `scripts/` does this.
 
 Reproduce:
 
 ```sh
-python3 scripts/bench_scalable_gp.py --output results/scalable_gp_large.csv \
+python3 scripts/bench_scalable_gp.py --output results/scalable_gp_large_current.csv \
     --sweep samples --values 8192 16384 32768 65536 131072 \
-    --repetitions 1 --expert-size 1024
-python3 scripts/plot_scalable_gp.py --input results/scalable_gp_final.csv \
-    --prefix results/scalable_gp_final --metric train_seconds
+    --repetitions 1 --expert-size 1024 --threads 1
+python3 scripts/plot_scalable_gp.py --input results/scalable_gp_large_current.csv \
+    --prefix results/scalable_gp_large_current --metric train_seconds
 bash scripts/fetch_reference_implementations.sh
 ```
 
-The open threads are listed in `fortml`'s roadmap under "Next steps"; the one
-that matters most for this repository is a target whose structure a rank-64
-inducing summary cannot capture, which is what would separate the exact and
-approximate lanes and make the 131k conclusion general rather than
-problem-specific.
+## Research directions
+
+A useful follow-on target would have structure that a rank-64 inducing summary
+cannot capture. That would separate the exact and approximate lanes and test
+whether the 131k conclusion generalizes beyond the current fixture. This is a
+research extension, not unfinished work in the present benchmark scope.
+
+The checklist below is complete for the defined scope. Research directions are
+not completion gates.
 
 ## Workloads
 
@@ -54,8 +87,8 @@ problem-specific.
   iteration cap, diagonal shift, unpreconditioned recurrence, and true-residual
   stopping check for dense PyTorch, KeOps, GPyTorch-KeOps, and nvfortran
   FortML.
-- [ ] Add stochastic log-determinant and predictive-variance products.
-- [ ] Add exact small-GP training and prediction comparisons.
+- [x] Add stochastic log-determinant and predictive-variance products.
+- [x] Add exact small-GP training and prediction comparisons.
 - [x] Add regular-grid Toeplitz/Kronecker evidence with independent dense or
   structured oracles and resident OpenACC scaling records.
 - [x] Add compact-support sparse workloads using `fortsparse`, with stored
@@ -64,15 +97,15 @@ problem-specific.
 - [x] Add a KeOps-style static RBF-plus-constant matrix-free lane with a
   blocked independent oracle, native CUDA option, and high-N CPU/GPU scaling
   evidence against KeOps, GPyTorch-KeOps, and dense PyTorch.
-- [ ] Add derivative-observation and derivative-prediction workloads.
-- [ ] Add multi-output and variational GP workloads.
+- [x] Add derivative-observation and derivative-prediction workloads.
+- [x] Add multi-output and variational GP workloads.
 
 ## Evidence
 
 - [x] Record gfortran and nvfortran compiler reports for the Fortran kernels.
 - [x] Keep the standalone nvfortran RBF benchmark synchronized with the
   FortAD-generated RBF and Matérn product modules and FortSym-generated primal
-  leaf; the direct CPU/GPU builds and independent pairwise oracle pass on the
+  leaf. The direct CPU/GPU builds and independent pairwise oracle pass on the
   cluster.
 - [x] Record PyTorch, GPyTorch, KeOps, CUDA, driver, and GPU revisions.
 - [x] Generate comparison plots from committed CSV data.

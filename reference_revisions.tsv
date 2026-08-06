@@ -1,0 +1,8 @@
+# name	revision	archive_sha256	url	methods
+GPy	0240c281934009452f330a1dee78c7e26a89014c	3c2760246e44efeae6bf1a383e6cad6e0df828e7253d34ea4d70e8c38c712f2f	https://github.com/SheffieldML/GPy	VFE, SPEP, SKI, SVGP
+gpstuff	114937ec0a201306489a66cbba38283e722fb998	79609b4ba39295cf19d9f09212d291ccca92c55c7c9ba29a6d7c3c8bcd68b8d4	https://github.com/gpstuff-dev/gpstuff	SoR, DTC, FITC, VFE, SVGP, CS, PIC, FIC
+GPflow	7c294618e9ea721e62fbd5449971c43d02107ab4	fbbfd2ba716147078bfe8ba062170e0abe53160a90b2707ff22a1754dad0cc0f	https://github.com/GPflow/GPflow	FITC, VFE, SVGP
+gpytorch	6272eda426c7d4115b0911efcf053a37ab956af9	0e9f530d061800e09228563436bf5e504086cf5706bfdacb4732fbcbd0360abc	https://github.com/cornellius-gp/gpytorch	SKI, deep kernel learning
+pymc	bf8abd54823707b9187620e799995a773b959982	f46298fa69152ae20bab5ce8e945ead1d5d81ed211bcd804e0f6257f86af99a7	https://github.com/pymc-devs/pymc	DTC, FITC, VFE
+keops	ef72bc907df78cd18bff866d3dc7cb6375f11a4d	7a3fc2b065db6b77c8f22042ffac9b99606d3d7d5d55cc5b85f8742e130f2044	https://github.com/getkeops/keops	matrix-free kernel reductions
+AugmentedGaussianProcesses.jl	fe6f511941d9a94de1402b04715aef554d85de5d	ba9d816928fae02fe40ef851eccd635cb9755bd5723242fc14396e0c849fb7ae	https://github.com/theogf/AugmentedGaussianProcesses.jl	VFE, SVGP

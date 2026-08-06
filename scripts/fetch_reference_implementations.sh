@@ -15,7 +15,13 @@ set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 target="${root}/.provenance/reference_implementations"
 manifest="${target}/MANIFEST.txt"
+revision_file="${root}/reference_revisions.tsv"
 mkdir -p "${target}"
+
+if [ ! -f "${revision_file}" ]; then
+    echo "missing pinned revision file: ${revision_file}" >&2
+    exit 1
+fi
 
 : >"${manifest}"
 {
@@ -24,38 +30,57 @@ mkdir -p "${target}"
     echo "# Data: A Review of Scalable GPs\", IEEE TNNLS 31(11):4405-4423, 2020,"
     echo "# doi:10.1109/TNNLS.2019.2957109 (not redistributable; cited only)."
     echo "# Fetched: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo -e "# name\trevision\tarchive_sha256\turl\tmethods"
     echo
 } >>"${manifest}"
 
-# name|url|methods it implements, per the review's Table I
-repositories=(
-    "GPy|https://github.com/SheffieldML/GPy|VFE, SPEP, SKI, SVGP"
-    "gpstuff|https://github.com/gpstuff-dev/gpstuff|SoR, DTC, FITC, VFE, SVGP, CS, PIC, FIC"
-    "GPflow|https://github.com/GPflow/GPflow|FITC, VFE, SVGP"
-    "gpytorch|https://github.com/cornellius-gp/gpytorch|SKI, deep kernel learning"
-    "pymc|https://github.com/pymc-devs/pymc|DTC, FITC, VFE"
-    "keops|https://github.com/getkeops/keops|matrix-free kernel reductions"
-    "AugmentedGaussianProcesses.jl|https://github.com/theogf/AugmentedGaussianProcesses.jl|VFE, SVGP"
-)
-
-for entry in "${repositories[@]}"; do
-    IFS='|' read -r name url methods <<<"${entry}"
+failures=0
+while IFS=$'\t' read -r name revision expected_checksum url methods; do
+    if [ -z "${name}" ] || [[ "${name}" == \#* ]]; then
+        continue
+    fi
     destination="${target}/${name}"
     if [ -d "${destination}/.git" ]; then
-        git -C "${destination}" fetch --depth 1 origin HEAD >/dev/null 2>&1 || true
-        git -C "${destination}" reset --hard FETCH_HEAD >/dev/null 2>&1 || true
+        if ! git -C "${destination}" fetch --depth 1 origin "${revision}" \
+                >/dev/null 2>&1; then
+            printf '%s\tFETCH FAILED\t%s\t%s\t%s\n' "${name}" "${revision}" \
+                "${url}" "${methods}" >>"${manifest}"
+            failures=1
+            continue
+        fi
     else
-        rm -rf "${destination}"
-        if ! git clone --depth 1 "${url}" "${destination}" >/dev/null 2>&1; then
-            printf '%s\tCLONE FAILED\t%s\t%s\n' "${name}" "${url}" "${methods}" \
-                >>"${manifest}"
+        if [ -e "${destination}" ]; then
+            printf '%s\tTARGET IS NOT A GIT CLONE\t%s\t%s\t%s\n' "${name}" \
+                "${revision}" "${url}" "${methods}" >>"${manifest}"
+            failures=1
+            continue
+        fi
+        git init --quiet "${destination}"
+        git -C "${destination}" remote add origin "${url}"
+        if ! git -C "${destination}" fetch --depth 1 origin "${revision}" \
+                >/dev/null 2>&1; then
+            printf '%s\tFETCH FAILED\t%s\t%s\t%s\n' "${name}" "${revision}" \
+                "${url}" "${methods}" >>"${manifest}"
+            failures=1
             continue
         fi
     fi
-    revision="$(git -C "${destination}" rev-parse HEAD)"
-    printf '%s\t%s\t%s\t%s\n' "${name}" "${revision}" "${url}" "${methods}" \
-        >>"${manifest}"
-done
+    git -C "${destination}" checkout --detach --force "${revision}" \
+        >/dev/null 2>&1
+    actual_revision="$(git -C "${destination}" rev-parse HEAD)"
+    actual_checksum="$(git -C "${destination}" archive "${actual_revision}" | \
+        sha256sum | awk '{print $1}')"
+    if [ "${actual_revision}" != "${revision}" ] || \
+            [ "${actual_checksum}" != "${expected_checksum}" ]; then
+        printf '%s\tVERIFICATION FAILED\t%s\t%s\t%s\t%s\n' "${name}" \
+            "${actual_revision}" "${actual_checksum}" "${url}" "${methods}" \
+            >>"${manifest}"
+        failures=1
+        continue
+    fi
+    printf '%s\t%s\t%s\t%s\t%s\n' "${name}" "${actual_revision}" \
+        "${actual_checksum}" "${url}" "${methods}" >>"${manifest}"
+done <"${revision_file}"
 
 # The MATLAB and R packages of Table I are distributed as archives rather than
 # as public git repositories. Record where they live; do not download binaries.
@@ -70,3 +95,4 @@ done
 
 echo "wrote ${manifest}"
 cat "${manifest}"
+exit "${failures}"

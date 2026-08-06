@@ -57,11 +57,14 @@ Table II. `results/SCALABLE_GP.md` states which half of the comparison each
 result belongs to. No number is attributed to the paper that the paper does not
 contain.
 
-`scripts/fetch_reference_implementations.sh` clones the public repositories of
-Table I into the ignored `.provenance/reference_implementations` tree and
-writes a manifest of names, revisions, URLs and the methods each implements.
-The archive-distributed packages are recorded by location rather than
-downloaded. No third-party source is linked into the MIT Fortran libraries.
+`reference_revisions.tsv` pins each public repository from Table I by commit
+and by the SHA-256 of `git archive` at that commit.
+`scripts/fetch_reference_implementations.sh` fetches exactly those commits into
+the ignored `.provenance/reference_implementations` tree, verifies the archive
+checksums, and writes the local verification manifest. It exits unsuccessfully
+if any fetch, revision, or checksum differs. Archive-distributed packages are
+recorded by location rather than downloaded. No third-party source is linked
+into the MIT Fortran libraries.
 
 The fixture itself lives in `fortml` as `fortml_review_toy`, so the benchmark
 and the correctness tests share one definition of the paper's problem.
