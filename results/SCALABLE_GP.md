@@ -223,6 +223,7 @@ memory-accuracy trade in it.
 | 16,384 | 3.91 s | - | - | 158 MiB | 8.325399e-4 |
 | 32,768 | 17.0 s | - | - | 159 MiB | 3.788e-4 |
 | 65,536 | 82.7 s | - | - | 160 MiB | 2.138e-4 |
+| 131,072 | 374.0 s | ~1.7 h (est.) | - | 162 MiB | 6.995e-5 |
 
 The memory is flat: the 158 MiB is the CUDA runtime, not the problem. The
 accuracy is the exact GP's to seven digits where the exact GP can still be run
@@ -255,6 +256,32 @@ A third defect, upstream in `fortnum`, blocked the device lane entirely: the
 generated FortAD derivative kernels carried no `!$acc routine seq`, so
 `nvfortran` refused every compute region that reaches them. Fixed in the
 generator and its 39 generated files.
+
+## The answer at n = 131,072
+
+This is the row that settles it. All five methods on the same problem, same
+data, same kernel:
+
+| method | train | peak | SMSE |
+| --- | --- | --- | --- |
+| VFE | **0.413 s** | 71.6 MiB | 8.08e-5 |
+| DTC | 0.686 s | 201.8 MiB | 6.78e-5 |
+| FITC | 0.708 s | 201.9 MiB | **6.76e-5** |
+| SKI (grid `n/8`) | 1.375 s | **19.0 MiB** | 6.97e-5 |
+| exact, matrix-free on GPU | 374.0 s | 162.5 MiB | 6.99e-5 |
+| exact, dense | impossible - 137 GB | - | - |
+
+The exact solve is **529 times slower than FITC and 272 times slower than SKI,
+and its accuracy is no better**: 6.99e-5 against FITC's 6.76e-5 and SKI's
+6.97e-5. At this sample count the error is set by the observation noise and the
+model, not by the solver, so the approximations have already reached the
+accuracy ceiling that exactness would buy. Paying 529x for it returns nothing.
+
+That is the conclusion for this problem. It is not a general law: it holds
+because 64 inducing points already summarize a one-dimensional `sinc` with
+131,072 samples on it. A target with structure that a rank-64 summary cannot
+capture would separate the methods again, and that is the experiment that would
+change the answer.
 
 ## Is the KeOps-style matrix-free lane good enough on its own?
 
@@ -316,9 +343,9 @@ These supersede the small-n plots below. `ski_scaled` is SKI with the grid at
 
 | Plot | URL |
 | --- | --- |
-| training time against `n` | https://box.sloppy.at/77193.png |
-| peak memory against `n` | https://box.sloppy.at/2b9cf.png |
-| accuracy against `n` | https://box.sloppy.at/39740.png |
+| training time against `n` | https://box.sloppy.at/9fdc1.png |
+| peak memory against `n` | https://box.sloppy.at/945a4.png |
+| accuracy against `n` | https://box.sloppy.at/15ceb.png |
 
 Measured slopes over 8,192 to 131,072:
 
