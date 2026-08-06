@@ -201,6 +201,17 @@ From the review's Table I, plus the repositories behind them:
 `scripts/fetch_reference_implementations.sh` records and downloads these, with
 checksums, into the ignored `.provenance/` tree.
 
+## Published plots
+
+| Plot | URL |
+| --- | --- |
+| training time against `n` | https://box.sloppy.at/058c3.png |
+| peak memory against `n` | https://box.sloppy.at/c70d3.png |
+| accuracy against `n` | https://box.sloppy.at/24744.png |
+| prediction time against `n` | https://box.sloppy.at/7c8d5.png |
+| training time against `m` | https://box.sloppy.at/6ca51.png |
+| training time against `M` | https://box.sloppy.at/55811.png |
+
 ## Reproduce
 
 ```sh
