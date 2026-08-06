@@ -120,6 +120,45 @@ against the direct pairwise oracle. Run `scripts/run_matmat_suite.sh` for the
 CPU, OpenACC, and native CUDA lanes over one, two, four, and eight right-hand
 sides. It writes `results/rbf_matmat.csv` and resident-runtime plots.
 
+## KeOps-style static composite operator
+
+The composite lane measures the operator used by a common GP covariance
+expression without materializing its dense matrix:
+
+\[
+ y_i = \delta v_i + c\sum_j v_j + \sigma^2
+ \sum_j \exp\left(-\frac{\lVert x_i-x_j\rVert^2}{2\ell^2}\right)v_j.
+\]
+
+FortML recognizes this fixed RBF-plus-constant expression and executes one
+matrix-free row map/reduce, with an optional native CUDA kernel. The KeOps
+lane uses a LazyTensor reduction; the GPyTorch lane uses its KeOps RBF
+operator plus the same explicit constant rank-one term; dense PyTorch is a
+materialized reference. All lanes use the same deterministic float64 inputs,
+constants, output oracle, and resident-versus-transfer policy. The blocked
+NumPy pairwise implementation is run before every timed competitor and is an
+independent behavioral oracle.
+
+Run the matched sweep with five repetitions:
+
+    REPETITIONS=5 ./scripts/run_composite_scaling.sh
+
+The default CPU build selects nvfortran with physical-core OpenMP when it is
+available; the GPU build uses nvfortran/OpenACC. Set `FORTML_NATIVE_CUDA=1`
+for the optional `nvcc` fixed-feature kernel. To extend an existing sweep to
+larger sizes, write to a separate directory and merge the resulting CSV:
+
+    N_VALUES='8192 16384' REPETITIONS=2 \
+      RESULTS_DIR=/tmp/fortml-composite-high ./scripts/run_composite_scaling.sh
+
+The released extended record and plots are in
+[`results/composite_mvm_scaling_extended.csv`](results/composite_mvm_scaling_extended.csv),
+[`results/composite_mvm_scaling_extended_cpu.png`](results/composite_mvm_scaling_extended_cpu.png),
+[`results/composite_mvm_scaling_extended_cuda.png`](results/composite_mvm_scaling_extended_cuda.png),
+and [`results/composite_mvm_scaling.md`](results/composite_mvm_scaling.md).
+The high-N dense GPU failures remain in the CSV as `oom`; they are capacity
+evidence, not timing points.
+
 ## Validity boundary
 
 The first comparison is a kernel-product comparison. It does not claim that a

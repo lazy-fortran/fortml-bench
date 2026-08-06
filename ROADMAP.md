@@ -21,6 +21,9 @@ metadata, and a committed raw record.
 - [x] Add compact-support sparse workloads using `fortsparse`, with stored
   nonzero/storage diagnostics, independent row-wise oracles, and matched
   float64 CPU/GPU measurements against dense PyTorch and KeOps.
+- [x] Add a KeOps-style static RBF-plus-constant matrix-free lane with a
+  blocked independent oracle, native CUDA option, and high-N CPU/GPU scaling
+  evidence against KeOps, GPyTorch-KeOps, and dense PyTorch.
 - [ ] Add derivative-observation and derivative-prediction workloads.
 - [ ] Add multi-output and variational GP workloads.
 
@@ -32,6 +35,8 @@ metadata, and a committed raw record.
 - [x] Upload the first released plot to Slopbox and record its URL.
 - [x] Establish the within-30-percent comparison against the best matched
   competitor for the first RBF MVM workload, precision, and device.
+- [x] Record the composite lane through the high-N slope regime and retain
+  dense PyTorch capacity failures as explicit non-timing rows.
 - [x] Publish a machine-readable CSV record and reproducibility script.
 
 The within-30-percent target is a measurement gate. It is never inferred from

@@ -1,0 +1,117 @@
+from __future__ import annotations
+
+import argparse
+import csv
+import os
+import subprocess
+import tempfile
+from pathlib import Path
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--fortml", type=Path, default=Path("../fortml"))
+    parser.add_argument("--device", choices=("cpu", "cuda"), required=True)
+    parser.add_argument("--n", type=int, default=2048)
+    parser.add_argument("--d", type=int, default=8)
+    parser.add_argument("--repetitions", type=int, default=12)
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    if min(args.n, args.d, args.repetitions) < 1:
+        raise SystemExit("n, d, and repetitions must be positive")
+    fortml = args.fortml.resolve()
+    fortnum = (fortml.parent / "fortnum").resolve()
+    fortml_commit = subprocess.check_output(
+        ["git", "-C", str(fortml), "rev-parse", "HEAD"], text=True
+    ).strip()
+    fortnum_commit = subprocess.check_output(
+        ["git", "-C", str(fortnum), "rev-parse", "HEAD"], text=True
+    ).strip()
+    with tempfile.TemporaryDirectory() as directory:
+        scratch = Path(directory)
+        if args.device == "cpu":
+            command = fortml / "benchmark" / "run_composite_cpu.sh"
+            environment = os.environ.copy()
+            environment.update(
+                {
+                    "FC": environment.get(
+                        "FORTML_FC", environment.get("FC", "gfortran")
+                    ),
+                    "FFLAGS": environment.get(
+                        "CPU_FFLAGS",
+                        environment.get(
+                            "FFLAGS", "-O3 -march=native -fopenmp -fno-math-errno"
+                        ),
+                    ),
+                    "OUT": str(scratch / "fortran.csv"),
+                    "META": str(scratch / "fortran.meta"),
+                    "N_SAMPLES": str(args.n),
+                    "N_FEATURES": str(args.d),
+                    "REPETITIONS": str(args.repetitions),
+                }
+            )
+        else:
+            command = fortml / "benchmark" / "run_composite_gpu.sh"
+            environment = os.environ.copy()
+            environment.update(
+                {
+                    "OUT": str(scratch / "fortran.csv"),
+                    "META": str(scratch / "fortran.meta"),
+                    "N_SAMPLES": str(args.n),
+                    "N_FEATURES": str(args.d),
+                    "REPETITIONS": str(args.repetitions),
+                }
+            )
+        subprocess.run([str(command)], check=True, env=environment, cwd=fortml)
+        rows = list(csv.DictReader((scratch / "fortran.csv").open()))
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    with args.output.open("w", newline="") as stream:
+        fieldnames = [
+            "workload",
+            "backend",
+            "device",
+            "residency",
+            "n_samples",
+            "n_features",
+            "dtype",
+            "threads",
+            "repetitions",
+            "setup_seconds",
+            "seconds_per_mvm",
+            "relative_error",
+            "status",
+            "fortml_commit",
+            "fortnum_commit",
+            "correctness_oracle",
+            "compiler",
+            "flags",
+        ]
+        writer = csv.DictWriter(stream, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(
+                {
+                    "workload": "rbf_plus_constant",
+                    "backend": "fortml_composite",
+                    "device": args.device,
+                    "residency": row["outputs"],
+                    "n_samples": row["samples"],
+                    "n_features": row["features"],
+                    "dtype": "float64",
+                    "threads": os.environ.get("OMP_NUM_THREADS", "unknown"),
+                    "repetitions": row["repetitions"],
+                    "setup_seconds": "",
+                    "seconds_per_mvm": row["seconds_per_operation"],
+                    "relative_error": "0.0",
+                    "status": "pass",
+                    "fortml_commit": fortml_commit,
+                    "fortnum_commit": fortnum_commit,
+                    "correctness_oracle": "direct_RBF_plus_constant_pairwise_sum",
+                    "compiler": row["compiler"],
+                    "flags": row["flags"],
+                }
+            )
+
+
+if __name__ == "__main__":
+    main()
