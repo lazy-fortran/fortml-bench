@@ -27,12 +27,17 @@ else
 fi
 gpu_flags=${GPU_FFLAGS:--O3 -acc}
 mkdir -p "$results_dir"
+preconditioner_args=()
+if [[ -n "${NYSTROM_RANK:-}" ]]; then
+    preconditioner_args=(--nystrom-rank "$NYSTROM_RANK")
+fi
 
 OMP_NUM_THREADS="$cpu_threads" FORTML_FC="$cpu_compiler" FFLAGS="$cpu_flags" \
     "$python" "$root/scripts/run_fortran_rbf_cg_multi.py" \
     --fortml "$fortml" --device cpu --n "$n" --d "$d" --rhs "$rhs" \
     --repetitions "$repetitions" --tolerance "$tolerance" \
-    --max-iterations "$max_iterations" --output "$results_dir/rbf_cg_multi_fortran_cpu.csv"
+    --max-iterations "$max_iterations" "${preconditioner_args[@]}" \
+    --output "$results_dir/rbf_cg_multi_fortran_cpu.csv"
 OMP_NUM_THREADS="$cpu_threads" "$python" "$root/scripts/bench_rbf_cg_multi.py" \
     --device cpu --n "$n" --d "$d" --rhs "$rhs" --threads "$cpu_threads" \
     --repetitions "$repetitions" --tolerance "$tolerance" \
@@ -41,7 +46,8 @@ if "$python" -c 'import torch; raise SystemExit(0 if torch.cuda.is_available() e
     FFLAGS="$gpu_flags" "$python" "$root/scripts/run_fortran_rbf_cg_multi.py" \
         --fortml "$fortml" --device cuda --n "$n" --d "$d" --rhs "$rhs" \
         --repetitions "$repetitions" --tolerance "$tolerance" \
-        --max-iterations "$max_iterations" --output "$results_dir/rbf_cg_multi_fortran_cuda.csv"
+        --max-iterations "$max_iterations" "${preconditioner_args[@]}" \
+        --output "$results_dir/rbf_cg_multi_fortran_cuda.csv"
     "$python" "$root/scripts/bench_rbf_cg_multi.py" \
         --device cuda --n "$n" --d "$d" --rhs "$rhs" \
         --repetitions "$repetitions" --tolerance "$tolerance" \

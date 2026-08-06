@@ -101,6 +101,14 @@ For sample-count scaling, run:
     N_RHS=4 ./scripts/run_cg_multi_scaling.sh
 
 This writes multi-RHS CPU and GPU log-log plots beside the merged scaling CSV.
+Pass `--include-setup` to `scripts/plot_cg_multi.py` to plot first-solve time
+(setup plus one solve) when a preconditioner has a one-time build.
+
+The experimental KeOps-style Nystrom/Woodbury path is enabled with
+`NYSTROM_RANK=32`. It builds a rank-32 feature factor, applies the resulting
+Woodbury preconditioner inside fused multi-RHS CG, and records both setup and
+steady-state solve time. The matched evidence is in
+[`results/rbf_cg_multi_nystrom.md`](results/rbf_cg_multi_nystrom.md).
 
 The `nvfortran` drivers also expose a native CUDA variant for the fixed
 eight-feature RBF kernel. Set `FORTML_NATIVE_CUDA=1` to compile the shared

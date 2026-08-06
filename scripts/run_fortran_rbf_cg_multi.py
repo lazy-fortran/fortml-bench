@@ -18,10 +18,13 @@ def main() -> None:
     parser.add_argument("--repetitions", type=int, default=3)
     parser.add_argument("--tolerance", type=float, default=1.0e-8)
     parser.add_argument("--max-iterations", type=int, default=500)
+    parser.add_argument("--nystrom-rank", type=int, default=0)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if min(args.n, args.d, args.rhs, args.repetitions, args.max_iterations) < 1:
         raise SystemExit("n, d, rhs, repetitions, and max-iterations must be positive")
+    if args.nystrom_rank < 0:
+        raise SystemExit("nystrom-rank must be nonnegative")
     if args.tolerance <= 0.0:
         raise SystemExit("tolerance must be positive")
     fortml = args.fortml.resolve()
@@ -45,6 +48,8 @@ def main() -> None:
                 "REPETITIONS": str(args.repetitions),
             }
         )
+        if args.nystrom_rank > 0:
+            environment["NYSTROM_RANK"] = str(args.nystrom_rank)
         if args.device == "cpu":
             environment["FORTML_NATIVE_CUDA"] = "0"
             environment["FC"] = environment.get(
@@ -97,13 +102,14 @@ def main() -> None:
         "compiler_version",
         "gpu",
         "native_cuda_kernel",
+        "preconditioner",
     ]
     with args.output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=fields)
         writer.writeheader()
         writer.writerow(
             {
-                "backend": "fortml",
+                "backend": "fortml_nystrom" if args.nystrom_rank > 0 else "fortml",
                 "device": args.device,
                 "residency": "resident_inputs",
                 "n_samples": row["samples"],
@@ -115,7 +121,7 @@ def main() -> None:
                 "tolerance": args.tolerance,
                 "max_iterations": args.max_iterations,
                 "iterations_max": row["iterations"],
-                "setup_seconds": "",
+                "setup_seconds": row["setup_seconds"],
                 "seconds_per_solve": row["seconds_per_solve"],
                 "reported_residual_norm_max": row["residual_norm"],
                 "target_residual_norm_max": "",
@@ -131,6 +137,11 @@ def main() -> None:
                 "compiler_version": metadata.get("compiler_version", ""),
                 "gpu": metadata.get("gpu", ""),
                 "native_cuda_kernel": metadata.get("native_cuda_kernel", "0"),
+                "preconditioner": (
+                    f"nystrom_rank_{args.nystrom_rank}"
+                    if args.nystrom_rank > 0
+                    else "none"
+                ),
             }
         )
 
