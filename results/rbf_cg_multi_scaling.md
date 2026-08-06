@@ -16,24 +16,36 @@ At 2048 samples, the default OpenACC lane records:
 
 | device | FortML | dense PyTorch | KeOps | GPyTorch-KeOps |
 | --- | ---: | ---: | ---: | ---: |
-| CPU, seconds | 0.834 | 0.158 | 0.867 | 0.718 |
-| CUDA, seconds | 0.576 | 0.357 | 0.962 | 0.846 |
+| CPU, seconds | 0.848 | 0.127 | 0.863 | 0.728 |
+| CUDA, seconds | 0.576 | 0.354 | 0.957 | 0.843 |
 
 The refreshed native CUDA lane records 0.328 seconds at 2048 samples. It is
 faster than dense PyTorch, KeOps, and GPyTorch-KeOps at that endpoint. Across
 all four tested GPU sizes it remains within the 30 percent GPyTorch target. The
-native CUDA GPU plot is published at https://box.sloppy.at/01752.png. The
-default OpenACC GPU plot is published at https://box.sloppy.at/7976b.png. CPU
-plots are https://box.sloppy.at/802a2.png and https://box.sloppy.at/10733.png
-for the native and default lanes.
+native CUDA GPU plot is published at https://box.sloppy.at/abbec.png.
 
-The raw records are `rbf_cg_multi_scaling.csv` and
-`native_cuda/rbf_cg_multi_scaling.csv`. The source revision is `fortml`
-`e0c9a85` with `fortnum` `5bce667`. The native CUDA run uses
-`FORTML_NATIVE_CUDA=1` and the shared neighbor-tile matmat kernel. Nsight
-Compute counters remain unavailable under the cluster's `ERR_NVGPUCTRPERM`
-restriction, so this record makes no occupancy or memory-counter claim.
+The default OpenACC GPU plot is published at https://box.sloppy.at/a5a8d.png.
+
+The native CUDA CPU plot is published at https://box.sloppy.at/c94e8.png.
+
+The default OpenACC CPU plot is published at https://box.sloppy.at/c678e.png.
+
+The default raw record is `rbf_cg_multi_scaling.csv`.
+
+The native CUDA raw record is `native_cuda/rbf_cg_multi_scaling.csv`.
+
+The source revision is `fortml` `a1a40ff`.
+
+It uses `fortnum` `5bce667`.
+
+The native CUDA run uses `FORTML_NATIVE_CUDA=1` and the shared neighbor-tile
+matmat kernel. Nsight Compute counters remain unavailable under the cluster's
+`ERR_NVGPUCTRPERM` restriction, so this record makes no occupancy or
+memory-counter claim.
+
+Both FortML lanes use the operator-owned multi-RHS Krylov workspace lifetime.
+The raw metadata records this as `workspace_residency`.
 
 The native GPU curve still has a higher local asymptotic slope than the
-GPyTorch-KeOps curve. Block or Nystrom preconditioning and a persistent
-Krylov-workspace API remain the next scaling work.
+GPyTorch-KeOps curve. Block or Nystrom preconditioning and larger-size runs
+remain the next scaling work.
