@@ -40,3 +40,28 @@ All non-OOM rows pass the independent oracle. Dense PyTorch CUDA is retained
 as `oom` at the capacity boundary rather than being silently omitted. The
 generic CUDA plan was separately checked by a direct C++ pairwise oracle for
 matvec and two-RHS matmat before this sweep.
+
+## Scalable-GP review comparison
+
+The reference for the scalable-GP study is H. Liu, Y.-S. Ong, X. Shen and
+J. Cai, "When Gaussian Process Meets Big Data: A Review of Scalable GPs", IEEE
+Transactions on Neural Networks and Learning Systems 31(11):4405-4423, 2020,
+doi:10.1109/TNNLS.2019.2957109. The article is not redistributable and is
+recorded by citation and DOI only.
+
+That review publishes no numeric result tables. Its reproducible content is the
+one-dimensional toy of Figs. 4 and 5, the qualitative behaviours stated in
+those captions and in Section IV-C, the complexity claims of Fig. 2 and
+Sections III to V, the library list of Table I, and the data set list of
+Table II. `results/SCALABLE_GP.md` states which half of the comparison each
+result belongs to. No number is attributed to the paper that the paper does not
+contain.
+
+`scripts/fetch_reference_implementations.sh` clones the public repositories of
+Table I into the ignored `.provenance/reference_implementations` tree and
+writes a manifest of names, revisions, URLs and the methods each implements.
+The archive-distributed packages are recorded by location rather than
+downloaded. No third-party source is linked into the MIT Fortran libraries.
+
+The fixture itself lives in `fortml` as `fortml_review_toy`, so the benchmark
+and the correctness tests share one definition of the paper's problem.
