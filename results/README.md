@@ -41,6 +41,33 @@ and 7.48 ms for KeOps. On the CPU lane, nvfortran Fortran takes 4.66 ms,
 compared with 6.22 ms for GPyTorch-KeOps and 7.56 ms for KeOps. The Fortran
 curve is lowest at every tested size on both devices.
 
+## Static composite kernel lane
+
+The static RBF-plus-constant lane uses the generic CUDA plan introduced in
+fortml commit `5ff3d80`. Its postfix program is lowered once during residency
+setup, and the timed CUDA MVM reuses the device-resident points and program.
+The same float64 inputs, kernel constants, diagonal shift, and independent
+blocked pairwise oracle are used for every backend. The base sweep has five
+repetitions at 256 through 4,096 samples. The slope extension has three
+repetitions at 8,192 and 16,384 samples. The merged record is
+`composite_mvm_scaling_extended.csv`.
+
+At 16,384 samples, resident CUDA FortML takes 56.68 ms per MVM, compared with
+64.13 ms for GPyTorch-KeOps and 83.61 ms for KeOps. Dense PyTorch is recorded
+as OOM from 8,192 samples. The last two FortML CUDA doublings have slopes 2.00
+and 2.00, which is the expected quadratic matrix-free scaling once launch and
+tile overheads are amortized. CPU placement noise remains visible in the
+extended endpoint, so CPU slope claims use the recorded 16-thread nvfortran
+run without extrapolation.
+
+Composite CPU plot: `composite_mvm_scaling_extended_cpu.png`
+
+https://box.sloppy.at/8b824.png
+
+Composite GPU plot: `composite_mvm_scaling_extended_cuda.png`
+
+https://box.sloppy.at/92846.png
+
 The dense PyTorch CPU curve is a dense-reference measurement. Its implementation
 materializes the full (N 	imes N 	imes D) difference tensor and two
 (N 	imes N) intermediates on every call. At 4,096 samples it takes 349 ms,

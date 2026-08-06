@@ -1,85 +1,85 @@
 workload,backend,device,residency,n_samples,n_features,dtype,threads,repetitions,setup_seconds,seconds_per_mvm,relative_error,status,fortml_commit,fortnum_commit,correctness_oracle,compiler,flags,torch_version,gpytorch_version,pykeops_version,cuda_device
-rbf_plus_constant,fortml_composite,cpu,cpu,256,8,float64,16,5,,  2.8180000000000001E-05,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -mp=multicore,,,,
-rbf_plus_constant,pytorch_dense,cpu,resident,256,8,float64,16,5,0.0020428090065252036,0.0009883962047751993,1.037664777877665e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,keops,cpu,resident,256,8,float64,16,5,0.09523934000753798,0.0008480757998768241,1.4823782541109502e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,gpytorch_keops,cpu,resident,256,8,float64,16,5,0.1487974880146794,0.001066497399006039,9.388257476422372e-09,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,fortml_composite,cuda,transfer,256,8,float64,unknown,5,,  7.6799999999999997E-05,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
-rbf_plus_constant,fortml_composite,cuda,resident,256,8,float64,unknown,5,,  6.0220000000000003E-05,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
-rbf_plus_constant,pytorch_dense,cuda,resident,256,8,float64,1,5,0.10646362698753364,0.00014357439940795302,4.447134762332851e-16,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,pytorch_dense,cuda,transfer,256,8,float64,1,5,0.0005920449912082404,0.00016218560049310326,4.447134762332851e-16,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,keops,cuda,resident,256,8,float64,1,5,0.002303699991898611,0.0008808035985566675,1.4823782541109502e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,keops,cuda,transfer,256,8,float64,1,5,0.0010217649978585541,0.0009025083971209824,1.4823782541109502e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,gpytorch_keops,cuda,resident,256,8,float64,1,5,0.18098178697982803,0.0013278198020998389,9.38825769877911e-09,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,gpytorch_keops,cuda,transfer,256,8,float64,1,5,0.0012660450011026114,0.0012474743998609483,9.38825769877911e-09,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,fortml_composite,cpu,cpu,512,8,float64,16,5,,  9.4359999999999998E-05,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -mp=multicore,,,,
-rbf_plus_constant,pytorch_dense,cpu,resident,512,8,float64,16,5,0.0053663400176446885,0.004458141600480303,8.865614347131504e-16,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,keops,cpu,resident,512,8,float64,16,5,0.08915017699473538,0.0012749782006721943,1.177464405478403e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,gpytorch_keops,cpu,resident,512,8,float64,16,5,0.14930944200023077,0.0013973226014059037,8.742397767121395e-09,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,fortml_composite,cuda,transfer,512,8,float64,unknown,5,,  1.2822000000000002E-04,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
-rbf_plus_constant,fortml_composite,cuda,resident,512,8,float64,unknown,5,,  1.0575999999999999E-04,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
-rbf_plus_constant,pytorch_dense,cuda,resident,512,8,float64,1,5,0.10516480999649502,0.00020205460023134947,4.432807173565752e-16,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,pytorch_dense,cuda,transfer,512,8,float64,1,5,0.0006703830149490386,0.0002409540000371635,4.432807173565752e-16,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,keops,cuda,resident,512,8,float64,1,5,0.0026835659809876233,0.001304241199977696,1.177464405478403e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,keops,cuda,transfer,512,8,float64,1,5,0.0014310260012280196,0.001322593801887706,1.177464405478403e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,gpytorch_keops,cuda,resident,512,8,float64,1,5,0.17184312699828297,0.0016388398013077675,8.742397933351663e-09,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,gpytorch_keops,cuda,transfer,512,8,float64,1,5,0.0016088709817267954,0.0015744022035505622,8.742397933351663e-09,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,fortml_composite,cpu,cpu,1024,8,float64,16,5,,  3.3601999999999997E-04,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -mp=multicore,,,,
-rbf_plus_constant,pytorch_dense,cpu,resident,1024,8,float64,16,5,0.022127550997538492,0.021912673400947824,2.121601554608136e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,keops,cpu,resident,1024,8,float64,16,5,0.09448084101313725,0.0021143595979083328,1.6694569610031233e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,gpytorch_keops,cpu,resident,1024,8,float64,16,5,0.15507057699142024,0.0020504051994066686,1.2654330174363262e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,fortml_composite,cuda,transfer,1024,8,float64,unknown,5,,  3.0697999999999999E-04,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
-rbf_plus_constant,fortml_composite,cuda,resident,1024,8,float64,unknown,5,,  2.7955999999999999E-04,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
-rbf_plus_constant,pytorch_dense,cuda,resident,1024,8,float64,1,5,0.10205218498595059,0.0010191200010012836,8.521186571786776e-16,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,pytorch_dense,cuda,transfer,1024,8,float64,1,5,0.001331298000877723,0.001056055596563965,8.521186571786776e-16,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,keops,cuda,resident,1024,8,float64,1,5,0.0034897949954029173,0.0021263602015096695,1.6694569610031233e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,keops,cuda,transfer,1024,8,float64,1,5,0.002277991996379569,0.0021656344004441054,1.6694569610031233e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,gpytorch_keops,cuda,resident,1024,8,float64,1,5,0.1701069569971878,0.002236439596163109,1.2654330174363262e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,gpytorch_keops,cuda,transfer,1024,8,float64,1,5,0.0022331069922074676,0.002204914396861568,1.2654330174363262e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,fortml_composite,cpu,cpu,2048,8,float64,16,5,,  1.1993800000000001E-03,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -mp=multicore,,,,
-rbf_plus_constant,pytorch_dense,cpu,resident,2048,8,float64,16,5,0.09098360099596903,0.0937741146015469,2.3293733037655242e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,keops,cpu,resident,2048,8,float64,16,5,0.09217918399372138,0.003854373999638483,1.38306539911078e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,gpytorch_keops,cpu,resident,2048,8,float64,16,5,0.15724311899975874,0.003340399597072974,1.1876373119085222e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,fortml_composite,cuda,transfer,2048,8,float64,unknown,5,,  1.0313799999999999E-03,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
-rbf_plus_constant,fortml_composite,cuda,resident,2048,8,float64,unknown,5,,  9.9337999999999987E-04,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
-rbf_plus_constant,pytorch_dense,cuda,resident,2048,8,float64,1,5,0.11573703799513169,0.004316593002295121,1.0191008203974169e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,pytorch_dense,cuda,transfer,2048,8,float64,1,5,0.004690016008680686,0.004383745399536565,1.0191008203974169e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,keops,cuda,resident,2048,8,float64,1,5,0.005242056009592488,0.00382806439884007,1.38306539911078e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,keops,cuda,transfer,2048,8,float64,1,5,0.0039733260055072606,0.0038552116020582616,1.38306539911078e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,gpytorch_keops,cuda,resident,2048,8,float64,1,5,0.174879027006682,0.0036362789978738874,1.1876373264671053e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,gpytorch_keops,cuda,transfer,2048,8,float64,1,5,0.003610853018471971,0.003718555998057127,1.1876373264671053e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,fortml_composite,cpu,cpu,4096,8,float64,16,5,,  2.9145999999999998E-03,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -mp=multicore,,,,
-rbf_plus_constant,pytorch_dense,cpu,resident,4096,8,float64,16,5,0.33947327599162236,0.34090419799904337,3.522155332792918e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,keops,cpu,resident,4096,8,float64,16,5,0.09468248998746276,0.007209805800812319,1.891527863907308e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,gpytorch_keops,cpu,resident,4096,8,float64,16,5,0.15651740098837763,0.00596037779469043,1.1582942416646126e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,fortml_composite,cuda,transfer,4096,8,float64,unknown,5,,  3.6417799999999998E-03,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
-rbf_plus_constant,fortml_composite,cuda,resident,4096,8,float64,unknown,5,,  3.5737799999999999E-03,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
+rbf_plus_constant,fortml_composite,cpu,cpu,256,8,float64,16,5,,  3.0559999999999999E-05,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -mp=multicore,,,,
+rbf_plus_constant,pytorch_dense,cpu,resident,256,8,float64,16,5,0.002172323002014309,0.0010248750040773302,1.037664777877665e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,keops,cpu,resident,256,8,float64,16,5,0.09891694999532774,0.000852209801087156,1.4823782541109502e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,gpytorch_keops,cpu,resident,256,8,float64,16,5,0.1560807980131358,0.0011610655987169594,9.388257476422372e-09,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,fortml_composite,cuda,transfer,256,8,float64,unknown,5,,  9.5539999999999997E-05,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
+rbf_plus_constant,fortml_composite,cuda,resident,256,8,float64,unknown,5,,  7.2000000000000002E-05,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
+rbf_plus_constant,pytorch_dense,cuda,resident,256,8,float64,1,5,0.09999981001601554,0.0001376394007820636,4.447134762332851e-16,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,pytorch_dense,cuda,transfer,256,8,float64,1,5,0.0006241259980015457,0.00015444300370290876,4.447134762332851e-16,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,keops,cuda,resident,256,8,float64,1,5,0.003468715993221849,0.0008772530010901392,1.4823782541109502e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,keops,cuda,transfer,256,8,float64,1,5,0.0010173570190090686,0.0009080167976208032,1.4823782541109502e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,gpytorch_keops,cuda,resident,256,8,float64,1,5,0.17896250099875033,0.0012882553972303867,9.38825769877911e-09,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,gpytorch_keops,cuda,transfer,256,8,float64,1,5,0.0012926860072184354,0.00159073940012604,9.38825769877911e-09,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,fortml_composite,cpu,cpu,512,8,float64,16,5,,  1.0755999999999999E-04,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -mp=multicore,,,,
+rbf_plus_constant,pytorch_dense,cpu,resident,512,8,float64,16,5,0.006201555021107197,0.003975739196175709,8.865614347131504e-16,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,keops,cpu,resident,512,8,float64,16,5,0.10010816299472935,0.0014385905989911408,1.177464405478403e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,gpytorch_keops,cpu,resident,512,8,float64,16,5,0.15590886297286488,0.001475241599837318,8.742397767121395e-09,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,fortml_composite,cuda,transfer,512,8,float64,unknown,5,,  1.3339999999999999E-04,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
+rbf_plus_constant,fortml_composite,cuda,resident,512,8,float64,unknown,5,,  1.1682000000000001E-04,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
+rbf_plus_constant,pytorch_dense,cuda,resident,512,8,float64,1,5,0.1049463799863588,0.00020147759933024644,4.432807173565752e-16,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,pytorch_dense,cuda,transfer,512,8,float64,1,5,0.0007154580089263618,0.0002411784022115171,4.432807173565752e-16,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,keops,cuda,resident,512,8,float64,1,5,0.0026918719813693315,0.0015146540012210608,1.177464405478403e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,keops,cuda,transfer,512,8,float64,1,5,0.0014881039969623089,0.0013273952004965394,1.177464405478403e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,gpytorch_keops,cuda,resident,512,8,float64,1,5,0.1712619710015133,0.001600822200998664,8.742397933351663e-09,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,gpytorch_keops,cuda,transfer,512,8,float64,1,5,0.0015928010107018054,0.001996383600635454,8.742397933351663e-09,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,fortml_composite,cpu,cpu,1024,8,float64,16,5,,  3.9199999999999999E-04,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -mp=multicore,,,,
+rbf_plus_constant,pytorch_dense,cpu,resident,1024,8,float64,16,5,0.022679011977743357,0.02239625480142422,2.121601554608136e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,keops,cpu,resident,1024,8,float64,16,5,0.10260841401759535,0.0022982964001130313,1.6694569610031233e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,gpytorch_keops,cpu,resident,1024,8,float64,16,5,0.157347922999179,0.002175927796633914,1.2654330174363262e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,fortml_composite,cuda,transfer,1024,8,float64,unknown,5,,  3.1179999999999999E-04,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
+rbf_plus_constant,fortml_composite,cuda,resident,1024,8,float64,unknown,5,,  3.0157999999999997E-04,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
+rbf_plus_constant,pytorch_dense,cuda,resident,1024,8,float64,1,5,0.10216155200032517,0.0010191382025368512,8.521186571786776e-16,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,pytorch_dense,cuda,transfer,1024,8,float64,1,5,0.0013962509983684868,0.0013126794015988707,8.521186571786776e-16,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,keops,cuda,resident,1024,8,float64,1,5,0.0035474239848554134,0.002137597603723407,1.6694569610031233e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,keops,cuda,transfer,1024,8,float64,1,5,0.0022866080107633024,0.002178476599510759,1.6694569610031233e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,gpytorch_keops,cuda,resident,1024,8,float64,1,5,0.17244337499141693,0.002238317398587242,1.2654330174363262e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,gpytorch_keops,cuda,transfer,1024,8,float64,1,5,0.0022799359867349267,0.0022181856038514525,1.2654330174363262e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,fortml_composite,cpu,cpu,2048,8,float64,16,5,,  1.1467800000000000E-03,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -mp=multicore,,,,
+rbf_plus_constant,pytorch_dense,cpu,resident,2048,8,float64,16,5,0.09484758001053706,0.09217261199955828,2.3293733037655242e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,keops,cpu,resident,2048,8,float64,16,5,0.10379323500092141,0.004065604199422523,1.38306539911078e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,gpytorch_keops,cpu,resident,2048,8,float64,16,5,0.16056443299748935,0.003526550601236522,1.1876373119085222e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,fortml_composite,cuda,transfer,2048,8,float64,unknown,5,,  9.8656000000000004E-04,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
+rbf_plus_constant,fortml_composite,cuda,resident,2048,8,float64,unknown,5,,  1.2131600000000000E-03,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
+rbf_plus_constant,pytorch_dense,cuda,resident,2048,8,float64,1,5,0.11349414300639182,0.004606479598442093,1.0191008203974169e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,pytorch_dense,cuda,transfer,2048,8,float64,1,5,0.004740592004964128,0.004676571401068941,1.0191008203974169e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,keops,cuda,resident,2048,8,float64,1,5,0.0052482390019577,0.004026208003051579,1.38306539911078e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,keops,cuda,transfer,2048,8,float64,1,5,0.003968808014178649,0.004096047597704456,1.38306539911078e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,gpytorch_keops,cuda,resident,2048,8,float64,1,5,0.17416742301429622,0.003594396397238597,1.1876373264671053e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,gpytorch_keops,cuda,transfer,2048,8,float64,1,5,0.0035625120217446238,0.0037731954012997448,1.1876373264671053e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,fortml_composite,cpu,cpu,4096,8,float64,16,5,,  4.7495799999999998E-03,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -mp=multicore,,,,
+rbf_plus_constant,pytorch_dense,cpu,resident,4096,8,float64,16,5,0.34524536298704334,0.34287582419929097,3.522155332792918e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,keops,cpu,resident,4096,8,float64,16,5,0.10521506401710212,0.0074423305981326845,1.891527863907308e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,gpytorch_keops,cpu,resident,4096,8,float64,16,5,0.15836373501224443,0.006181939999805763,1.1582942416646126e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,fortml_composite,cuda,transfer,4096,8,float64,unknown,5,,  3.5726000000000000E-03,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
+rbf_plus_constant,fortml_composite,cuda,resident,4096,8,float64,unknown,5,,  3.5281600000000002E-03,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
 rbf_plus_constant,pytorch_dense,cuda,resident,4096,8,float64,1,5,nan,nan,nan,oom,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
 rbf_plus_constant,pytorch_dense,cuda,transfer,4096,8,float64,1,5,nan,nan,nan,oom,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,keops,cuda,resident,4096,8,float64,1,5,0.008612816978711635,0.007293593598296866,1.891527863907308e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,keops,cuda,transfer,4096,8,float64,1,5,0.007431652018567547,0.007218925200868398,1.891527863907308e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,gpytorch_keops,cuda,resident,4096,8,float64,1,5,0.18228826599079184,0.006055358599405735,1.158294267754652e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,gpytorch_keops,cuda,transfer,4096,8,float64,1,5,0.006083661981392652,0.006068723998032511,1.158294267754652e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,fortml_composite,cpu,cpu,8192,8,float64,16,2,,  2.4786450000000002E-02,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -mp=multicore,,,,
-rbf_plus_constant,pytorch_dense,cpu,resident,8192,8,float64,16,2,1.3039790659968276,1.3201146315113874,4.384133287501434e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,keops,cpu,resident,8192,8,float64,16,2,0.11718929398921318,0.02719247800996527,2.9227555250009555e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,gpytorch_keops,cpu,resident,8192,8,float64,16,2,0.1759781459986698,0.021098751487443224,9.77186738805563e-09,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,fortml_composite,cuda,transfer,8192,8,float64,unknown,2,,  1.3790000000000000E-02,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
-rbf_plus_constant,fortml_composite,cuda,resident,8192,8,float64,unknown,2,,  1.3711900000000001E-02,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
-rbf_plus_constant,pytorch_dense,cuda,resident,8192,8,float64,1,2,nan,nan,nan,oom,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,pytorch_dense,cuda,transfer,8192,8,float64,1,2,nan,nan,nan,oom,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,keops,cuda,resident,8192,8,float64,1,2,0.048589265992632136,0.02708244499808643,2.9227555250009555e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,keops,cuda,transfer,8192,8,float64,1,2,0.02726620199973695,0.027286629992886446,2.9227555250009555e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,gpytorch_keops,cuda,resident,8192,8,float64,1,2,0.20752840899513103,0.021111455498612486,9.77186738805563e-09,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,gpytorch_keops,cuda,transfer,8192,8,float64,1,2,0.021049337985459715,0.021088652501930483,9.77186738805563e-09,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,fortml_composite,cpu,cpu,16384,8,float64,16,2,,  5.4536899999999999E-02,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -mp=multicore,,,,
-rbf_plus_constant,pytorch_dense,cpu,resident,16384,8,float64,16,2,6.119212071993388,6.057271019497421,7.852853252230526e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,keops,cpu,resident,16384,8,float64,16,2,0.17916558001888916,0.08069524049642496,3.5524812331519043e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,gpytorch_keops,cpu,resident,16384,8,float64,16,2,0.2143759190221317,0.06211040051130112,1.3292126600122421e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
-rbf_plus_constant,fortml_composite,cuda,transfer,16384,8,float64,unknown,2,,  5.3904500000000001E-02,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
-rbf_plus_constant,fortml_composite,cuda,resident,16384,8,float64,unknown,2,,  5.3832499999999998E-02,0.0,pass,76c94d4f2d5c75fdd4de1c0c0987df5d4b421937,73e8965c9891a7a6256981a6509edd36ec26a9b4,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
-rbf_plus_constant,pytorch_dense,cuda,resident,16384,8,float64,1,2,nan,nan,nan,oom,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,pytorch_dense,cuda,transfer,16384,8,float64,1,2,nan,nan,nan,oom,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,keops,cuda,resident,16384,8,float64,1,2,0.10318051901413128,0.08031895649037324,3.5524812331519043e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,keops,cuda,transfer,16384,8,float64,1,2,0.08055230599711649,0.08046024751092773,3.5524812331519043e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,gpytorch_keops,cuda,resident,16384,8,float64,1,2,0.2572665869956836,0.061543973002699204,1.3292126903953053e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
-rbf_plus_constant,gpytorch_keops,cuda,transfer,16384,8,float64,1,2,0.06145774101605639,0.061278382505406626,1.3292126903953053e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,keops,cuda,resident,4096,8,float64,1,5,0.009945549012627453,0.0074191330000758175,1.891527863907308e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,keops,cuda,transfer,4096,8,float64,1,5,0.007342233991948888,0.007554057199740782,1.891527863907308e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,gpytorch_keops,cuda,resident,4096,8,float64,1,5,0.17559696501120925,0.006390072003705427,1.158294267754652e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,gpytorch_keops,cuda,transfer,4096,8,float64,1,5,0.007412044971715659,0.00629584239795804,1.158294267754652e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,fortml_composite,cpu,cpu,8192,8,float64,16,3,,  1.7408600000000000E-02,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -mp=multicore,,,,
+rbf_plus_constant,pytorch_dense,cpu,resident,8192,8,float64,16,3,1.50703342500492,1.4615802736661863,4.384133287501434e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,keops,cpu,resident,8192,8,float64,16,3,0.13154770401888527,0.02813754166709259,2.9227555250009555e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,gpytorch_keops,cpu,resident,8192,8,float64,16,3,0.1936609149852302,0.0228463689951847,9.77186738805563e-09,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,fortml_composite,cuda,transfer,8192,8,float64,unknown,3,,  1.4211966666666666E-02,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
+rbf_plus_constant,fortml_composite,cuda,resident,8192,8,float64,unknown,3,,  1.4190566666666666E-02,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
+rbf_plus_constant,pytorch_dense,cuda,resident,8192,8,float64,1,3,nan,nan,nan,oom,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,pytorch_dense,cuda,transfer,8192,8,float64,1,3,nan,nan,nan,oom,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,keops,cuda,resident,8192,8,float64,1,3,0.04995415100711398,0.02825158299917045,2.9227555250009555e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,keops,cuda,transfer,8192,8,float64,1,3,0.028476323001086712,0.027936275670072064,2.9227555250009555e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,gpytorch_keops,cuda,resident,8192,8,float64,1,3,0.21088794199749827,0.021885582003354404,9.77186738805563e-09,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,gpytorch_keops,cuda,transfer,8192,8,float64,1,3,0.0222696190176066,0.021853481671617676,9.77186738805563e-09,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,fortml_composite,cpu,cpu,16384,8,float64,16,3,,  5.6556999999999996E-02,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -mp=multicore,,,,
+rbf_plus_constant,pytorch_dense,cpu,resident,16384,8,float64,16,3,6.652595441002632,6.5378013393298415,7.852853252230526e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,keops,cpu,resident,16384,8,float64,16,3,0.18871918998775072,0.0839249449976099,3.5524812331519043e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,gpytorch_keops,cpu,resident,16384,8,float64,16,3,0.22674403301789425,0.06419600332931925,1.3292126600122421e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,cpu
+rbf_plus_constant,fortml_composite,cuda,transfer,16384,8,float64,unknown,3,,  5.6541266666666666E-02,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
+rbf_plus_constant,fortml_composite,cuda,resident,16384,8,float64,unknown,3,,  5.6684333333333337E-02,0.0,pass,5ff3d80e67fe8988ed7330b7288c6ba76e169ade,c5bea470d07b3d8c5449e213c33816c7dbc0ad32,direct_RBF_plus_constant_pairwise_sum,nvfortran,-O3 -acc,,,,
+rbf_plus_constant,pytorch_dense,cuda,resident,16384,8,float64,1,3,nan,nan,nan,oom,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,pytorch_dense,cuda,transfer,16384,8,float64,1,3,nan,nan,nan,oom,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,keops,cuda,resident,16384,8,float64,1,3,0.1062173550017178,0.08361055200415042,3.5524812331519043e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,keops,cuda,transfer,16384,8,float64,1,3,0.08347181000863202,0.08402614166455653,3.5524812331519043e-15,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,gpytorch_keops,cuda,resident,16384,8,float64,1,3,0.2551641789905261,0.06412880933688332,1.3292126903953053e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti
+rbf_plus_constant,gpytorch_keops,cuda,transfer,16384,8,float64,1,3,0.06433027499588206,0.06388325032700475,1.3292126903953053e-08,pass,,,,,,2.13.0+cu130,1.15.2,2.3,NVIDIA GeForce RTX 5060 Ti

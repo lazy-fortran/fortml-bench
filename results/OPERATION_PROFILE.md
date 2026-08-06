@@ -14,7 +14,7 @@ nvfortran -O3 -acc, Nsight Systems, and NV_ACC_TIME over 12 MVMs.
 | Dense PyTorch | sub -> pow -> sum -> scale -> exp -> addmv | Materializes an N x N x D difference tensor and N x N intermediates, then launches separate elementwise, reduction, exponential, and matrix-vector work. |
 | KeOps | A generated GenredAutograd map-reduce, exposed on CUDA as GpuConv1DOnDevice | Fuses distance, exponential, multiply, and reduction into a custom tiled kernel without an N x N result. |
 | GPyTorch + KeOps | GPyTorch KernelLinearOperator.matmul around the same KeOps map-reduce | Keeps the matrix-free KeOps kernel, but adds operator dispatch, parameter transforms, copies, and stream synchronization. |
-| fortml | One fused reduction for each output row, with two output rows assigned to worker lanes in the eight-feature path, one exponential, and an OpenMP/OpenACC reduction over neighbors | Does not materialize pairwise storage. CPU uses a static outer-row schedule and SIMD neighbor reduction. nvfortran launches one kernel per MVM with sample-major point storage. Neighbor points are still reloaded for each output row. |
+| fortml | One fused reduction for each output row, with two output rows assigned to worker lanes in the eight-feature path, one exponential, and an OpenMP/OpenACC reduction over neighbors | Does not materialize pairwise storage. CPU uses a static outer-row schedule and SIMD neighbor reduction. nvfortran launches one kernel per MVM with sample-major point storage. The static composite lane lowers its postfix program once into a resident generic CUDA plan and reuses that plan across MVMs. |
 
 For this workload, each exact MVM evaluates 1,048,576 pairs. The Fortran
 hot loop therefore performs eight coordinate differences and eight squares per
@@ -63,9 +63,12 @@ The neighbor loop consequently loaded each feature with an eight-sample
 stride for this workload. The operator now stores samples contiguously and
 the inner neighbor index is unit stride. The eight-feature path also uses
 explicit multiplies instead of scalar power expressions. The current source
-is fortml commit `81b0655`. The optional native bridge adds a linked CUDA
+is fortml commit `5ff3d80`. The optional native bridge adds a linked CUDA
 kernel with shared neighbor storage while leaving the OpenACC path as the
-default comparison backend.
+default comparison backend for the specialized RBF workload. The static
+composite workload uses the generic CUDA plan ABI. Its independent C++ test
+covers composite matvec and two-RHS matmat, and the scaling CSV records the
+plan as the resident CUDA implementation.
 
 The remaining structural differences are deliberate optimization targets:
 
@@ -91,4 +94,7 @@ Fortran reduction order. Their observed relative errors were about 2e-15 and
 Raw Python operation tables are
 [operation_profile_cpu.csv](operation_profile_cpu.csv) and
 [operation_profile_cuda.csv](operation_profile_cuda.csv). The reproducible
-commands are scripts/profile_python_ops.py and scripts/profile_rbf_mvm.sh.
+commands are scripts/profile_python_ops.py and scripts/profile_rbf_mvm.sh. The
+Fortran profiler now links both the specialized RBF CUDA object and the generic
+kernel-plan object, so future operation traces cannot silently omit the ABI used
+by the composite benchmark.

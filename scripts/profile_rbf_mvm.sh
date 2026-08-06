@@ -38,6 +38,7 @@ $cpu_fc $cpu_flags "${cpu_module_flag[@]}" \
     "$fortml/src/gp/fortml_kernels.f90" \
     "$fortml/src/gp/fortml_linear_operator.f90" \
     "$fortml/src/gp/fortml_cuda_rbf_stub.f90" \
+    "$fortml/src/gp/fortml_cuda_kernel_stub.f90" \
     "$fortml/src/gp/fortml_kernel_operator.f90" \
     "$fortml/app/fortml_bench_rbf_operator.f90"
 OMP_NUM_THREADS="$cpu_threads" perf stat -r 3 \
@@ -62,14 +63,20 @@ if command -v nvfortran >/dev/null 2>&1 && command -v nsys >/dev/null 2>&1; then
         nvcc_flags=${NVCCFLAGS:--O3 -arch=native}
         nvcc $nvcc_flags -c "$fortml/src/gp/fortml_cuda_rbf.cu" \
             -o "$build/fortml_cuda_rbf.o"
+        nvcc $nvcc_flags -c "$fortml/src/gp/fortml_cuda_kernel.cu" \
+            -o "$build/fortml_cuda_kernel.o"
         gpu_link_inputs=(
             "$build/fortml_cuda_rbf.o"
+            "$build/fortml_cuda_kernel.o"
             "-L$cuda_root/lib64"
             -lcudart
             -c++libs
         )
     else
-        gpu_sources+=("$fortml/src/gp/fortml_cuda_rbf_stub.f90")
+        gpu_sources+=(
+            "$fortml/src/gp/fortml_cuda_rbf_stub.f90"
+            "$fortml/src/gp/fortml_cuda_kernel_stub.f90"
+        )
     fi
     nvfortran -O3 -acc -module "$build" -o "$build/rbf_gpu" \
         "${gpu_sources[@]}" "${gpu_link_inputs[@]}"
