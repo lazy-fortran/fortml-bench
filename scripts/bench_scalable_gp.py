@@ -43,12 +43,16 @@ METHODS = (
     "grbcm",
     "moe",
     "keops",
+    "keops_gpu",
+    "keops_matvec",
 )
 
 #: What the review claims each method costs, for the measured-versus-claimed
 #: table. `n` training points, `m` inducing or subset size, `M` experts,
 #: `m0 = n/M` points per expert, `d` input dimensions.
 CLAIMED_ORDER = {
+    "keops_gpu": "O(s n^2) train, resident OpenACC products",
+    "keops_matvec": "O(n^2) for one matrix-free product",
     "full": "O(n^3) train, O(n^2) predict variance (Sec. II)",
     "sod": "O(m^3) train (Sec. III-A)",
     "sor": "O(n m^2) train, O(m) predict mean (Sec. III-C1)",
@@ -115,7 +119,14 @@ def run_point(fortml: Path, point: Point, repetitions: int) -> dict[str, str]:
 
 
 def build(fortml: Path) -> None:
-    subprocess.run(["fo", "build"], cwd=fortml, check=True, capture_output=True)
+    """Release flags. The default fo profile is -O0 -fcheck=all, which would
+    make every timing here a debug-build timing."""
+    subprocess.run(
+        ["fo", "build", "--flag", "-O3 -funroll-loops"],
+        cwd=fortml,
+        check=True,
+        capture_output=True,
+    )
 
 
 def revisions(fortml: Path) -> dict[str, str]:
@@ -143,6 +154,7 @@ def main() -> None:
     parser.add_argument("--n", type=int, default=1024)
     parser.add_argument("--m", type=int, default=64)
     parser.add_argument("--experts", type=int, default=8)
+    parser.add_argument("--expert-size", type=int, default=None)
     parser.add_argument("--d", type=int, default=1)
     parser.add_argument("--values", type=int, nargs="+", default=None)
     parser.add_argument("--methods", nargs="+", default=list(METHODS))
@@ -177,13 +189,18 @@ def main() -> None:
         writer.writeheader()
         for value in values:
             for method in arguments.methods:
+                samples = value if arguments.sweep == "samples" else arguments.n
+                experts = value if arguments.sweep == "experts" else arguments.experts
+                # Holding the per-expert size fixed is what makes the local
+                # methods scalable: at fixed M the per-expert Cholesky grows
+                # with n, so both time and memory grow quadratically.
+                if arguments.expert_size:
+                    experts = max(samples // arguments.expert_size, 1)
                 point = Point(
                     method=method,
-                    n=value if arguments.sweep == "samples" else arguments.n,
+                    n=samples,
                     m=value if arguments.sweep == "inducing" else arguments.m,
-                    experts=(
-                        value if arguments.sweep == "experts" else arguments.experts
-                    ),
+                    experts=experts,
                     d=value if arguments.sweep == "dimension" else arguments.d,
                 )
                 # SKI's grid path here is one dimensional; skip rather than
