@@ -309,7 +309,31 @@ From the review's Table I, plus the repositories behind them:
 `scripts/fetch_reference_implementations.sh` records and downloads these, with
 checksums, into the ignored `.provenance/` tree.
 
-## Published plots
+## Final comparison plots (8k to 131k, release build)
+
+These supersede the small-n plots below. `ski_scaled` is SKI with the grid at
+`n/8`; `keops_gpu` is the resident OpenACC matrix-free solve.
+
+| Plot | URL |
+| --- | --- |
+| training time against `n` | https://box.sloppy.at/77193.png |
+| peak memory against `n` | https://box.sloppy.at/2b9cf.png |
+| accuracy against `n` | https://box.sloppy.at/39740.png |
+
+Measured slopes over 8,192 to 131,072:
+
+| method | train | peak memory | SMSE |
+| --- | --- | --- | --- |
+| full | +2.69 | +2.00 | -1.17 |
+| sor / dtc / fitc | +1.05 / +1.03 / +1.12 | +0.92 / +0.92 / +0.94 | -1.21 / -1.21 / **-1.24** |
+| vfe | +1.34 | +0.84 | -1.12 |
+| ski_scaled | +1.29 | +0.63 | -1.21 |
+| poe, gpoe, bcm, rbcm, grbcm, moe, nle | +0.95 to +0.98 | +0.92 | -0.48 to -0.59 |
+| keops_gpu (device, exact) | +2.20 | **+0.01** | -0.98 |
+| keops matrix-free product | +2.68 | +0.18 | exact |
+| sod | -0.43 | +0.16 | **+0.54** |
+
+## Published plots (superseded, small-n debug build)
 
 | Plot | URL |
 | --- | --- |
