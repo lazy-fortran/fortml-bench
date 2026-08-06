@@ -4,6 +4,46 @@ This repository owns reproducible cross-engine evidence for fortml. A result
 requires an independent oracle, matched mathematical work, recorded toolchain
 metadata, and a committed raw record.
 
+## Status and handoff
+
+Last updated 2026-08-06. The scalable-GP study of Liu et al. (IEEE TNNLS
+31(11):4405-4423, 2020) is complete and is the centrepiece of the GP evidence
+here. Read `results/SCALABLE_GP.md` first: it states what "matching the paper"
+can mean (the review publishes no numeric result tables), which half of each
+result is a reproduced behaviour and which is a measured complexity order, and
+the conclusion at n = 131,072.
+
+Headline: on the review's 1-D fixture at 131,072 points the exact matrix-free
+solve on a GPU takes 374 s against FITC's 0.708 s for the same accuracy
+(6.99e-5 against 6.76e-5), and the dense exact GP cannot run at all - it needs
+137 GB. SKI with its grid scaled to `n/8` matches that accuracy in 19 MiB.
+
+Two traps that produced wrong numbers in this repository and will again:
+
+* The default `fo` profile is `-O0 -fcheck=all`. Any timing taken without
+  `--flag "-O3 -funroll-loops"` is a debug-build timing. The first scalable-GP
+  sweep was one and had to be discarded.
+* `fo` shares `build/fo/bin` between compilers, so a device run can execute a
+  host binary. Rebuild immediately before a device measurement and let nothing
+  else build in between; `scripts/` does this.
+
+Reproduce:
+
+```sh
+python3 scripts/bench_scalable_gp.py --output results/scalable_gp_large.csv \
+    --sweep samples --values 8192 16384 32768 65536 131072 \
+    --repetitions 1 --expert-size 1024
+python3 scripts/plot_scalable_gp.py --input results/scalable_gp_final.csv \
+    --prefix results/scalable_gp_final --metric train_seconds
+bash scripts/fetch_reference_implementations.sh
+```
+
+The open threads are listed in `fortml`'s roadmap under "Next steps"; the one
+that matters most for this repository is a target whose structure a rank-64
+inducing summary cannot capture, which is what would separate the exact and
+approximate lanes and make the 131k conclusion general rather than
+problem-specific.
+
 ## Workloads
 
 - [x] Complete matched RBF MVM runs on CPU and GPU for Fortran, dense PyTorch,
