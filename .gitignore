@@ -12,3 +12,4 @@ results/profiles/
 *.o
 *.a
 *.so
+.provenance/
