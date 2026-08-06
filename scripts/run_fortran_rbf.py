@@ -30,7 +30,6 @@ def main() -> None:
     with tempfile.TemporaryDirectory() as directory:
         scratch = Path(directory)
         if args.device == "cpu":
-            command = fortml / "benchmark" / "run.sh"
             environment = os.environ.copy()
             environment.update(
                 {
@@ -46,6 +45,18 @@ def main() -> None:
                     "REPETITIONS": str(args.repetitions),
                 }
             )
+            if Path(environment["FC"]).name.lower() == "nvfortran":
+                # The current nvfortran 26.5 fpm graph still reaches the
+                # FortAD source-transformer ICE. The standalone operator
+                # build exercises the same generated FortML leaf and oracle
+                # without making the benchmark depend on that unrelated gate.
+                command = fortml / "benchmark" / "run_rbf_gpu.sh"
+                environment["FFLAGS"] = environment.get(
+                    "CPU_FFLAGS", environment.get("FFLAGS", "-O3 -mp")
+                )
+                environment["FORTML_NATIVE_CUDA"] = "0"
+            else:
+                command = fortml / "benchmark" / "run.sh"
         else:
             command = fortml / "benchmark" / "run_rbf_gpu.sh"
             environment = os.environ.copy()

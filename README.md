@@ -69,6 +69,11 @@ reports. The Python operation profiler records the corresponding operation
 tables for dense PyTorch, KeOps, and GPyTorch-KeOps. Nsight Compute is
 attempted when permissions allow it.
 
+The standalone RBF driver selects the direct nvfortran operator build for its
+CPU lane when `FC=nvfortran`; this keeps the benchmark usable while the full
+fpm dependency graph remains blocked by the documented FortAD 26.5 compiler
+ICE. GNU and other compiler selections continue through `benchmark/run.sh`.
+
 Run the matched matrix-free CG workload with:
 
     N_SAMPLES=2048 N_FEATURES=8 ./scripts/run_cg_suite.sh

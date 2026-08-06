@@ -4,7 +4,7 @@ Run date: 2026-08-06. The matched workload is 1024 samples, 8 features,
 float64, resident inputs, and the same variance, lengthscale, points, input
 vector, and independent NumPy oracle as the timing suite. Python operations
 were collected with torch.profiler after two warm-up calls. The Fortran CPU
-lane used nvfortran -O3 -mp and perf stat over 300 MVMs. The GPU lane used
+lane used nvfortran -O3 -mp and perf stat over 100 MVMs. The GPU lane used
 nvfortran -O3 -acc, Nsight Systems, and NV_ACC_TIME over 12 MVMs.
 
 ## What each implementation executes
@@ -30,15 +30,15 @@ The refreshed Python CUDA trace reported these dominant self-device operations:
 
 | Backend | Dominant measured operations |
 | --- | --- |
-| Dense PyTorch | sum 358.8 us, pow 353.0 us, sub 137.2 us, exp 95.3 us, and addmv_ 11.1 us, plus multiple CUDA launches. |
-| KeOps | One GpuConv1DOnDevice operation at 1685.4 us and one GenredAutograd wrapper at 1685.7 us. |
+| Dense PyTorch | sum 358.7 us, pow 351.8 us, sub 274.5 us, exp 95.3 us, and addmv_ 11.4 us, plus multiple CUDA launches. |
+| KeOps | One GpuConv1DOnDevice operation at 1686.3 us and one GenredAutograd wrapper at 1686.5 us. |
 | GPyTorch-KeOps | One GpuConv1DOnDevice operation at 1261.9 us, with a GenredAutograd wrapper at 1262.1 us and a separate Matmul framework operation. |
 
 The refreshed FortML Nsight Systems trace reported 13 launches for the
 correctness call plus 12 timed resident calls. The specialized OpenACC kernel
-averaged 922.1 us per launch at 2,048 samples. The benchmark application
-measured 946.4 us per resident MVM across the same 12 calls. NV_ACC_TIME
-reported 45 us of input copies and 15 us of output copyout for the operator
+averaged 965.1 us per launch at 2,048 samples. The benchmark application
+measured 994.8 us per resident MVM across the same 12 calls. NV_ACC_TIME
+reported 55 us of input copies and 16 us of output copyout for the operator
 call. The optional native CUDA bridge produced one four-warp kernel per MVM,
 averaging 915.6 us in Nsight Systems and 940.7 us in the application across
 eight timed calls. Its shared-memory neighbor tile therefore matches the
@@ -49,8 +49,8 @@ memory-throughput counters still require GPU performance-counter permission on
 the cluster.
 
 The refreshed nvfortran CPU perf stat run at 4,096 samples measured, amortized
-per MVM, approximately 197.1 million cycles, 478.2 million instructions, 3.67
-million cache misses, and 11.8 thousand branch misses. The regular reduction
+per MVM, approximately 197.8 million cycles, 491.2 million instructions, 1.40
+million cache misses, and 16.5 thousand branch misses. The regular reduction
 loop remains branch-light relative to the arithmetic work. The remaining CPU
 profiling question is vector math throughput for the exponential and reuse
 across neighboring output rows, which needs a symbol-level profile on an
@@ -63,7 +63,9 @@ The neighbor loop consequently loaded each feature with an eight-sample
 stride for this workload. The operator now stores samples contiguously and
 the inner neighbor index is unit stride. The eight-feature path also uses
 explicit multiplies instead of scalar power expressions. The current source
-is fortml commit `5ff3d80`. The optional native bridge adds a linked CUDA
+is fortml commit `5e1fc09`. The standalone profiler compiles the generated
+FortAD RBF product module and the FortSym primal leaf before `fortml_kernels`.
+The optional native bridge adds a linked CUDA
 kernel with shared neighbor storage while leaving the OpenACC path as the
 default comparison backend for the specialized RBF workload. The static
 composite workload uses the generic CUDA plan ABI. Its independent C++ test

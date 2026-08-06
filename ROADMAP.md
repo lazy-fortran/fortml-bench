@@ -30,6 +30,9 @@ metadata, and a committed raw record.
 ## Evidence
 
 - [x] Record gfortran and nvfortran compiler reports for the Fortran kernels.
+- [x] Keep the standalone nvfortran RBF benchmark synchronized with the
+  FortAD-generated product module and FortSym-generated primal leaf; the
+  direct CPU/GPU builds and independent pairwise oracle pass on the cluster.
 - [x] Record PyTorch, GPyTorch, KeOps, CUDA, driver, and GPU revisions.
 - [x] Generate comparison plots from committed CSV data.
 - [x] Upload the first released plot to Slopbox and record its URL.

@@ -35,6 +35,8 @@ $cpu_fc $cpu_flags "${cpu_module_flag[@]}" \
     "$fortnum/src/fortnum_kinds.f90" \
     "$fortnum/src/fortnum_status.f90" \
     "$fortnum/src/linalg/fortnum_krylov.f90" \
+    "$fortml/src/gp/fortml_generated_rbf_products.f90" \
+    "$fortml/src/gp/fortml_generated_rbf_leaf_fortran.f90" \
     "$fortml/src/gp/fortml_kernels.f90" \
     "$fortml/src/gp/fortml_linear_operator.f90" \
     "$fortml/src/gp/fortml_cuda_rbf_stub.f90" \
@@ -51,6 +53,8 @@ if command -v nvfortran >/dev/null 2>&1 && command -v nsys >/dev/null 2>&1; then
         "$fortnum/src/fortnum_kinds.f90"
         "$fortnum/src/fortnum_status.f90"
         "$fortnum/src/linalg/fortnum_krylov.f90"
+        "$fortml/src/gp/fortml_generated_rbf_products.f90"
+        "$fortml/src/gp/fortml_generated_rbf_leaf_fortran.f90"
         "$fortml/src/gp/fortml_kernels.f90"
         "$fortml/src/gp/fortml_linear_operator.f90"
         "$fortml/src/gp/fortml_kernel_operator.f90"
