@@ -175,6 +175,12 @@ a different workload, precision, device, or residency policy.
   arbitrary integer labels, stable distance ties, uniform and inverse-distance
   votes, and complete probability/prediction checksums. The raw record is
   `results/knn.csv`; discrete input JVP/VJP refusals remain explicit.
+- [x] Add dense scalar closed-radius nearest-neighbor regression with uniform
+  or inverse-distance sample-weighted averaging and an explicit
+  empty-neighborhood value. The independent NumPy prediction oracle and typed
+  CUDA refusal are defined by `scripts/bench_radius_neighbors_regression.py`
+  and documented in `results/RADIUS_NEIGHBORS_REGRESSION.md`; the CSV is
+  generated only after the FortML release app builds successfully.
 - [x] Add weighted primal linear SVM classification with arbitrary binary
   integer labels, feature-only L2 regularization, complete signed-margin
   checks, and a typed CUDA refusal. The raw record is
