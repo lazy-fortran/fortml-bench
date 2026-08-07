@@ -274,6 +274,10 @@ a different workload, precision, device, or residency policy.
   raw multiclass margins, and normalized gain feature importance. The release
   app exports first/final stage checksums and the raw records are retained in
   `results/xgboost_workloads.csv`.
+- [x] Add a correctness-gated squared-log (RMSLE) XGBoost lane. The independent
+  NumPy oracle solves the transformed-coordinate one-split Newton fixture,
+  while the release app records exact CPU fit/predict, weighted-histogram
+  parity, and a typed CUDA refusal in `results/xgboost_squared_log.csv`.
 - [x] Add matched multinomial softmax regression and multiclass neural
   classifier lanes. `scripts/bench_classification_models.py` uses independent
   NumPy damped-Newton and full-batch Adam oracles, records scikit-learn and

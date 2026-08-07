@@ -685,6 +685,20 @@ histogram timings on a larger deterministic count workload:
 See [`results/XGBOOST_POISSON.md`](results/XGBOOST_POISSON.md). Its CUDA row
 is an explicit unavailable refusal until a resident tree kernel is linked.
 
+The squared-log (RMSLE) objective lane independently reconstructs a one-tree
+Newton update in the `log1p(target)` coordinate, then records exact CPU
+fit/predict and weighted-histogram parity on a deterministic nonnegative
+workload:
+
+```bash
+python -B scripts/bench_xgboost_squared_log.py \
+  --fortml ../fortml --output results/xgboost_squared_log.csv
+```
+
+See [`results/XGBOOST_SQUARED_LOG.md`](results/XGBOOST_SQUARED_LOG.md). Its
+CUDA row remains an explicit unavailable refusal until a resident tree kernel
+is linked.
+
 The robust XGBoost lane independently reconstructs weighted one-tree Huber and
 pinball/quantile objectives, including base margins and leaf corrections:
 

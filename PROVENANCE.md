@@ -70,6 +70,13 @@ maximum oracle error of `1.78e-15`. Its CUDA row remains explicitly unavailable
 because FortML has no resident tree kernel; no CPU objective timing is reused
 as GPU evidence.
 
+The squared-log XGBoost record independently reconstructs the one-tree
+`log1p(target)` Newton update, including the geometric base margin, analytic
+gradient, positive Hessian floor, and guarded `expm1` inverse link, before
+timing the 256-row exact and weighted-histogram workload from FortML source
+revision `1f2b82b`. Its CUDA refusal is explicit because no resident
+squared-log tree kernel is linked.
+
 The generic hyperparameter-search record independently enumerates the 5×5×5
 Cartesian grid, checks a deterministic 128-candidate stream seeded with
 `20260807`, and checks FortOpt L-BFGS-B for a three-parameter quadratic against
