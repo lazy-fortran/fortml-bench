@@ -143,6 +143,30 @@ release-app protocol:
 See [`results/MULTINOMIAL_NB.md`](results/MULTINOMIAL_NB.md) for the fixture,
 oracle tolerances, and release-app records.
 
+The Complement Naive Bayes lane independently checks complement counts,
+positive feature weights, stable probabilities, predictions, and an input JVP.
+It retains the scikit-learn prior-intercept difference as contextual evidence
+and records an explicit refusal when the FortML release target is unavailable:
+
+```bash
+.venv/bin/python -B scripts/bench_complement_nb.py \
+  --fortml ../fortml --output results/complement_naive_bayes.csv
+```
+
+See [`results/COMPLEMENT_NB.md`](results/COMPLEMENT_NB.md) for the contract.
+
+The integer one-hot lane checks sorted categories, packed offsets, missing and
+unknown policies, and complete dense transforms against an independent NumPy
+oracle and scikit-learn context.  Categorical JVP/VJP are explicit refusals:
+
+```bash
+.venv/bin/python -B scripts/bench_one_hot_encoder.py \
+  --fortml ../fortml --output results/one_hot_encoder.csv
+```
+
+See [`results/ONE_HOT_ENCODER.md`](results/ONE_HOT_ENCODER.md) for the release
+target protocol and derivative boundary.
+
 The MLP training, composable polynomial/Fourier basis pipeline, deterministic
 decision stump, depth-limited CART regression and classification, core
 regression metrics, and residual-stump gradient-boosting lanes are in
