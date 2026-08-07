@@ -6,6 +6,11 @@ The workload uses 192 samples, two features, eight depth-three trees, and an ind
 
 The implementation propagates leaf-value bounds through recursive splits. A split on a `+1` feature receives a shared lower/upper boundary between child subtrees; `-1` reverses the bounds. Unconstrained features preserve the current bounds. The fit remains a discrete tree-building operation, so input JVP/VJP products retain the existing split-surface refusal contract.
 
+The independent FortML tests also cover overflow-safe split midpoints at large
+finite coordinates and learned/forced-left/forced-right NaN routing with a
+constrained feature. These are fit/prediction safety checks, not additional
+timed GPU work.
+
 CUDA is deliberately represented by two `unavailable` capability rows. No resident CUDA tree or histogram kernel is linked in this release, and the public `predict_device` contract returns `FORTNUM_NOT_IMPLEMENTED` instead of silently executing on the host. These rows are not GPU timings.
 
 Run:
