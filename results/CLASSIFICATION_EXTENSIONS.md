@@ -5,8 +5,8 @@ Run date: 2026-08-07. The raw record is
 [`scripts/bench_classification_extensions.py`](../scripts/bench_classification_extensions.py)
 against the FortML release app `fortml_bench_classification`.
 
-The lane contains two fitted-transform workloads and two binary Laplace-GP
-likelihood workloads:
+The lane contains two fitted-transform workloads, two binary Laplace-GP
+likelihood workloads, and one one-vs-rest multiclass Laplace-GP workload:
 
 - `standard_scaler` checks population means, unit scaling for a constant column,
   transform output, and the input-JVP sum against NumPy.
@@ -17,20 +17,26 @@ likelihood workloads:
   NumPy before timing the Fortran fit and probability prediction.
 - `gp_classification_probit` uses the independent NumPy Laplace solve with the
   analytic Gaussian-CDF predictive map.
+- `gp_classification_multiclass` fits one independent binary Laplace model per
+  sorted class, checks the normalized probability simplex, and compares labels
+  and probabilities against an independent NumPy one-vs-rest solve.
 
-All five FortML rows pass. The maximum scaler error is `3.41e-13` (the JVP
-checksum). Both GP probability checks are exact on this symmetric fixture.
-The recorded CPU timings are machine-specific:
+All six FortML rows pass. The maximum absolute error is `3.41e-13` (the
+scaler JVP checksum). The multiclass probability error is `7.11e-15`. The
+binary GP probability checks are exact on this symmetric fixture. The recorded
+CPU timings are machine-specific:
 
 | workload / phase | seconds per operation | checked metric |
 | --- | ---: | ---: |
-| standard scaler / transform | 1.1411e-5 | feature sum `1.47e-14` |
-| GP logistic / fit | 8.0214e-5 | accuracy `1.0` |
-| GP logistic / predict | 7.3435e-5 | positive-probability sum `16.0` |
+| standard scaler / transform | 1.1923e-5 | feature sum `1.47e-14` |
+| GP logistic / fit | 9.7033e-5 | accuracy `1.0` |
+| GP logistic / predict | 7.5925e-5 | positive-probability sum `16.0` |
+| GP multiclass / fit | recorded in CSV | accuracy `1.0`, simplex sum `32` |
 
-The GP lane is binary Laplace inference, not a claim of multiclass or
-variational GPyTorch parity. The source revision, compiler, flags, Python, and
-NumPy versions are recorded in every CSV row. Run it serially with:
+The GP lane covers binary and one-vs-rest multiclass Laplace inference. It is
+not a claim of variational GPyTorch parity. The source revision, compiler,
+flags, Python, and NumPy versions are recorded in every CSV row. Run it
+serially with:
 
 ```bash
 .venv/bin/python -B scripts/bench_classification_extensions.py \

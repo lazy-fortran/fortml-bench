@@ -265,8 +265,8 @@ def run(fortml: Path, root: Path) -> list[dict[str, object]]:
     probit_error = abs(float(gp_probit[2]) - probit["probability_sum"])
     gp_multiclass = parsed["gp_classification_multiclass"]
     multiclass_error = max(
-        abs(float(gp_multiclass[2]) - multiclass["accuracy"]),
-        abs(float(gp_multiclass[3]) - multiclass["probability_sum"]),
+        abs(float(gp_multiclass[3]) - multiclass["accuracy"]),
+        abs(float(gp_multiclass[4]) - multiclass["probability_sum"]),
     )
     if logistic_error > 2.0e-8 or probit_error > 2.0e-8 or multiclass_error > 2.0e-8:
         raise RuntimeError(
@@ -355,11 +355,12 @@ def run(fortml: Path, root: Path) -> list[dict[str, object]]:
                 "status": "pass",
                 "n_samples": 32,
                 "n_features": 1,
+                "seconds_per_operation": float(gp_multiclass[2]),
                 "metric": "accuracy",
-                "value": float(gp_multiclass[2]),
+                "value": float(gp_multiclass[3]),
                 "max_abs_error": multiclass_error,
                 "oracle": "independent NumPy one-vs-rest Laplace logistic solve",
-                "notes": f"simplex sum={gp_multiclass[3]}; total iterations={gp_multiclass[4]}",
+                "notes": f"simplex sum={gp_multiclass[4]}; total iterations={gp_multiclass[5]}",
             },
         ]
     )

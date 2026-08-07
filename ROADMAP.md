@@ -131,9 +131,10 @@ a different workload, precision, device, or residency policy.
   transform, JVP, and VJP checks and timings.
 - [x] Add deterministic CART-stump and residual-stump boosting lanes with an
   exhaustive NumPy split oracle and matched scikit-learn depth-1 reference.
-- [x] Add fitted standard/min-max scaler and binary Laplace GP logistic/probit
-  lanes with independent NumPy transform and Newton posterior oracles. The
-  raw record is `results/classification_extensions.csv`.
+- [x] Add fitted standard/min-max scaler, binary Laplace GP logistic/probit,
+  and one-vs-rest multiclass Laplace-GP lanes with independent NumPy transform
+  and Newton posterior oracles. The raw record is
+  `results/classification_extensions.csv`.
 - [x] Add an exact depth-one second-order boosting lane with independent NumPy
   gradient/Hessian, regularized leaf-weight, split-gain, squared-objective, and
   logistic-objective checks. Record a dedicated FortML workload and an explicit
@@ -143,9 +144,10 @@ a different workload, precision, device, or residency policy.
   deterministic input-shape oracles), but this repository still needs the
   matched probability/metric/timing record before the benchmark lane is
   complete.
-- [ ] Add multiclass and variational GP classification with GPyTorch likelihood
-  references and independent dense small-data oracles. The binary Laplace lane
-  is complete and remains explicitly separate from that target.
+- [ ] Add variational GP classification with GPyTorch likelihood references and
+  independent dense small-data oracles. Binary and one-vs-rest Laplace lanes
+  are complete. Variational inference and calibrated likelihood comparisons
+  remain separate work.
 - [ ] Add the full histogram/CART feature matrix: missing values, sample and
   class weights, monotonic constraints, early stopping, feature importance,
   categorical inputs, and GPU histograms.
