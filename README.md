@@ -128,6 +128,19 @@ See [`results/MULTILABEL_LOGISTIC.md`](results/MULTILABEL_LOGISTIC.md). CUDA
 capability rows are explicit refusals until a resident multi-head kernel is
 linked; host timings are never relabeled as accelerator evidence.
 
+The ordered-label lane fits a weighted cumulative-logit classifier with
+strictly increasing cut points. It checks the complete probability matrix and
+predicted labels against an independent SciPy L-BFGS-B oracle before timing:
+
+```bash
+.venv/bin/python -B scripts/bench_ordinal_logistic.py \
+    --fortml ../fortml --output results/ordinal_logistic.csv
+```
+
+See [`results/ORDINAL_LOGISTIC.md`](results/ORDINAL_LOGISTIC.md). CUDA rows
+are explicit `unavailable` capability records until a resident ordinal kernel
+is linked; no host fallback is timed.
+
 The shared binary GP likelihood lane separately checks signed-margin logistic
 and probit value/JVP/VJP products, including a stable negative-probit tail and
 an independent adjoint oracle:
