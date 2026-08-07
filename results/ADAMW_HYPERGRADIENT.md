@@ -44,7 +44,9 @@ file contains every prediction, scalar, gradient component, and JVP and the
 values agree with the independent NumPy record.  A missing target or build
 failure is emitted as explicit `unavailable` rows, never silently dropped.
 The current record therefore retains the NumPy pass rows and the FortML
-target boundary.  No CPU timing is relabeled as CUDA evidence.
+target boundary.  It also records untimed CUDA refusal rows for each phase:
+the current trainer and hypergradient release apps are host-only, and no CPU
+timing is relabeled as CUDA evidence.
 
 The AdamW target protocol uses `FORTML_BENCH_ADAMW_ORACLE` and CSV quantities
 `prediction`, `initial_loss`, and `final_loss`; it emits

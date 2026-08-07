@@ -410,6 +410,27 @@ def unavailable_rows(details: dict[str, str], workload: str, phases: tuple[str, 
     ]
 
 
+def device_refusal_rows(
+    details: dict[str, str], workload: str, phases: tuple[str, ...]
+) -> list[dict[str, Any]]:
+    """Keep the host-only boundary machine-readable and untimed."""
+
+    return [
+        base_row(
+            details,
+            workload=workload,
+            phase=phase,
+            variant="adamw" if workload == "mlp_adamw_training" else "fixed_sgd_log_hyperparameters",
+            backend="fortml",
+            device="cuda",
+            status="unavailable",
+            oracle="FortML device capability boundary",
+            notes="current trainer/hypergradient release apps are host-only; no CPU timing is relabeled as CUDA",
+        )
+        for phase in phases
+    ]
+
+
 def parse_timing(stdout: str, name: str) -> float | None:
     pattern = re.compile(rf"^{re.escape(name)},(.*)$")
     for line in stdout.splitlines():
@@ -573,6 +594,12 @@ def main() -> None:
                 fortml, args.hypergradient_target, "FORTML_BENCH_HYPERGRADIENT_ORACLE", "mlp_hypergradient",
                 ("value_gradient", "jvp"), details, expected_adamw, expected_hyper
             )
+    adamw_rows.extend(
+        device_refusal_rows(details, "mlp_adamw_training", ("fit", "predict"))
+    )
+    hyper_rows.extend(
+        device_refusal_rows(details, "mlp_hypergradient", ("value_gradient", "jvp"))
+    )
     adamw_output.parent.mkdir(parents=True, exist_ok=True)
     hyper_output.parent.mkdir(parents=True, exist_ok=True)
     with adamw_output.open("w", newline="") as stream:
