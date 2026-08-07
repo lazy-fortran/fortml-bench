@@ -143,7 +143,7 @@ a different workload, precision, device, or residency policy.
   categorical inputs, and GPU histograms.
 - [ ] Add a matched XGBoost lane when the optional dependency and a pinned
   release are available. Until then, dependency-check refusal rows remain in
-  `results/features_workloads.csv`; a stump benchmark is not called XGBoost.
+  `results/features_workloads.csv`. A stump benchmark is not called XGBoost.
 - [ ] Add physics-informed, Hamiltonian, Lagrangian, and symplectic workloads
   with analytic harmonic-oscillator and manufactured-PDE oracles. Record
   trajectory error, energy drift, symplectic Jacobian defect, residual norms,
