@@ -129,13 +129,15 @@ a different workload, precision, device, or residency policy.
   oracle, full loss/prediction checks, and release-build fit timings.
 - [x] Add a composable polynomial/Fourier basis-pipeline lane with independent
   transform, JVP, and VJP checks and timings.
+- [x] Add the fitted basis-linear regression composition lane with an
+  independent NumPy least-squares and chained JVP oracle.
 - [x] Add deterministic CART-stump and residual-stump boosting lanes with an
   exhaustive NumPy split oracle and matched scikit-learn depth-1 reference.
 - [x] Add fitted standard/min-max scaler, binary Laplace GP logistic/probit,
   and one-vs-rest multiclass Laplace-GP lanes with independent NumPy transform
   and Newton posterior oracles. The raw record is
   `results/classification_extensions.csv`.
-- [x] Add an exact depth-one second-order boosting lane with independent NumPy
+- [x] Add an exact depth-limited recursive second-order boosting lane with independent NumPy
   gradient/Hessian, regularized leaf-weight, split-gain, squared-objective, and
   logistic-objective checks. Record a dedicated FortML workload and an explicit
   optional-XGBoost contextual/refusal row in `results/xgboost_workloads.csv`.
@@ -160,8 +162,8 @@ a different workload, precision, device, or residency policy.
   class weights, monotonic constraints, early stopping, feature importance,
   categorical inputs, and GPU histograms.
 - [ ] Add a matched full XGBoost lane when the optional dependency and a pinned
-  release are available. The current exact depth-one FortML lane is recorded in
-  `results/xgboost_workloads.csv`. Histogram, deeper-tree, missing-value, and
+  release are available. The current exact depth-limited recursive FortML lane
+  is recorded in `results/xgboost_workloads.csv`. Histogram, missing-value, and
   constraint comparisons remain separate work. A stump benchmark is not called
   XGBoost.
 - [ ] Add physics-informed, Hamiltonian, Lagrangian, and symplectic workloads
