@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import os
+import platform
 import re
 import subprocess
 import time
@@ -27,6 +28,16 @@ def inputs() -> tuple[np.ndarray, np.ndarray]:
     true = -0.15 + x @ np.sin(0.17 * np.arange(1, N_FEATURES + 1))
     labels = np.where(true >= 0.0, 7, -3).astype(np.int64)
     return x, labels
+
+
+def git_revision(repository: Path) -> str:
+    revision = subprocess.check_output(
+        ["git", "-C", str(repository), "rev-parse", "HEAD"], text=True
+    ).strip()
+    dirty = subprocess.check_output(
+        ["git", "-C", str(repository), "status", "--porcelain"], text=True
+    ).strip()
+    return revision + ("+dirty" if dirty else "")
 
 
 def parse_fortran(stdout: str) -> dict[str, float]:
@@ -129,6 +140,20 @@ def main() -> None:
     x, labels = inputs()
     rows = run_sklearn(x, labels)
     rows.extend(run_fortran(args.fortml.resolve()))
+    metadata = {
+        "python_version": platform.python_version(),
+        "numpy_version": np.__version__,
+        "benchmark_revision": git_revision(Path.cwd()),
+        "fortml_revision": git_revision(args.fortml.resolve()),
+    }
+    try:
+        import sklearn
+
+        metadata["sklearn_version"] = sklearn.__version__
+    except ImportError:
+        metadata["sklearn_version"] = "unavailable"
+    for row in rows:
+        row.update(metadata)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     fields = [
         "backend",
@@ -140,6 +165,11 @@ def main() -> None:
         "accuracy",
         "oracle",
         "notes",
+        "python_version",
+        "numpy_version",
+        "sklearn_version",
+        "fortml_revision",
+        "benchmark_revision",
     ]
     with args.output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=fields)
