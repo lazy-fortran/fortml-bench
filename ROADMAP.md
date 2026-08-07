@@ -435,6 +435,11 @@ a different workload, precision, device, or residency policy.
   JVP, and CUDA refusal are covered by
   `results/gp_variational_classification.csv`; full likelihood catalogs,
   natural-gradient optimization, and resident GPU training remain open.
+- [x] Add a GPyTorch-compatible spectral-mixture kernel lane with independent
+  NumPy value, input-product, parameter JVP/VJP/HVP, and packed-metadata
+  oracles. `results/spectral_mixture.csv` records the two-mixture CPU release
+  app and typed resident-CUDA refusal; the protocol is documented in
+  `results/SPECTRAL_MIXTURE.md`.
 - [ ] Add the remaining histogram/CART feature matrix: weighted missing-bin
   workloads, class weights, monotonic constraints, early stopping, feature
   importance, categorical inputs, and native GPU histograms. CPU weighted

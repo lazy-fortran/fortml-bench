@@ -115,6 +115,18 @@ python -B scripts/bench_kernel_catalog.py \
 
 See [`results/KERNEL_CATALOG.md`](results/KERNEL_CATALOG.md).
 
+The spectral-mixture lane checks the GPyTorch-compatible stationary mixture
+formula, compositional packed metadata, dense value and input products, and
+parameter JVP/VJP/HVP products against an independent NumPy oracle.  It records
+FortML CPU timings and an explicit resident-CUDA refusal:
+
+```bash
+python -B scripts/bench_spectral_mixture.py \
+  --fortml ../fortml --output results/spectral_mixture.csv
+```
+
+See [`results/SPECTRAL_MIXTURE.md`](results/SPECTRAL_MIXTURE.md).
+
 The weighted discriminant-analysis lane checks arbitrary integer-label LDA and
 QDA fits, stabilized class probabilities, predictions, and fixed-state input
 JVPs against an independent NumPy Gaussian-discriminant oracle. It also records
