@@ -99,6 +99,10 @@ not completion gates.
   evidence against KeOps, GPyTorch-KeOps, and dense PyTorch.
 - [x] Add derivative-observation and derivative-prediction workloads.
 - [x] Add multi-output and variational GP workloads.
+- [x] Add periodic and rational-quadratic kernel value, input-derivative, and
+  logarithmic parameter JVP/VJP/HVP checks with release CPU timings and
+  explicit CUDA capability-refusal rows. See
+  [`results/KERNEL_CATALOG.md`](results/KERNEL_CATALOG.md).
 
 ## Evidence
 
