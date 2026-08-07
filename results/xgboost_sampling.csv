@@ -1,0 +1,3 @@
+workload,phase,backend,device,status,metric,value,max_abs_error,oracle,seconds,python_version,numpy_version,fortml_revision,benchmark_revision,compiler,flags,notes
+xgboost_sampling,fit_predict,fortml,cpu,pass,max_abs_error,0.0,0.0,"independent NumPy Park-Miller sampling, Newton stump, and prediction",0.001040249946527183,3.14.6,2.5.1,3aa654334e8936af40bebd60f383c570f615bebe,a9cfb0785948aa2a1b69722e2f968da289fbd0a1,gfortran,-O2,subsample=0.5; colsample_bytree=0.5; seed=12345; selected_feature=1
+xgboost_sampling,device_capability,fortml,cuda,unavailable,predict,nan,nan,typed device contract,,3.14.6,2.5.1,3aa654334e8936af40bebd60f383c570f615bebe,a9cfb0785948aa2a1b69722e2f968da289fbd0a1,gfortran,-O2,FORTNUM_NOT_IMPLEMENTED; tree growth/prediction has no resident CUDA kernel
