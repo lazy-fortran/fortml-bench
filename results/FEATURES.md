@@ -30,14 +30,14 @@ The recorded FortML rows all pass. The current gfortran CPU timings are:
 
 | workload / phase | seconds per operation | checked metric |
 |---|---:|---:|
-| MLP training / fit | 1.40e-3 | final MSE 1.5205011458254373e-3 |
-| basis pipeline / transform | 1.12e-5 | feature sum 2753.0921746559225 |
-| basis pipeline / JVP | 2.32e-5 | JVP sum 1231.6432747014742 |
-| basis pipeline / VJP | 1.19e-5 | parameter cotangent sum -5.287453498417015 |
-| decision stump / fit | 4.67e-5 | MSE 1.254599131397361e-2 |
-| decision stump / predict | 1.03e-7 | prediction sum 43.62121219974757 |
-| gradient boosting / fit | 7.50e-4 | MSE 6.647611998075403e-2 |
-| gradient boosting / predict | 1.77e-6 | prediction sum 43.62121219974761 |
+| MLP training / fit | 1.37587025e-3 | final MSE 1.5205011458254373e-3 |
+| basis pipeline / transform | 1.13705e-5 | feature sum 2753.0921746559225 |
+| basis pipeline / JVP | 2.346484375e-5 | JVP sum 1231.6432747014742 |
+| basis pipeline / VJP | 1.224746875e-5 | parameter cotangent sum -5.287453498417015 |
+| decision stump / fit | 4.7289125e-5 | MSE 1.254599131397361e-2 |
+| decision stump / predict | 1.04578125e-7 | prediction sum 43.62121219974757 |
+| gradient boosting / fit | 7.56505625e-4 | MSE 6.647611998075403e-2 |
+| gradient boosting / predict | 1.9615e-6 | prediction sum 43.62121219974761 |
 
 Timings are machine-specific and should only be compared after matching the
 compiler, flags, CPU affinity, precision, and repetition policy. The CSV

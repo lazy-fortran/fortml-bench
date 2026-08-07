@@ -131,8 +131,11 @@ a different workload, precision, device, or residency policy.
   transform, JVP, and VJP checks and timings.
 - [x] Add deterministic CART-stump and residual-stump boosting lanes with an
   exhaustive NumPy split oracle and matched scikit-learn depth-1 reference.
-- [ ] Add matched multinomial softmax regression and neural classifier lanes
-  after the FortML class-label, weighting, and metric contracts are complete.
+- [ ] Add matched multinomial softmax regression and neural classifier lanes.
+  FortML now has the softmax and multiclass MLP implementations (including
+  deterministic input-shape oracles), but this repository still needs the
+  matched probability/metric/timing record before the benchmark lane is
+  complete.
 - [ ] Add Bernoulli and multiclass GP classification with GPyTorch likelihood
   references and independent dense small-data oracles.
 - [ ] Add the full histogram/CART feature matrix: missing values, sample and
