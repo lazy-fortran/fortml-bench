@@ -51,6 +51,7 @@ Complete-call studies:
 - [GP classification and fitted preprocessing](CLASSIFICATION_EXTENSIONS.md)
 - [Binary GP likelihood value/JVP/VJP primitive](GP_LIKELIHOOD.md)
 - [Probability calibration](PROBABILITY_CALIBRATION.md)
+- [Multiclass softmax-temperature calibration](MULTICLASS_CALIBRATION.md)
 - [Monotonic XGBoost constraints](XGBOOST_MONOTONIC_CONSTRAINTS.md)
 - [Multinomial and neural classification](CLASSIFICATION_MODELS.md)
 - [Differentiable Multinomial Naive Bayes](MULTINOMIAL_NB.md)

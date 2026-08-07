@@ -143,6 +143,12 @@ a different workload, precision, device, or residency policy.
   oracle checks all 256 labels, predictions, and probability columns before
   retaining CPU timings in `results/probability_calibration.csv`; all three
   CUDA capability rows remain explicit refusals until a resident kernel exists.
+- [x] Add a multiclass softmax-temperature calibration lane with sorted integer
+  classes, stable complete probability/prediction arrays, fitted-temperature
+  agreement against an independent NumPy weighted-NLL Newton oracle, and an
+  explicit CUDA refusal. The raw record is
+  `results/multiclass_probability_calibration.csv`; Platt/isotonic multiclass
+  policies remain typed unsupported contracts.
 - [x] Add a deterministic MLP-training lane with an independent NumPy Adam
   oracle, full loss/prediction checks, and release-build fit timings.
 - [x] Add release-build momentum-SGD and Nesterov MLP-training workloads with

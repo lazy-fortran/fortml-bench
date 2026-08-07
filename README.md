@@ -490,6 +490,20 @@ See [`results/PROBABILITY_CALIBRATION.md`](results/PROBABILITY_CALIBRATION.md).
 CUDA capability rows are explicit refusals because no resident calibration
 kernel is linked.
 
+The multiclass calibration lane fits one positive softmax temperature on a
+192-row, three-class logit fixture. It checks sorted integer classes, every
+probability and prediction row, and the fitted temperature against an
+independent NumPy weighted softmax-NLL Newton oracle before retaining timing:
+
+```bash
+python -B scripts/bench_multiclass_probability_calibration.py \
+    --fortml ../fortml --output results/multiclass_probability_calibration.csv
+```
+
+See [`results/MULTICLASS_CALIBRATION.md`](results/MULTICLASS_CALIBRATION.md).
+The CUDA row remains an explicit refusal until a resident calibration kernel
+is linked.
+
 The composable physics-residual lane checks four weighted affine PINN-style
 terms plus an independent nonlinear reverse-over-forward HVP fixture. The
 FortML gate covers the FortOpt adapter, malformed-input refusals, the exact
