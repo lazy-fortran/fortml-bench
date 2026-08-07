@@ -387,6 +387,7 @@ def main() -> None:
         args.output.resolve(),
         (root / "results/classification_models.csv").resolve(),
         (root / "results/classification_extensions.csv").resolve(),
+        (root / "results/classification_workloads.csv").resolve(),
     )
     details = metadata(root, args.fortml.resolve(), ignored_outputs)
     rows = run(args.fortml.resolve(), root)

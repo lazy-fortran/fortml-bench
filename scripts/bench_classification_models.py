@@ -841,6 +841,7 @@ def main() -> None:
         args.output.resolve(),
         (root / "results/classification_models.csv").resolve(),
         (root / "results/classification_extensions.csv").resolve(),
+        (root / "results/classification_workloads.csv").resolve(),
     )
     details = metadata(root, fortml, ignored_outputs)
     rows = run_numpy_reference(x, labels, details)
