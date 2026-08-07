@@ -110,15 +110,18 @@ def run_gate(fortml: Path, script_name: str) -> tuple[str, str, float | None]:
     elapsed = time.perf_counter() - started
     output = (process.stdout + "\n" + process.stderr).strip()
     lowered = output.lower()
+    lines = [line.strip() for line in output.splitlines() if line.strip()]
     if process.returncode != 0:
-        return "failed", output[-500:] or "CUDA gate returned nonzero status", elapsed
+        return "failed", lines[-1] if lines else "CUDA gate returned nonzero status", elapsed
     if "skipped" in lowered or "unavailable" in lowered:
-        return "skipped", output[-500:] or "CUDA gate skipped", elapsed
+        skip_lines = [line for line in lines if "skip" in line.lower() or "unavailable" in line.lower()]
+        return "skipped", skip_lines[-1] if skip_lines else "CUDA gate skipped", elapsed
     if "pass" not in lowered:
-        return "failed", output[-500:] or "CUDA gate emitted no PASS marker", elapsed
+        return "failed", lines[-1] if lines else "CUDA gate emitted no PASS marker", elapsed
     match = re.search(r"max error ([0-9.+\-eE]+)", output)
     observed_error = float(match.group(1)) if match else None
-    return "pass", output[-500:] or "CUDA gate passed", elapsed
+    pass_lines = [line for line in lines if "pass" in line.lower()]
+    return "pass", pass_lines[-1] if pass_lines else "CUDA gate passed", elapsed
 
 
 def main() -> None:
