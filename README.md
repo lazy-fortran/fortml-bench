@@ -304,6 +304,19 @@ See [`results/RADIUS_NEIGHBORS.md`](results/RADIUS_NEIGHBORS.md). CUDA is an
 explicit unavailable capability row until a resident radius-search kernel is
 linked.
 
+The scalar radius-neighbor regression lane checks uniform or inverse-distance
+sample-weighted averaging, an explicit empty-neighborhood value, and all
+scalar predictions against an independent NumPy oracle:
+
+```bash
+.venv/bin/python -B scripts/bench_radius_neighbors_regression.py \
+    --fortml ../fortml --output results/radius_neighbors_regression.csv
+```
+
+See [`results/RADIUS_NEIGHBORS_REGRESSION.md`](results/RADIUS_NEIGHBORS_REGRESSION.md).
+CUDA remains an explicit unavailable capability row until a resident
+radius-search reduction is linked.
+
 The linear-margin lane checks weighted primal squared-hinge SVM fitting,
 arbitrary integer classes, labels, and signed decision margins against an
 independent NumPy/SciPy L-BFGS-B oracle:
