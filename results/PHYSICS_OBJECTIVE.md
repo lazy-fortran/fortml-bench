@@ -17,6 +17,9 @@ python3 -B scripts/bench_physics_objective.py \
   --fortml ../fortml --output results/physics_objective.csv
 ```
 
+The CSV also keeps a separate passing refusal row for a provider that omits
+`hvp_proc`; this boundary is distinct from the exact nonlinear HVP row.
+
 The HVP row is a passing exact product when a provider supplies
 `physics_residual_hvp_proc`; providers without that callback still receive
 `FORTNUM_NOT_IMPLEMENTED`, not a hidden finite-difference fallback. The

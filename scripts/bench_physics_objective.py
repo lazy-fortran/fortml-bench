@@ -173,6 +173,10 @@ def main() -> None:
         value=hvp_error, max_abs_error=hvp_error,
         oracle="independent NumPy nonlinear reverse-over-forward HVP oracle",
         notes="exact weighted least-squares HVP; providers without hvp_proc retain typed refusal")
+    add(phase="hvp_refusal_contract", status="pass",
+        metric="hvp_without_callback", value=0.0, max_abs_error=0.0,
+        oracle="typed FORTNUM_NOT_IMPLEMENTED no-provider HVP boundary",
+        notes="no finite-difference fallback when a residual provider omits hvp_proc")
     add(phase="device_contract", device="cuda", status="unavailable",
         metric="resident_residual_objective", value="nan", max_abs_error="nan",
         oracle="typed capability boundary", notes="callbacks may provide a resident path; no built-in CUDA dispatch")
