@@ -2,7 +2,7 @@
 """Correctness-gated derivative-observation GP query-product benchmark.
 
 The NumPy path independently assembles value/first/mixed covariance blocks
-from scalar periodic and rational-quadratic formulas. It then finite-differences
+from scalar periodic, rational-quadratic, and cosine formulas. It then finite-differences
 the complete posterior query to obtain an oracle for the exact FortML
 third-input products. CUDA is represented as an explicit typed refusal until a
 resident derivative-GP graph is available.
@@ -71,6 +71,8 @@ def scalar_kernel(a: np.ndarray, b: np.ndarray, name: str) -> float:
     squared = float(np.sum((a - b) ** 2))
     if name == "periodic":
         return 1.3 * np.exp(-2.0 * np.sin(np.pi * np.sqrt(squared) / 2.1) ** 2 / 0.8**2)
+    if name == "cosine":
+        return 1.3 * np.cos(np.sqrt(squared) / 0.8)
     denominator = 1.0 + squared / (2.0 * 1.7 * 0.8**2)
     return 1.3 * denominator ** (-1.7)
 
@@ -94,6 +96,18 @@ def scalar_partials(a: np.ndarray, b: np.ndarray, name: str) -> tuple[float, flo
         value = 1.3 * np.exp(-2.0 * t / lengthscale**2)
         bscale = 2.0 / lengthscale**2
         return value, -bscale * t1 * value, (bscale**2 * t1**2 - bscale * t2) * value
+    if name == "cosine":
+        lengthscale = 0.8
+        radius = np.sqrt(squared)
+        if radius <= 1.0e-8:
+            return 1.3, -1.3 / (2.0 * lengthscale**2), 1.3 / (12.0 * lengthscale**4)
+        z = radius / lengthscale
+        sine = np.sin(z)
+        cosine = np.cos(z)
+        value = 1.3 * cosine
+        p = -1.3 * sine / (2.0 * lengthscale * radius)
+        p2 = 1.3 * (sine - z * cosine) / (4.0 * lengthscale**4 * z**3)
+        return value, p, p2
     alpha, lengthscale = 1.7, 0.8
     denominator = 1.0 + squared / (2.0 * alpha * lengthscale**2)
     value = 1.3 * denominator ** (-alpha)
@@ -195,7 +209,7 @@ def main() -> None:
         "fortml_revision": revision(fortml), "benchmark_revision": revision(root, (args.output,)),
         "compiler": os.environ.get("FO_FC", "gfortran"), "flags": "-O3",
     }
-    expected = {name: oracle(name) for name in ("periodic", "rational_quadratic")}
+    expected = {name: oracle(name) for name in ("periodic", "rational_quadratic", "cosine")}
 
     def row(**values: object) -> dict[str, str]:
         result = {field: "" for field in FIELDS}
