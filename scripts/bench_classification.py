@@ -105,9 +105,7 @@ def checked_metrics(
     if not np.isin(predicted, CLASS_LABELS).all():
         raise RuntimeError("classification predictions contain an unknown label")
 
-    normalization_error = float(
-        np.max(np.abs(probabilities.sum(axis=1) - 1.0))
-    )
+    normalization_error = float(np.max(np.abs(probabilities.sum(axis=1) - 1.0)))
     target_columns = (labels == CLASS_LABELS[1]).astype(np.int64)
     selected = probabilities[np.arange(N_SAMPLES), target_columns]
     selected = np.clip(selected, np.finfo(np.float64).eps, 1.0)
