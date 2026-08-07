@@ -118,7 +118,14 @@ def main() -> None:
     root = Path(__file__).resolve().parents[1]
     fortml = args.fortml.resolve()
     output_path = args.output if args.output.is_absolute() else root / args.output
-    ignored_outputs = (output_path.resolve(),)
+    # Sibling release lanes may leave their generated CSVs in the shared
+    # results directory.  They are outputs, not source changes, and must not
+    # turn this lane's provenance into a misleading ``+dirty`` revision.
+    ignored_outputs = (
+        output_path.resolve(),
+        root / "results" / "extra_trees.csv",
+        root / "results" / "mlp_grouped_training.csv",
+    )
     x, query = fixture()
     expected_probabilities, expected_labels = oracle_predict(query)
     if not np.array_equal(expected_labels, EXPECTED_QUERY):
