@@ -101,6 +101,22 @@ def rmsprop_oracle() -> tuple[float, float]:
     return norm, checksum
 
 
+def mse_oracle() -> float:
+    """Return the weighted multi-output MSE used by the CUDA metric gate."""
+    target = np.reshape(np.array([
+        1.0, -2.0, 0.5, 4.0, 2.0, 1.0, -1.5, 3.0,
+    ], dtype=np.float64), (4, 2), order="F")
+    prediction = np.reshape(np.array([
+        0.0, -1.0, 1.5, 2.0, 1.0, 2.0, -0.5, 4.0,
+    ], dtype=np.float64), (4, 2), order="F")
+    weights = np.array([1.0, 2.0, 0.5, 3.0], dtype=np.float64)
+    value = np.sum(weights[:, None] * (target - prediction) ** 2)
+    value /= weights.sum() * target.shape[1]
+    if not np.isfinite(value):
+        raise RuntimeError("CUDA MSE independent oracle is nonfinite")
+    return float(value)
+
+
 def run_gate(fortml: Path, script_name: str) -> tuple[str, str, float | None]:
     script = fortml / "test" / script_name
     if not script.is_file():
@@ -135,6 +151,7 @@ def main() -> None:
     details = metadata(root, fortml, output)
     expected_knn, knn_checksum = knn_oracle()
     rmsprop_norm, rmsprop_checksum = rmsprop_oracle()
+    mse_value = mse_oracle()
     rows: list[dict[str, Any]] = []
 
     status, notes, elapsed = run_gate(fortml, "run_knn_classifier_cuda.sh")
@@ -158,6 +175,13 @@ def main() -> None:
         max_abs_error=observed_error if observed_error is not None else (0.0 if status == "pass" else ""),
         oracle="independent NumPy centered RMSprop state recurrence",
         notes=f"expected state checksum={rmsprop_checksum:.16e}; native gate checks five resident steps; {notes}"))
+
+    status, notes, elapsed = run_gate(fortml, "run_cuda_metric.sh")
+    rows.append(base(
+        details, workload="cuda_weighted_mse_reduction", phase="metric", status=status,
+        seconds_per_operation="", metric="weighted_mean_squared_error", value=mse_value,
+        max_abs_error="", oracle="independent NumPy weighted multi-output MSE",
+        notes=f"native gate checks transfer-inclusive CUDA block reduction; expected value={mse_value:.16e}; {notes}"))
 
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:

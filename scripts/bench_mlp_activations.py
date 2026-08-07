@@ -36,13 +36,19 @@ FIELDS = (
 )
 
 
-def revision(repository: Path) -> str:
+def revision(repository: Path, ignored: tuple[Path, ...] = ()) -> str:
     head = subprocess.check_output(
         ["git", "-C", str(repository), "rev-parse", "HEAD"], text=True
     ).strip()
+    ignored_paths = {path.resolve() for path in ignored}
     dirty = subprocess.check_output(
         ["git", "-C", str(repository), "status", "--porcelain"], text=True
-    ).strip()
+    ).splitlines()
+    dirty = [
+        line for line in dirty
+        if (repository / line[3:].split(" -> ")[-1].strip()).resolve()
+        not in ignored_paths
+    ]
     return head + ("+dirty" if dirty else "")
 
 
@@ -137,7 +143,7 @@ def run(args: argparse.Namespace) -> list[dict[str, Any]]:
         "python_version": platform.python_version(),
         "numpy_version": np.__version__,
         "fortml_revision": revision(fortml),
-        "benchmark_revision": revision(root),
+        "benchmark_revision": revision(root, (output.resolve(),)),
         "compiler": os.environ.get("FO_FC", "gfortran"),
         "flags": "-O3",
     }
