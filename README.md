@@ -90,6 +90,18 @@ confusion-matrix calculations cross-checked by `sklearn.metrics` before timing:
 The workload definition and validity boundary are in
 [`results/CLASSIFICATION.md`](results/CLASSIFICATION.md).
 
+The extended classification lane checks fitted standard/min-max scalers and
+binary Laplace GP logistic/probit inference against independent NumPy solves:
+
+```bash
+.venv/bin/python -B scripts/bench_classification_extensions.py \
+  --fortml ../fortml --output results/classification_extensions.csv
+```
+
+See [`results/CLASSIFICATION_EXTENSIONS.md`](results/CLASSIFICATION_EXTENSIONS.md).
+It is deliberately a binary Laplace workload. Multiclass and variational GP
+classification remain separate benchmark contracts.
+
 The MLP training, composable polynomial/Fourier basis pipeline, deterministic
 decision stump, and residual-stump gradient-boosting lanes are in
 [`results/FEATURES.md`](results/FEATURES.md). Run them with:

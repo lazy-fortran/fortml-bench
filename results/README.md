@@ -4,10 +4,11 @@ Complete-call studies:
 
 - [Exact GP and MLP workloads](MODEL_WORKLOADS.md)
 - [MLP training, basis pipeline, and tree workloads](FEATURES.md)
+- [GP classification and fitted preprocessing](CLASSIFICATION_EXTENSIONS.md)
 - [Stochastic, derivative, multi-output, and variational GP features](GP_FEATURES.md)
-- [Scalable-GP review comparison](SCALABLE_GP.md)
+- [Large-GP review comparison](SCALABLE_GP.md)
 
-The current scalable addenda are
+The current large-GP addenda are
 [`scalable_gp_grbcm_corrected.csv`](scalable_gp_grbcm_corrected.csv),
 [`scalable_gp_clustered.csv`](scalable_gp_clustered.csv), and
 [`scalable_gp_dimension_current.csv`](scalable_gp_dimension_current.csv), each
