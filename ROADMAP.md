@@ -183,6 +183,17 @@ a different workload, precision, device, or residency policy.
   scikit-learn context row, and complete FortML release-app output arrays. The
   raw record is `results/multinomial_naive_bayes.csv` and the protocol is
   documented in `results/MULTINOMIAL_NB.md`.
+- [x] Add a differentiable Complement Naive Bayes lane with independent
+  complement-count, positive-weight, log-softmax, prediction, and input-JVP
+  oracles.  The scikit-learn multiclass prior-intercept difference is retained
+  as contextual evidence, and missing FortML targets remain explicit refusal
+  rows.  The raw record is `results/complement_naive_bayes.csv` and the
+  protocol is documented in `results/COMPLEMENT_NB.md`.
+- [x] Add an integer one-hot encoder lane with independent sorted-category,
+  packed-offset, missing/unknown-policy, and complete dense-transform checks.
+  Categorical JVP/VJP are explicit refusals because integer categories have no
+  canonical tangent space.  The raw record is `results/one_hot_encoder.csv`
+  and the protocol is documented in `results/ONE_HOT_ENCODER.md`.
 - [ ] Add variational GP classification with GPyTorch likelihood references and
   independent dense small-data oracles. Binary and one-vs-rest Laplace lanes
   are complete. Variational inference and calibrated likelihood comparisons
