@@ -79,7 +79,8 @@ def main() -> None:
     app_oracle_error = None
     rows: list[dict[str, str]] = []
     fortml_rev = revision(fortml)
-    bench_rev = revision(root, (args.output,))
+    bench_rev = revision(root, tuple(root / "results" / name for name in (
+        "xgboost_poisson.csv", "hyperparameter_search.csv")))
 
     def base_row(**kwargs: object) -> dict[str, str]:
         row = {field: "" for field in FIELDS}

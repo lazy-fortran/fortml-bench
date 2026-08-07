@@ -82,7 +82,8 @@ def main() -> None:
         raise RuntimeError("independent grid oracle is invalid")
     rows: list[dict[str, str]] = []
     fortml_rev = revision(fortml)
-    bench_rev = revision(root, (args.output,))
+    bench_rev = revision(root, tuple(root / "results" / name for name in (
+        "xgboost_poisson.csv", "hyperparameter_search.csv")))
 
     def row(**kwargs: object) -> dict[str, str]:
         output = {field: "" for field in FIELDS}
