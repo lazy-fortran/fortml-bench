@@ -729,6 +729,18 @@ See [`results/XGBOOST_EARLY_STOPPING.md`](results/XGBOOST_EARLY_STOPPING.md).
 The lane is CPU correctness evidence; tree CUDA remains an explicit typed
 unavailable contract.
 
+The sampling lane checks deterministic without-replacement row and feature
+subsets, exact depth-one Newton gains, and predictions against an independent
+NumPy oracle. CUDA remains an explicit typed refusal until resident tree
+kernels are linked:
+
+```bash
+python -B scripts/bench_xgboost_sampling.py \
+  --fortml ../fortml --output results/xgboost_sampling.csv
+```
+
+See [`results/XGBOOST_SAMPLING.md`](results/XGBOOST_SAMPLING.md).
+
 The robust XGBoost lane independently reconstructs weighted one-tree Huber and
 pinball/quantile objectives, including base margins and leaf corrections:
 
