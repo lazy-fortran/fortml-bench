@@ -763,6 +763,18 @@ JVP against an independent central-finite-difference NumPy oracle:
 
 See [`results/SGD_MOMENTUM_HYPERGRADIENT.md`](results/SGD_MOMENTUM_HYPERGRADIENT.md).
 
+The deterministic mini-batch SGD hypergradient lane records a private seeded
+batch cursor and checks validation MSE, both packed `[log_learning_rate,
+log_l2]` gradient components, and a directional JVP against an independent
+NumPy central-difference trajectory before retaining the FortML timing:
+
+```bash
+.venv/bin/python -B scripts/bench_mlp_minibatch_hypergradient.py \
+    --fortml ../fortml --output results/mlp_minibatch_hypergradient.csv
+```
+
+See [`results/MLP_MINIBATCH_HYPERGRADIENT.md`](results/MLP_MINIBATCH_HYPERGRADIENT.md).
+
 The resident CUDA contract lane independently checks the native kNN prediction
 plan, the resident dense-affine inference primitive (all eight MLP activations
 and their forward-mode JVP/reverse-mode VJP), its single-layer tanh MSE update,
