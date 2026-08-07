@@ -89,6 +89,19 @@ python -B scripts/bench_gp_mean.py \
 
 See [`results/GP_MEAN.md`](results/GP_MEAN.md).
 
+The ARD-GP lane checks an anisotropic RBF covariance with one length scale per
+feature, input gradients and mixed Hessians, analytic parameter JVP/VJP/HVP
+products, and exact-GP posterior and hyperparameter-gradient products against
+an independent NumPy oracle. Exact-GP ARD CUDA remains an explicit typed
+unavailable row until a resident anisotropic covariance kernel is linked:
+
+```bash
+python -B scripts/bench_gp_ard.py \
+  --fortml ../fortml --output results/gp_ard.csv
+```
+
+See [`results/GP_ARD.md`](results/GP_ARD.md).
+
 The kernel-catalog lane checks periodic, rational-quadratic, cosine, and
 polynomial covariance leaves, their input derivatives, and logarithmic
 parameter JVP/VJP/HVP products against independent NumPy formulas. It records
