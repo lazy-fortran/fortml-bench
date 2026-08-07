@@ -164,6 +164,10 @@ a different workload, precision, device, or residency policy.
   trainer, the logistic objective, and the classifier release app. A missing
   FortML device path is never replaced with a relabeled CPU timing. Resident
   PyTorch CUDA rows remain independent evidence.
+- [ ] Add resident CUDA/OpenACC correctness-gated rows for kNN search, RMSprop
+  optimizer/trainer state, staged XGBoost diagnostics, and GP classification
+  hyperparameter training. Until those rows pass, their CPU timings remain
+  provisional and device refusals must stay explicit.
 - [x] Add fitted standard/min-max scaler, binary Laplace GP logistic/probit,
   and one-vs-rest multiclass Laplace-GP lanes with independent NumPy transform
   and Newton posterior oracles. The raw record is
