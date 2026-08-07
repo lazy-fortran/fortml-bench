@@ -217,10 +217,10 @@ capability rows are explicit refusals until a resident multi-head kernel is
 linked; host timings are never relabeled as accelerator evidence.
 
 The multilabel metrics lane checks micro, macro, and samples precision, recall,
-F1, Jaccard, and Hamming loss, together with `>=` probability thresholding,
-against independent NumPy TP/FP/FN and intersection/union/error oracles. It
-records the typed CUDA refusal until resident multilabel reduction kernels are
-available:
+F1, weighted F-beta (`beta=2`), Jaccard, and Hamming loss, together with `>=`
+probability thresholding, against independent NumPy TP/FP/FN and
+intersection/union/error oracles. It records the typed CUDA refusal until
+resident multilabel reduction kernels are available:
 
 ```bash
 python -B scripts/bench_multilabel_metrics.py \

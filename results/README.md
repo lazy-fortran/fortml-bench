@@ -21,6 +21,7 @@ Complete-call studies:
 - [RMSprop optimizer and MLP training](RMSPROP.md)
 - [RMSprop trajectory hypergradients](RMSPROP_HYPERGRADIENT.md)
 - [Resident CUDA correctness contracts](DEVICE_CONTRACTS.md)
+- [Grouped MLP value, HVP, and bounded L-BFGS-B](MLP_GROUPED_TRAINING.md)
 - [Physics-informed and Hamiltonian model evidence](PHYSICS_MODELS.md)
 - [Resident CUDA AdamW state gate](CUDA_ADAMW.md)
 - [Deterministic k-nearest-neighbor classification](KNN.md)
