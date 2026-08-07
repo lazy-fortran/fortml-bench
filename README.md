@@ -77,6 +77,18 @@ boundaries, plots, and the recorded machine results are in
 [`results/MODEL_WORKLOADS.md`](results/MODEL_WORKLOADS.md) and
 [`results/GP_FEATURES.md`](results/GP_FEATURES.md).
 
+The exact-GP mean lane checks trainable constant and intercept-plus-linear
+means, packed coefficients, posterior predictions, log marginal likelihood,
+and analytic mean hypergradients/HVPs against an independent NumPy covariance
+oracle. Exact-GP CUDA remains an explicit typed unavailable row:
+
+```bash
+python -B scripts/bench_gp_mean.py \
+  --fortml ../fortml --output results/gp_mean.csv
+```
+
+See [`results/GP_MEAN.md`](results/GP_MEAN.md).
+
 The kernel-catalog lane checks periodic, rational-quadratic, cosine, and
 polynomial covariance leaves, their input derivatives, and logarithmic
 parameter JVP/VJP/HVP products against independent NumPy formulas. It records
