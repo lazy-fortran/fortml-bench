@@ -108,13 +108,26 @@ def main() -> None:
     seen = set()
     for line in lines:
         fields = line.split(",")
-        if fields[0] not in {"grid", "random", "lbfgsb"}:
+        if fields[0] not in {"grid", "random", "lbfgsb", "lbfgsb_multistart"}:
             continue
-        evaluations = int(fields[1])
-        best_value = float(fields[2])
-        seconds = float(fields[3])
         phase = fields[0]
         seen.add(phase)
+        if phase == "lbfgsb_multistart":
+            starts = int(fields[1])
+            evaluations = int(fields[2])
+            best_value = float(fields[3])
+            seconds = float(fields[4])
+            if starts != 8 or evaluations < starts or not np.isfinite(best_value):
+                raise RuntimeError(
+                    "multistart contract mismatch: "
+                    f"starts={starts}, evaluations={evaluations}, value={best_value}"
+                )
+            error = abs(best_value)
+            notes = f"starts={starts}; seed=20260807; best converged state"
+        else:
+            evaluations = int(fields[1])
+            best_value = float(fields[2])
+            seconds = float(fields[3])
         if phase == "grid":
             error = abs(best_value - grid_value)
             if evaluations != grid_count or error > 1.0e-13:
@@ -127,7 +140,7 @@ def main() -> None:
             if error > 1.0e-10:
                 raise RuntimeError(f"L-BFGS-B quadratic oracle mismatch: {error}")
             notes = f"analytic_optimum={optimum.tolist()}"
-        else:
+        elif phase == "random":
             error = 0.0 if np.isfinite(best_value) and evaluations == 128 else np.inf
             if not np.isfinite(best_value) or evaluations != 128:
                 raise RuntimeError(
@@ -137,7 +150,7 @@ def main() -> None:
         rows.append(row(phase=phase, evaluations=evaluations,
                         seconds_per_operation=seconds, metric="best_value",
                         value=best_value, max_abs_error=error, notes=notes))
-    if seen != {"grid", "random", "lbfgsb"}:
+    if seen != {"grid", "random", "lbfgsb", "lbfgsb_multistart"}:
         raise RuntimeError(f"release app rows missing: {seen}")
     rows.append(row(phase="search", device="cuda", status="unavailable",
                     evaluations=0, seconds_per_operation=0.0, metric="best_value",
