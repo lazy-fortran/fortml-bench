@@ -36,6 +36,7 @@ Complete-call studies:
 - [Weighted softmax training objective and HVP](../README.md#weighted-softmax-training-lane)
 - [GP classification hyperparameter training](GP_CLASSIFICATION_TRAINING.md)
 - [Exact-GP seeded hyperparameter multistart](GP_HYPERPARAMETER_TRAINING.md)
+- [Trainable exact-GP constant and linear means](GP_MEAN.md)
 - [GP classification and fitted preprocessing](CLASSIFICATION_EXTENSIONS.md)
 - [Binary GP likelihood value/JVP/VJP primitive](GP_LIKELIHOOD.md)
 - [Probability calibration](PROBABILITY_CALIBRATION.md)
