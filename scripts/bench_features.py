@@ -32,6 +32,8 @@ MLP_LR = 0.01
 MLP_L2 = 1.0e-4
 BASIS_N = 256
 BASIS_D = 2
+BASIS_LINEAR_N = 128
+BASIS_LINEAR_FREQUENCY = 0.7
 TREE_N = 128
 TREE_D = 2
 TREE_ESTIMATORS = 16
@@ -267,6 +269,37 @@ def basis_oracle() -> dict[str, float]:
         "jvp_sum": float(np.sum(phi_dot)),
         "theta_bar_sum": float(np.sum(theta_bar)),
         "x_bar_sum": float(np.sum(x_bar)),
+    }
+
+
+def basis_linear_oracle() -> dict[str, float]:
+    """Check the fitted Fourier basis plus linear-regression composition."""
+
+    index = np.arange(1, BASIS_LINEAR_N + 1, dtype=np.float64)
+    x = -1.0 + 2.0 * (index - 1.0) / float(BASIS_LINEAR_N - 1)
+    x_dot = np.cos(0.013 * index)
+    frequency = BASIS_LINEAR_FREQUENCY
+    target = 1.2 + 2.0 * np.sin(frequency * x) - 0.3 * np.cos(frequency * x)
+    design = np.column_stack(
+        (np.ones(BASIS_LINEAR_N), np.sin(frequency * x), np.cos(frequency * x))
+    )
+    coefficients, _residuals, _rank, _singular_values = np.linalg.lstsq(
+        design, target, rcond=None
+    )
+    prediction = design @ coefficients
+    theta_dot = np.full(4, 0.04)
+    argument_dot = frequency * (x_dot + x * theta_dot[0])
+    prediction_dot = (
+        theta_dot[1]
+        + theta_dot[2] * np.sin(frequency * x)
+        + theta_dot[3] * np.cos(frequency * x)
+        + coefficients[1] * np.cos(frequency * x) * argument_dot
+        - coefficients[2] * np.sin(frequency * x) * argument_dot
+    )
+    return {
+        "mse": float(np.mean((prediction - target) ** 2)),
+        "prediction_sum": float(np.sum(prediction)),
+        "jvp_sum": float(np.sum(prediction_dot)),
     }
 
 
@@ -514,6 +547,7 @@ def parse_fortran(stdout: str) -> dict[str, list[list[str]]]:
             "basis_transform",
             "basis_jvp",
             "basis_vjp",
+            "basis_linear",
             "stump",
             "cart",
             "cart_classifier",
@@ -527,6 +561,7 @@ def parse_fortran(stdout: str) -> dict[str, list[list[str]]]:
         "basis_transform",
         "basis_jvp",
         "basis_vjp",
+        "basis_linear",
         "stump",
         "cart",
         "cart_classifier",
@@ -597,6 +632,21 @@ def run_fortran(
             error = abs(actual - expected)
         if error > 5.0e-10:
             raise RuntimeError(f"FortML {key} oracle mismatch: {error:.3e}")
+
+    basis_linear = basis_linear_oracle()
+    basis_linear_row = parsed["basis_linear"][0]
+    basis_linear_values = {
+        "mse": float(basis_linear_row[6]),
+        "prediction_sum": float(basis_linear_row[7]),
+        "jvp_sum": float(basis_linear_row[8]),
+    }
+    basis_linear_error = max(
+        abs(basis_linear_values[key] - basis_linear[key]) for key in basis_linear
+    )
+    if basis_linear_error > 5.0e-10:
+        raise RuntimeError(
+            f"FortML basis-linear oracle mismatch: {basis_linear_error:.3e}"
+        )
 
     tree = boosting_oracle()
     stump_row = parsed["stump"][0]
@@ -703,6 +753,59 @@ def run_fortran(
             oracle="independent NumPy Adam/MSE implementation",
             notes=f"{MLP_EPOCHS} full-batch epochs; process wall={process_seconds:.6e}s",
         )
+    )
+    records.extend(
+        [
+            row(
+                metadata,
+                workload="basis_linear_regression",
+                phase="fit",
+                backend="fortml",
+                status="pass",
+                n_samples=BASIS_LINEAR_N,
+                n_features=1,
+                repetitions=8,
+                seconds_per_operation=float(basis_linear_row[3]),
+                metric="mse",
+                value=basis_linear_values["mse"],
+                mse=basis_linear_values["mse"],
+                max_abs_error=basis_linear_error,
+                oracle="independent NumPy Fourier design least-squares solve",
+                notes="one fitted Fourier frequency plus linear regression",
+            ),
+            row(
+                metadata,
+                workload="basis_linear_regression",
+                phase="predict",
+                backend="fortml",
+                status="pass",
+                n_samples=BASIS_LINEAR_N,
+                n_features=1,
+                repetitions=64,
+                seconds_per_operation=float(basis_linear_row[4]),
+                metric="prediction_sum",
+                value=basis_linear_values["prediction_sum"],
+                max_abs_error=basis_linear_error,
+                oracle="independent NumPy Fourier design least-squares solve",
+                notes="packed basis and coefficient parameters",
+            ),
+            row(
+                metadata,
+                workload="basis_linear_regression",
+                phase="jvp",
+                backend="fortml",
+                status="pass",
+                n_samples=BASIS_LINEAR_N,
+                n_features=1,
+                repetitions=64,
+                seconds_per_operation=float(basis_linear_row[5]),
+                metric="jvp_sum",
+                value=basis_linear_values["jvp_sum"],
+                max_abs_error=basis_linear_error,
+                oracle="independent NumPy chained Fourier/linear directional derivative",
+                notes="frequency, coefficients, and inputs vary together",
+            ),
+        ]
     )
     records.append(
         row(
