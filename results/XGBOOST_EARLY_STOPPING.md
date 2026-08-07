@@ -29,6 +29,6 @@ python -B scripts/bench_xgboost_early_stopping.py \
   --fortml ../fortml --output results/XGBOOST_EARLY_STOPPING.md
 ```
 
-FortML revision: `d9d09e52737defc4642b46a2ef3da1602361909b`
-Benchmark revision: `e7dc1e393c48b99281d20b273e07796e6b50e75a`
+FortML revision: `9d99de6d97569df5ae3baefa744856de6ae18fe6`
+Benchmark revision: `7bcec1ee667c52d983e893c825a82211520f0842`
 Python 3.14.6, NumPy 2.5.1
