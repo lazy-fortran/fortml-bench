@@ -32,13 +32,19 @@ def inputs() -> tuple[np.ndarray, np.ndarray]:
     return x, labels
 
 
-def git_revision(repository: Path) -> str:
+def git_revision(repository: Path, ignored_paths: tuple[Path, ...] = ()) -> str:
     revision = subprocess.check_output(
         ["git", "-C", str(repository), "rev-parse", "HEAD"], text=True
     ).strip()
-    dirty = subprocess.check_output(
+    status = subprocess.check_output(
         ["git", "-C", str(repository), "status", "--porcelain"], text=True
-    ).strip()
+    ).splitlines()
+    ignored = {path.resolve() for path in ignored_paths}
+    dirty = []
+    for line in status:
+        path_text = line[3:].split(" -> ")[-1].strip()
+        if (repository / path_text).resolve() not in ignored:
+            dirty.append(line)
     return revision + ("+dirty" if dirty else "")
 
 
@@ -267,10 +273,11 @@ def main() -> None:
     x, labels = inputs()
     rows = run_sklearn(x, labels)
     rows.extend(run_fortran(args.fortml.resolve()))
+    output_path = args.output.resolve()
     metadata = {
         "python_version": platform.python_version(),
         "numpy_version": np.__version__,
-        "benchmark_revision": git_revision(Path.cwd()),
+        "benchmark_revision": git_revision(Path.cwd(), (output_path,)),
         "fortml_revision": git_revision(args.fortml.resolve()),
     }
     try:
