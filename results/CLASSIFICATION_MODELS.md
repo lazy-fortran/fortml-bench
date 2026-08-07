@@ -30,9 +30,9 @@ The current CSV records four NumPy-oracle rows, four scikit-learn context rows,
 four FortML passes, and two unavailable PyTorch rows. The NumPy and FortML
 references pass with softmax accuracy `0.53125` and MLP accuracy `0.640625`.
 The FortML maximum probability error is `2.46e-6` for softmax and
-`2.45e-15` for the MLP. The recorded FortML fit times are `9.75e-4` seconds
-for softmax and `2.49e-2` seconds for the MLP. All probability normalization
-errors are at most `2.22e-16`. The scikit-learn rows use multinomial `lbfgs`
+`2.45e-15` for the MLP. All probability normalization errors are at most
+`2.22e-16`. Fit and prediction timing fields remain in the raw CSV. The
+scikit-learn rows use multinomial `lbfgs`
 and a tanh
 `MLPClassifier` with matched exposed settings.  They are contextual timings,
 not a claim that optimizer stopping or regularization conventions are
