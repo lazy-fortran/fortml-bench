@@ -50,25 +50,25 @@ The recorded FortML rows all pass. The current gfortran CPU timings are:
 
 | workload / phase | seconds per operation | checked metric |
 |---|---:|---:|
-| MLP training / fit | 1.3619365e-3 | final MSE 1.5205011458254412e-3 |
-| basis-linear / fit | 1.2645125e-5 | MSE 3.4915906185525344e-31 |
-| basis-linear / predict | 1.065125e-6 | prediction sum 118.30705401978305 |
-| basis-linear / JVP | 2.392171875e-6 | JVP sum 105.28373944064631 |
-| GaussianNB / fit | 6.38575e-6 | log-probability sum -9.813379464436336e5 |
-| GaussianNB / predict | 1.648934375e-5 | log-probability sum -9.813379464436336e5 |
-| GaussianNB / JVP | 2.6518859375e-5 | JVP sum 1.254372277354169e3 |
-| basis pipeline / transform | 1.000071875e-5 | feature sum 2753.0921746559225 |
-| basis pipeline / JVP | 2.124284375e-5 | JVP sum 1231.6432747014742 |
-| basis pipeline / VJP | 1.098759375e-5 | parameter cotangent sum -5.287453498417015 |
-| CART regression / fit | 1.08244e-4 | MSE 4.564795134272737e-4 |
-| CART regression / predict | 6.8128125e-7 | prediction sum 43.62121219974771 |
-| CART classification / fit | 1.18178875e-4 | accuracy 1.0 |
-| CART classification / predict | 7.124375e-7 | probability sum 128.0 |
-| regression metrics / aggregate | 1.93990625e-6 | MSE 3.6625981037084515e-3 |
-| decision stump / fit | 4.3969e-5 | MSE 1.254599131397361e-2 |
-| decision stump / predict | 2.06015625e-7 | prediction sum 43.62121219974757 |
-| gradient boosting / fit | 7.07493125e-4 | MSE 6.647611998075403e-2 |
-| gradient boosting / predict | 3.125265625e-6 | prediction sum 43.62121219974761 |
+| MLP training / fit | 1.250303e-3 | final MSE 1.5205011458254412e-3 |
+| basis-linear / fit | 1.286175e-5 | MSE 3.4915906185525344e-31 |
+| basis-linear / predict | 1.071875e-6 | prediction sum 118.30705401978305 |
+| basis-linear / JVP | 2.435984375e-6 | JVP sum 105.28373944064631 |
+| GaussianNB / fit | 6.480875e-6 | log-probability sum -9.813379464436336e5 |
+| GaussianNB / predict | 1.5599390625e-5 | log-probability sum -9.813379464436336e5 |
+| GaussianNB / JVP | 2.47795e-5 | JVP sum 1.254372277354169e3 |
+| basis pipeline / transform | 1.03783125e-5 | feature sum 2753.0921746559225 |
+| basis pipeline / JVP | 2.17425e-5 | JVP sum 1231.6432747014742 |
+| basis pipeline / VJP | 1.1352625e-5 | parameter cotangent sum -5.287453498417015 |
+| CART regression / fit | 1.08389125e-4 | MSE 4.564795134272737e-4 |
+| CART regression / predict | 6.77375e-7 | prediction sum 43.62121219974771 |
+| CART classification / fit | 1.18467e-4 | accuracy 1.0 |
+| CART classification / predict | 7.08515625e-7 | probability sum 128.0 |
+| regression metrics / aggregate | 1.931140625e-6 | MSE 3.6625981037084515e-3 |
+| decision stump / fit | 4.383e-5 | MSE 1.254599131397361e-2 |
+| decision stump / predict | 2.08046875e-7 | prediction sum 43.62121219974757 |
+| gradient boosting / fit | 7.0709725e-4 | MSE 6.647611998075403e-2 |
+| gradient boosting / predict | 3.03196875e-6 | prediction sum 43.62121219974761 |
 
 The raw CSV also carries explicit FortML CUDA capability-boundary rows for
 GaussianNB (fit, predict, and input JVP), the MLP trainer (fit), and the
