@@ -505,6 +505,18 @@ See [`results/PHYSICS_OBJECTIVE.md`](results/PHYSICS_OBJECTIVE.md). The
 objective is callback-based and has no built-in resident CUDA dispatch, so
 CUDA remains an explicit capability row until a resident adapter is linked.
 
+The bounded PINN adapter lane wraps the same four-term objective and checks an
+independent manufactured affine solution, nonlinear exact HVP, bounded
+FortOpt L-BFGS-B fit, and typed CUDA refusal:
+
+```bash
+python3 -B scripts/bench_pinn.py \
+    --fortml ../fortml --output results/pinn.csv
+```
+
+See [`results/PINN.md`](results/PINN.md). The CPU result is a correctness
+gate, not a resident GPU performance claim.
+
 The matched multinomial softmax and multiclass neural-classifier lane uses an
 independent NumPy damped-Newton/Adam oracle, scikit-learn and optional resident
 PyTorch context rows, and an explicit FortML app protocol. Missing FortML

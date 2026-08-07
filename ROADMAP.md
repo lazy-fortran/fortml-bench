@@ -297,6 +297,10 @@ a different workload, precision, device, or residency policy.
   with independent value/gradient/JVP/VJP products; providers without an HVP
   callback retain the typed refusal, and the callback-based CUDA boundary
   remains explicit in `results/physics_objective.csv`.
+- [x] Add the bounded PINN training-adapter lane. The independent
+  manufactured four-slot fixture checks value/gradient/JVP/VJP, nonlinear HVP,
+  FortOpt L-BFGS-B fitting, malformed shapes, and typed CUDA refusal in
+  `results/pinn.csv`.
 - [ ] Add resident CUDA/OpenACC timing rows for kNN search, RMSprop
   optimizer/trainer state, AdamW trainer state, staged XGBoost diagnostics, and GP classification
   hyperparameter training. Native CUDA kNN and a direct RMSprop state-kernel
