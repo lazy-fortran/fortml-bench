@@ -16,6 +16,13 @@ timing is retained. Missing optional packages and release targets are written
 as explicit refusal rows, and a FortML pass requires complete probabilities
 and labels in addition to a successful process exit.
 
+The relaxed Bernoulli Naive Bayes record applies the same gate to a direct
+NumPy Bernoulli likelihood, stable log-softmax, and analytic input JVP.  Its
+scikit-learn context uses `binarize=None` so the relaxed `[0.1,0.9]` fixture is
+not silently thresholded.  The FortML classifier source is pinned separately
+from the release-app target: until that target is present, the raw record
+retains explicit `unavailable` rows and makes no timing or device claim.
+
 The KeOps and GPyTorch adapters follow their public PyTorch interfaces. The
 Fortran adapter invokes the pinned `fortml` benchmark entry point and records
 the source revision it used. No competitor source is linked into the MIT

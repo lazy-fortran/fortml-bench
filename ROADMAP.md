@@ -158,6 +158,11 @@ a different workload, precision, device, or residency policy.
   release-app timing protocol documented in
   `results/CLASSIFICATION_MODELS.md`. The current raw record is
   `results/classification_models.csv`.
+- [x] Add a relaxed Bernoulli Naive Bayes lane with an independent NumPy
+  likelihood/log-softmax/input-JVP oracle, scikit-learn context rows, and an
+  explicit FortML release-app refusal until `fortml_bench_bernoulli_nb` is
+  available. The raw record is `results/bernoulli_naive_bayes.csv` and the
+  protocol is documented in `results/BERNOULLI_NB.md`.
 - [ ] Add variational GP classification with GPyTorch likelihood references and
   independent dense small-data oracles. Binary and one-vs-rest Laplace lanes
   are complete. Variational inference and calibrated likelihood comparisons

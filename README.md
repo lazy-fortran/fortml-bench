@@ -116,6 +116,19 @@ targets or optional dependencies are recorded as machine-readable
 See [`results/CLASSIFICATION_MODELS.md`](results/CLASSIFICATION_MODELS.md) for
 the fixture, oracle tolerances, and required release-app records.
 
+The relaxed Bernoulli Naive Bayes lane uses a complete NumPy likelihood,
+log-softmax, and input-JVP oracle on sorted arbitrary labels.  It records a
+scikit-learn `BernoulliNB` context row and an explicit FortML target refusal
+until the matching release app is shipped:
+
+```bash
+.venv/bin/python -B scripts/bench_bernoulli_nb.py \
+    --fortml ../fortml --output results/bernoulli_naive_bayes.csv
+```
+
+See [`results/BERNOULLI_NB.md`](results/BERNOULLI_NB.md) for the fixture,
+oracle boundary, and release-app protocol.
+
 The MLP training, composable polynomial/Fourier basis pipeline, deterministic
 decision stump, depth-limited CART regression and classification, core
 regression metrics, and residual-stump gradient-boosting lanes are in
