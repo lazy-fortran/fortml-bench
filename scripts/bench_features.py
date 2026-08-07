@@ -315,6 +315,7 @@ def boosting_oracle() -> dict[str, float]:
     x, y = tree_inputs()
     feature, threshold, left, right = best_stump(x, y)
     stump_prediction = stump_predict(x, feature, threshold, left, right)
+    stump_left, stump_right = left, right
     base = float(np.mean(y))
     prediction = np.full(TREE_N, base)
     for _ in range(TREE_ESTIMATORS):
@@ -324,8 +325,8 @@ def boosting_oracle() -> dict[str, float]:
     return {
         "stump_feature": float(feature + 1),
         "stump_threshold": threshold,
-        "stump_left": left,
-        "stump_right": right,
+        "stump_left": stump_left,
+        "stump_right": stump_right,
         "stump_mse": float(np.mean((stump_prediction - y) ** 2)),
         "stump_sum": float(np.sum(stump_prediction)),
         "boosting_mse": float(np.mean((prediction - y) ** 2)),
