@@ -1,5 +1,5 @@
-backend,phase,status,n_samples,n_features,seconds_per_operation,accuracy,oracle,notes
-sklearn,fit,pass,1024,8,0.00696562702069059,1.0,NumPy generated labels,probability normalization error=0.000e+00
-sklearn,predict,pass,1024,8,0.00030805100686848164,1.0,NumPy generated labels,single-process CPU reference
-fortml,fit,pass,1024,8,0.0003183198,0.982421875,FortML internal invariant plus NumPy labels,fo wall time including process startup=5.605644e-03s
-fortml,predict,pass,1024,8,1.28317e-05,0.982421875,FortML internal invariant plus NumPy labels,fo wall time including process startup=5.605644e-03s
+backend,phase,status,n_samples,n_features,seconds_per_operation,accuracy,oracle,notes,python_version,numpy_version,sklearn_version,fortml_revision,benchmark_revision
+sklearn,fit,pass,1024,8,0.02301903101033531,1.0,NumPy generated labels,probability normalization error=0.000e+00,3.14.6,2.5.1,1.9.0,ab7d42dffa6b6a3495a117eefdf83a98e0f2df5d,e1aad25ca175ebf4d258cdccbb3e8b46feb5fc97
+sklearn,predict,pass,1024,8,0.000545346993021667,1.0,NumPy generated labels,single-process CPU reference,3.14.6,2.5.1,1.9.0,ab7d42dffa6b6a3495a117eefdf83a98e0f2df5d,e1aad25ca175ebf4d258cdccbb3e8b46feb5fc97
+fortml,fit,pass,1024,8,0.0002902248,0.982421875,FortML internal invariant plus NumPy labels,fo wall time including process startup=5.544348e-03s,3.14.6,2.5.1,1.9.0,ab7d42dffa6b6a3495a117eefdf83a98e0f2df5d,e1aad25ca175ebf4d258cdccbb3e8b46feb5fc97
+fortml,predict,pass,1024,8,1.5999425e-05,0.982421875,FortML internal invariant plus NumPy labels,fo wall time including process startup=5.544348e-03s,3.14.6,2.5.1,1.9.0,ab7d42dffa6b6a3495a117eefdf83a98e0f2df5d,e1aad25ca175ebf4d258cdccbb3e8b46feb5fc97
