@@ -288,6 +288,11 @@ a different workload, precision, device, or residency policy.
   `test_trainer` malformed/truncated/extra-record gate in
   `results/trainer_checkpoint.csv`; host-resident state has an explicit CUDA
   refusal row.
+- [x] Add the deterministic unfactored Adafactor trainer/MLP lane. The
+  independent NumPy squared-gradient/update-RMS oracle is paired with
+  `test_trainer` and `test_mlp_adafactor` recurrence/checkpoint gates in
+  `results/adafactor.csv`; the packed-vector API does not claim matrix-factored
+  state, and the CPU-only CUDA boundary remains an explicit unavailable row.
 - [x] Add the weighted binary MLP objective adapter and bounded L-BFGS-B lane.
   The independent value/JVP/HVP finite-difference oracle and FortOpt contract
   are recorded in `results/mlp_binary_objective.csv`; no resident CUDA graph is

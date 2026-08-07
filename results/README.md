@@ -24,6 +24,7 @@ Complete-call studies:
 - [Weighted elastic-net regression and derivative products](ELASTIC_NET.md)
 - [RMSprop optimizer and MLP training](RMSPROP.md)
 - [Generic trainer checkpoint continuation](TRAINER_CHECKPOINT.md)
+- [Unfactored Adafactor trainer state](ADAFACTOR.md)
 - [RMSprop trajectory hypergradients](RMSPROP_HYPERGRADIENT.md)
 - [Adagrad trajectory hypergradients](ADAGRAD_HYPERGRADIENT.md)
 - [Resident CUDA correctness contracts](DEVICE_CONTRACTS.md)
