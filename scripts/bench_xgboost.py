@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Benchmark FortML's exact depth-limited second-order boosting lane.
+"""Benchmark FortML's exact and weighted-histogram boosting lanes.
 
-The Fortran workload is checked against an independent NumPy implementation of
-the XGBoost leaf-weight and split-gain formulas before its timings are written.
-The optional xgboost package is recorded as a contextual availability row; its
-histogram, tie, and regularisation policies are not silently treated as a
-bitwise oracle for this exact-split fixture.
+The Fortran workload is checked against independent NumPy implementations of
+the exact and weighted-quantile XGBoost leaf-weight and split-gain formulas
+before timings are written. The optional xgboost package is recorded as a
+contextual availability row; its histogram, tie, and regularisation policies
+are not silently treated as a bitwise oracle for these fixtures.
 """
 
 from __future__ import annotations
@@ -34,6 +34,10 @@ GAMMA = 0.01
 MIN_CHILD_WEIGHT = 0.1
 MULTICLASS_CLASSES = np.array((-1, 4, 9), dtype=np.int64)
 MISSING_SAMPLES = 6
+HIST_SAMPLES = 6
+HIST_FEATURES = 1
+HIST_MAX_BIN = 2
+HIST_WEIGHTS = np.array((1.0, 1.0, 1.0, 1.0, 5.0, 5.0), dtype=np.float64)
 
 FIELDS = (
     "workload",
@@ -90,7 +94,7 @@ def package_version(name: str) -> str:
 def metadata(root: Path, fortml: Path, output: Path) -> dict[str, str]:
     ignored = tuple(root / "results" / name for name in (
         "knn.csv", "rmsprop.csv", "xgboost_workloads.csv",
-        "gp_classification_training.csv"))
+        "gp_classification_training.csv", "adamw_beta_hypergradient.csv"))
     return {
         "python_version": platform.python_version(),
         "numpy_version": np.__version__,
@@ -171,6 +175,244 @@ def missing_oracle() -> tuple[np.ndarray, float]:
                     right_gradient, float(np.sum(hessian[right])), 0.0, 0.0
                 )
     return best_prediction, best_gain
+
+
+def weighted_histogram_cuts(
+    values: np.ndarray,
+    indices: np.ndarray,
+    sample_weight: np.ndarray,
+    max_bin: int,
+) -> list[int]:
+    """Return the Fortran weighted-quantile cut positions independently."""
+    order = np.argsort(values[indices], kind="stable")
+    sorted_indices = indices[order]
+    n = sorted_indices.size
+    n_bins = min(max_bin, n)
+    total_weight = float(np.sum(sample_weight[sorted_indices]))
+    cuts: list[int] = []
+    for bin_index in range(1, n_bins):
+        target = total_weight * float(bin_index) / float(n_bins)
+        cumulative = 0.0
+        position = n
+        for k in range(n - 1):
+            cumulative += float(sample_weight[sorted_indices[k]])
+            if cumulative >= target:
+                position = k
+                break
+        if position >= n - 1:
+            continue
+        if values[sorted_indices[position]] >= values[sorted_indices[position + 1]]:
+            continue
+        if not cuts or cuts[-1] != position:
+            cuts.append(position)
+    return cuts
+
+
+def build_hist_tree(
+    x: np.ndarray,
+    gradient: np.ndarray,
+    hessian: np.ndarray,
+    sample_weight: np.ndarray,
+    *,
+    l1: float,
+    l2: float,
+    gamma: float,
+    min_child_weight: float,
+    max_depth: int,
+    min_samples_leaf: int,
+    max_bin: int,
+    indices: np.ndarray | None = None,
+    depth: int = 0,
+) -> TreeNode:
+    """Independent weighted-quantile histogram tree oracle."""
+    if indices is None:
+        indices = np.arange(x.shape[0], dtype=np.int64)
+    total_gradient = float(np.sum(gradient[indices]))
+    total_hessian = float(np.sum(hessian[indices]))
+    node = TreeNode(weight=leaf_weight(total_gradient, total_hessian, l1, l2))
+    n_local = indices.size
+    if depth >= max_depth or n_local < 2 * min_samples_leaf:
+        return node
+
+    best_gain = 0.0
+    best: tuple[int, float] | None = None
+    for feature in range(x.shape[1]):
+        order = np.argsort(x[indices, feature], kind="stable")
+        sorted_indices = indices[order]
+        cuts = set(
+            weighted_histogram_cuts(
+                x[:, feature], indices, sample_weight, max_bin
+            )
+        )
+        left_gradient = 0.0
+        left_hessian = 0.0
+        for k in range(1, n_local):
+            index = sorted_indices[k - 1]
+            left_gradient += float(gradient[index])
+            left_hessian += float(hessian[index])
+            if k - 1 not in cuts:
+                continue
+            if k < min_samples_leaf or n_local - k < min_samples_leaf:
+                continue
+            if x[sorted_indices[k - 1], feature] >= x[sorted_indices[k], feature]:
+                continue
+            right_gradient = total_gradient - left_gradient
+            right_hessian = total_hessian - left_hessian
+            if left_hessian < min_child_weight or right_hessian < min_child_weight:
+                continue
+            gain = (
+                0.5
+                * (
+                    leaf_score(left_gradient, left_hessian, l1, l2)
+                    + leaf_score(right_gradient, right_hessian, l1, l2)
+                    - leaf_score(total_gradient, total_hessian, l1, l2)
+                )
+                - gamma
+            )
+            if gain > best_gain:
+                best_gain = gain
+                best = (
+                    feature,
+                    0.5
+                    * (
+                        x[sorted_indices[k - 1], feature]
+                        + x[sorted_indices[k], feature]
+                    ),
+                )
+    if best is None:
+        return node
+    feature, threshold = best
+    left_indices = indices[x[indices, feature] < threshold]
+    right_indices = indices[x[indices, feature] >= threshold]
+    if left_indices.size < min_samples_leaf or right_indices.size < min_samples_leaf:
+        raise RuntimeError("histogram oracle violated minimum leaf size")
+    node.feature = feature
+    node.threshold = threshold
+    node.gain = best_gain
+    node.left = build_hist_tree(
+        x,
+        gradient,
+        hessian,
+        sample_weight,
+        l1=l1,
+        l2=l2,
+        gamma=gamma,
+        min_child_weight=min_child_weight,
+        max_depth=max_depth,
+        min_samples_leaf=min_samples_leaf,
+        max_bin=max_bin,
+        indices=left_indices,
+        depth=depth + 1,
+    )
+    node.right = build_hist_tree(
+        x,
+        gradient,
+        hessian,
+        sample_weight,
+        l1=l1,
+        l2=l2,
+        gamma=gamma,
+        min_child_weight=min_child_weight,
+        max_depth=max_depth,
+        min_samples_leaf=min_samples_leaf,
+        max_bin=max_bin,
+        indices=right_indices,
+        depth=depth + 1,
+    )
+    return node
+
+
+def hist_fixture() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    x = np.arange(HIST_SAMPLES, dtype=np.float64).reshape(-1, 1)
+    regression = np.array((0.0, 0.0, 0.0, 10.0, 10.0, 10.0), dtype=np.float64)
+    labels = np.array((0.0, 0.0, 0.0, 0.0, 1.0, 1.0), dtype=np.float64)
+    return x, regression, labels
+
+
+def fit_hist_boosting(
+    x: np.ndarray,
+    target: np.ndarray,
+    sample_weight: np.ndarray,
+    *,
+    logistic: bool,
+) -> tuple[np.ndarray, TreeNode]:
+    weight_sum = float(np.sum(sample_weight))
+    if logistic:
+        margin = np.full(x.shape[0], logit(float(np.sum(sample_weight * target) / weight_sum)))
+        probability = sigmoid(margin)
+        gradient = sample_weight * (probability - target)
+        hessian = sample_weight * np.maximum(probability * (1.0 - probability), 1.0e-12)
+        l1, l2 = 0.0, 0.0
+    else:
+        margin = np.full(x.shape[0], float(np.sum(sample_weight * target) / weight_sum))
+        gradient = sample_weight * (margin - target)
+        hessian = sample_weight.copy()
+        l1, l2 = 0.0, 0.0
+    tree = build_hist_tree(
+        x,
+        gradient,
+        hessian,
+        sample_weight,
+        l1=l1,
+        l2=l2,
+        gamma=0.0,
+        min_child_weight=0.0,
+        max_depth=1,
+        min_samples_leaf=1,
+        max_bin=HIST_MAX_BIN,
+    )
+    margin = margin + tree_predict(x, tree)
+    return margin, tree
+
+
+def hist_oracle() -> dict[str, float]:
+    x, regression, labels = hist_fixture()
+    regression_margin, regression_tree = fit_hist_boosting(
+        x, regression, HIST_WEIGHTS, logistic=False
+    )
+    logistic_margin, logistic_tree = fit_hist_boosting(
+        x, labels, HIST_WEIGHTS, logistic=True
+    )
+    regression_mse = float(
+        np.sum(HIST_WEIGHTS * (regression_margin - regression) ** 2)
+        / np.sum(HIST_WEIGHTS)
+    )
+    logistic_probability = sigmoid(logistic_margin)
+    logistic_logloss = float(
+        -np.sum(
+            HIST_WEIGHTS
+            * (
+                labels * np.log(np.maximum(logistic_probability, 1.0e-15))
+                + (1.0 - labels) * np.log(np.maximum(1.0 - logistic_probability, 1.0e-15))
+            )
+        )
+        / np.sum(HIST_WEIGHTS)
+    )
+    multiclass_labels = np.array((-1, -1, 4, 4, 9, 9), dtype=np.int64)
+    positive_probabilities = []
+    for class_label in (-1, 4, 9):
+        margin, _tree = fit_hist_boosting(
+            x,
+            (multiclass_labels == class_label).astype(np.float64),
+            HIST_WEIGHTS,
+            logistic=True,
+        )
+        positive_probabilities.append(sigmoid(margin))
+    positive = np.column_stack(positive_probabilities)
+    probabilities = positive / np.sum(positive, axis=1, keepdims=True)
+    predicted = np.array((-1, 4, 9), dtype=np.int64)[np.argmax(probabilities, axis=1)]
+    return {
+        "regression_mse": regression_mse,
+        "regression_sum": float(np.sum(regression_margin)),
+        "regression_gain": regression_tree.gain,
+        "logistic_logloss": logistic_logloss,
+        "logistic_accuracy": float(np.mean((logistic_probability >= 0.5) == (labels >= 0.5))),
+        "logistic_probability_sum": float(np.sum(logistic_probability)),
+        "logistic_gain": logistic_tree.gain,
+        "multiclass_accuracy": float(np.mean(predicted == multiclass_labels)),
+        "multiclass_probability_sum": float(np.sum(probabilities)),
+        "multiclass_class0_sum": float(np.sum(probabilities[:, 0])),
+    }
 
 
 def sigmoid(value: np.ndarray) -> np.ndarray:
@@ -464,6 +706,12 @@ def parse_fortran(stdout: str) -> dict[str, list[str]]:
         "xgb_multiclass_staged_margin",
         "xgb_missing_fit",
         "xgb_missing_predict",
+        "xgb_hist_regression_fit",
+        "xgb_hist_regression_predict",
+        "xgb_hist_logistic_fit",
+        "xgb_hist_logistic_predict",
+        "xgb_hist_multiclass_fit",
+        "xgb_hist_multiclass_predict",
     }
     if expected - rows.keys():
         raise RuntimeError(f"FortML app omitted {sorted(expected - rows.keys())}")
@@ -497,6 +745,7 @@ def run_fortran(
     multiclass_accuracy, multiclass_probability_sum = multiclass_oracle(x)
     multiclass_stages, multiclass_margin_stages = multiclass_staged_oracle(x)
     missing_prediction, missing_gain = missing_oracle()
+    hist_values = hist_oracle()
     regression_root = root_diagnostics(regression_trees[0])
     logistic_root = root_diagnostics(logistic_trees[0])
     regression_mse = float(np.mean((regression_prediction - regression) ** 2))
@@ -590,6 +839,37 @@ def run_fortran(
     )
     if missing_error > 2.0e-11:
         raise RuntimeError(f"FortML XGBoost missing-value oracle mismatch: {missing_error:.3e}")
+    hist_regression_error = max(
+        abs(float(parsed["xgb_hist_regression_fit"][4]) - hist_values["regression_mse"]),
+        abs(float(parsed["xgb_hist_regression_fit"][5]) - hist_values["regression_sum"]),
+        abs(float(parsed["xgb_hist_regression_fit"][6]) - hist_values["regression_gain"]),
+        abs(float(parsed["xgb_hist_regression_predict"][4]) - hist_values["regression_mse"]),
+        abs(float(parsed["xgb_hist_regression_predict"][5]) - hist_values["regression_sum"]),
+        abs(float(parsed["xgb_hist_regression_predict"][6]) - hist_values["regression_gain"]),
+    )
+    hist_logistic_error = max(
+        abs(float(parsed["xgb_hist_logistic_fit"][4]) - hist_values["logistic_logloss"]),
+        abs(float(parsed["xgb_hist_logistic_fit"][5]) - hist_values["logistic_accuracy"]),
+        abs(float(parsed["xgb_hist_logistic_fit"][6]) - hist_values["logistic_gain"]),
+        abs(float(parsed["xgb_hist_logistic_predict"][4]) - hist_values["logistic_logloss"]),
+        abs(float(parsed["xgb_hist_logistic_predict"][5]) - hist_values["logistic_probability_sum"]),
+        abs(float(parsed["xgb_hist_logistic_predict"][6]) - hist_values["logistic_gain"]),
+    )
+    hist_multiclass_error = max(
+        abs(float(parsed["xgb_hist_multiclass_fit"][4]) - hist_values["multiclass_accuracy"]),
+        abs(float(parsed["xgb_hist_multiclass_fit"][5]) - hist_values["multiclass_probability_sum"]),
+        abs(float(parsed["xgb_hist_multiclass_fit"][6]) - hist_values["multiclass_class0_sum"]),
+        abs(float(parsed["xgb_hist_multiclass_predict"][4]) - hist_values["multiclass_accuracy"]),
+        abs(float(parsed["xgb_hist_multiclass_predict"][5]) - hist_values["multiclass_probability_sum"]),
+        abs(float(parsed["xgb_hist_multiclass_predict"][6]) - hist_values["multiclass_class0_sum"]),
+    )
+    if max(hist_regression_error, hist_logistic_error, hist_multiclass_error) > 2.0e-11:
+        raise RuntimeError(
+            "FortML weighted histogram oracle mismatch: "
+            f"regression={hist_regression_error:.3e}; "
+            f"logistic={hist_logistic_error:.3e}; "
+            f"multiclass={hist_multiclass_error:.3e}"
+        )
     return [
         row(
             metadata_values,
@@ -788,6 +1068,102 @@ def run_fortran(
             oracle="independent NumPy exact threshold/default-direction oracle",
             notes="stored default branch reused by prediction; infinities remain refused",
         ),
+        row(
+            metadata_values,
+            workload="xgboost_hist_weighted_regression",
+            phase="fit",
+            backend="fortml",
+            status="pass",
+            n_samples=HIST_SAMPLES,
+            n_features=HIST_FEATURES,
+            n_estimators=1,
+            seconds_per_operation=float(parsed["xgb_hist_regression_fit"][3]),
+            metric="weighted_mse",
+            value=hist_values["regression_mse"],
+            max_abs_error=hist_regression_error,
+            oracle="independent NumPy weighted-quantile histogram Newton tree",
+            notes="max_bin=2; weights=[1,1,1,1,5,5]; one weighted-median cut",
+        ),
+        row(
+            metadata_values,
+            workload="xgboost_hist_weighted_regression",
+            phase="predict",
+            backend="fortml",
+            status="pass",
+            n_samples=HIST_SAMPLES,
+            n_features=HIST_FEATURES,
+            n_estimators=1,
+            seconds_per_operation=float(parsed["xgb_hist_regression_predict"][3]),
+            metric="prediction_sum",
+            value=hist_values["regression_sum"],
+            max_abs_error=hist_regression_error,
+            oracle="independent NumPy weighted-quantile histogram Newton tree",
+            notes="stored histogram threshold reused by prediction",
+        ),
+        row(
+            metadata_values,
+            workload="xgboost_hist_weighted_logistic",
+            phase="fit",
+            backend="fortml",
+            status="pass",
+            n_samples=HIST_SAMPLES,
+            n_features=HIST_FEATURES,
+            n_estimators=1,
+            seconds_per_operation=float(parsed["xgb_hist_logistic_fit"][3]),
+            metric="weighted_logloss",
+            value=hist_values["logistic_logloss"],
+            max_abs_error=hist_logistic_error,
+            oracle="independent NumPy weighted-quantile logistic Newton tree",
+            notes="max_bin=2; weighted base logit and Hessian reductions checked",
+        ),
+        row(
+            metadata_values,
+            workload="xgboost_hist_weighted_logistic",
+            phase="predict",
+            backend="fortml",
+            status="pass",
+            n_samples=HIST_SAMPLES,
+            n_features=HIST_FEATURES,
+            n_estimators=1,
+            seconds_per_operation=float(parsed["xgb_hist_logistic_predict"][3]),
+            metric="probability_sum",
+            value=hist_values["logistic_probability_sum"],
+            max_abs_error=hist_logistic_error,
+            oracle="independent NumPy weighted-quantile logistic Newton tree",
+            notes="binary probability path checked after histogram fit",
+        ),
+        row(
+            metadata_values,
+            workload="xgboost_hist_weighted_multiclass",
+            phase="fit",
+            backend="fortml",
+            status="pass",
+            n_samples=HIST_SAMPLES,
+            n_features=HIST_FEATURES,
+            n_estimators=1,
+            seconds_per_operation=float(parsed["xgb_hist_multiclass_fit"][3]),
+            metric="accuracy",
+            value=hist_values["multiclass_accuracy"],
+            max_abs_error=hist_multiclass_error,
+            oracle="independent NumPy weighted one-vs-rest histogram Newton trees",
+            notes="labels=[-1,-1,4,4,9,9]; max_bin=2; weighted OVR normalization",
+        ),
+        row(
+            metadata_values,
+            workload="xgboost_hist_weighted_multiclass",
+            phase="predict",
+            backend="fortml",
+            status="pass",
+            n_samples=HIST_SAMPLES,
+            n_features=HIST_FEATURES,
+            n_estimators=1,
+            seconds_per_operation=float(parsed["xgb_hist_multiclass_predict"][3]),
+            metric="class0_probability_sum",
+            value=hist_values["multiclass_class0_sum"],
+            max_abs_error=hist_multiclass_error,
+            oracle="independent NumPy weighted one-vs-rest histogram Newton trees",
+            notes="probability simplex sum and class-0 checksum checked",
+        ),
     ]
 
 
@@ -812,12 +1188,12 @@ def unsupported_policy_rows(metadata_values: dict[str, str]) -> list[dict[str, A
     return [
         row(
             metadata_values,
-            workload="xgboost_histogram",
+            workload="xgboost_histogram_gpu",
             phase="capability_check",
             backend="fortml",
             status="unavailable",
             oracle="declared capability boundary",
-            notes="weighted quantile/histogram growth is not implemented in the exact backend",
+            notes="CPU weighted histogram growth is measured; native CUDA histogram growth remains open",
         ),
         row(
             metadata_values,

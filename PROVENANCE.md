@@ -55,6 +55,14 @@ directional JVP. The current FortML source has no complete-array release app
 for this objective, so the raw CSV records explicit `unavailable` rows. No
 CPU objective timing is relabeled as CUDA evidence.
 
+The XGBoost record pins FortML `17a18b1` and reconstructs both exact recursive
+trees and the weighted histogram path independently in NumPy. The histogram
+fixture uses six rows, `max_bin=2`, and weights `[1,1,1,1,5,5]`; its oracle
+checks weighted base scores, gradient/Hessian reductions, the weighted
+quantile cut, leaf values, binary probabilities, and one-vs-rest normalization
+before any timing is retained. Native CUDA histogram growth and LightGBM
+policies remain explicit unavailable rows and are not inferred from CPU data.
+
 The KeOps and GPyTorch adapters follow their public PyTorch interfaces. The
 Fortran adapter invokes the pinned `fortml` benchmark entry point and records
 the source revision it used. No competitor source is linked into the MIT

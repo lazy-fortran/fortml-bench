@@ -208,8 +208,15 @@ a different workload, precision, device, or residency policy.
 - [x] Extend the exact XGBoost lane with an independent six-sample NaN fixture:
   `missing_policy="learn"` scores both default directions, checks every
   prediction and split gain, and records fit/predict timings. The same CSV
-  retains explicit unavailable rows for weighted histograms and LightGBM
-  leaf-wise/GOSS/EFB policies rather than conflating them with exact growth.
+  retains an explicit native-CUDA histogram refusal and LightGBM leaf-wise/
+  GOSS/EFB refusal rather than conflating CPU histogram growth with those
+  policies.
+- [x] Add correctness-gated weighted CPU histogram workloads for regression,
+  binary logistic, and one-vs-rest multiclass XGBoost. The release app uses
+  `tree_method="hist"`, `max_bin=2`, and nonuniform sample weights; an
+  independent NumPy weighted-quantile oracle checks base scores,
+  gradient/Hessian reductions, the selected cut, predictions, and OVR
+  normalization in `results/xgboost_workloads.csv`.
 - [x] Add correctness-gated binary and multiclass staged XGBoost diagnostics,
   raw multiclass margins, and normalized gain feature importance. The release
   app exports first/final stage checksums and the raw records are retained in
@@ -258,14 +265,16 @@ a different workload, precision, device, or residency policy.
   independent dense small-data oracles. Binary and one-vs-rest Laplace lanes
   are complete. Variational inference and calibrated likelihood comparisons
   remain separate work.
-- [ ] Add the full histogram/CART feature matrix: missing values, sample and
-  class weights, monotonic constraints, early stopping, feature importance,
-  categorical inputs, and GPU histograms.
+- [ ] Add the remaining histogram/CART feature matrix: weighted missing-bin
+  workloads, class weights, monotonic constraints, early stopping, feature
+  importance, categorical inputs, and native GPU histograms. CPU weighted
+  binary/regression/multiclass histogram growth is now covered by the release
+  lane; the CUDA histogram gate remains open.
 - [ ] Add a matched full XGBoost lane when the optional dependency and a pinned
-  release are available. The current exact depth-limited recursive FortML lane
-  is recorded in `results/xgboost_workloads.csv`; the exact lane now includes a
-  correctness-gated missing/default-direction fixture. Histogram, categorical,
-  ranking, and constraint comparisons remain separate work. A stump benchmark
+  release are available. The current exact depth-limited and weighted CPU
+  histogram FortML lanes are recorded in `results/xgboost_workloads.csv`; both
+  have independent NumPy correctness gates. Categorical, ranking, constraint,
+  and native GPU histogram comparisons remain separate work. A stump benchmark
   is not called XGBoost.
 - [ ] Add physics-informed, Hamiltonian, Lagrangian, and symplectic workloads
   with analytic harmonic-oscillator and manufactured-PDE oracles. Record

@@ -357,11 +357,13 @@ not full Laplace evidence:
 
 See [`results/GP_CLASSIFICATION_TRAINING.md`](results/GP_CLASSIFICATION_TRAINING.md).
 
-The exact second-order XGBoost-style lane has its own workload and raw record.
-It checks squared, binary logistic, one-vs-rest multiclass, and learned-NaN
-default-direction depth-two boosting against independent recursive NumPy
-gradient/Hessian oracles, then records explicit optional-XGBoost and
-histogram/LightGBM capability rows:
+The XGBoost-style lane has its own workload and raw record. It checks squared,
+binary logistic, one-vs-rest multiclass, and learned-NaN default-direction
+depth-two boosting against independent recursive NumPy gradient/Hessian
+oracles. It also checks weighted CPU histogram growth for regression, binary
+logistic, and multiclass OVR (`tree_method="hist"`, `max_bin=2`) against a
+weighted-quantile NumPy oracle. Native CUDA histogram growth and LightGBM
+leaf-wise policies remain explicit capability rows:
 
 ```bash
 .venv/bin/python -B scripts/bench_xgboost.py \
@@ -369,8 +371,9 @@ histogram/LightGBM capability rows:
 ```
 
 See [`results/XGBOOST.md`](results/XGBOOST.md) for the regularisation settings,
-oracle boundary, and recorded timings. The optional package row never turns a
-different histogram or tree-growth policy into a bitwise comparison.
+weighted-histogram fixture, oracle boundary, and recorded timings. The
+optional package row never turns a different histogram or tree-growth policy
+into a bitwise comparison.
 The same release protocol now checks regression margins, binary positive-class
 probabilities, multiclass simplex probabilities, staged raw margins, and
 normalized gain feature importance after every boosting stage.
