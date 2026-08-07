@@ -183,7 +183,7 @@ def main() -> None:
     rows.append({**metadata, "workload": "multilabel_metrics", "phase": "all",
         "backend": "fortml", "device": "cuda", "status": "unavailable",
         "n_samples": labels.shape[0], "n_labels": labels.shape[1],
-        "seconds_per_operation": "", "metric": "precision/recall/f1/Jaccard/Hamming",
+        "seconds_per_operation": "", "metric": "precision/recall/F1/F-beta/Jaccard/Hamming",
         "value": "", "max_abs_error": "", "oracle": "typed_device_contract",
         "notes": "classification_multilabel_*_device is not implemented; no host fallback"})
     output.parent.mkdir(parents=True, exist_ok=True)
