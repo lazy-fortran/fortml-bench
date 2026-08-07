@@ -164,7 +164,8 @@ def main() -> None:
         "status": "pass", "dimensions": "2->4->1", "repetitions": "2048",
         "oracle": "independent NumPy two-stage chain and finite-difference HVP",
         "python_version": platform.python_version(), "numpy_version": np.__version__,
-        "fortml_revision": revision(fortml), "benchmark_revision": revision(root),
+        "fortml_revision": revision(fortml),
+        "benchmark_revision": revision(root, (args.output.resolve(),)),
         "compiler": os.environ.get("FO_FC", "gfortran"), "flags": "-O3",
         "max_abs_error": f"{max_error:.17e}", "notes": "named encoder/head parameter tree",
     }
