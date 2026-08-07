@@ -220,6 +220,17 @@ a different workload, precision, device, or residency policy.
   The raw record is `results/adagrad_hypergradient.csv`, with compiler and
   revision provenance plus typed CUDA refusals until resident state derivatives
   are linked.
+- [x] Add a fixed full-batch SGD momentum hypergradient workload over log
+  learning rate, log regularization, and momentum. The independent NumPy
+  trajectory checks value, all three gradient components, and a directional JVP
+  before retaining the FortML timing; the raw record is
+  `results/sgd_momentum_hypergradient.csv`, with compiler/source provenance and
+  typed CUDA refusals.
+- [x] Add a calibrated neural classifier lane with an independent fixture,
+  sorted-class, probability-simplex, finite-bound, and prediction-domain
+  oracle. The raw record is `results/mlp_calibrated_classifier.csv`; CPU fit
+  and prediction timings are retained only after the contract passes, while
+  CUDA remains an explicit refusal.
 - [x] Add mean, median, and constant differentiable simple-imputer workloads
   with independent statistic, transform, JVP, and VJP checks. Host-only device
   boundaries are retained as explicit capability notes.

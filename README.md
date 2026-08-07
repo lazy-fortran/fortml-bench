@@ -715,6 +715,29 @@ CUDA refusals:
 
 See [`results/ADAGRAD_HYPERGRADIENT.md`](results/ADAGRAD_HYPERGRADIENT.md).
 
+The calibrated neural classifier lane checks sorted labels, finite calibrated
+probabilities, the probability simplex, and prediction-domain invariants on a
+64-row deterministic fixture before retaining CPU fit/predict timings:
+
+```bash
+.venv/bin/python -B scripts/bench_mlp_calibrated_classifier.py \
+    --fortml ../fortml --output results/mlp_calibrated_classifier.csv
+```
+
+See [`results/MLP_CALIBRATED_CLASSIFIER.md`](results/MLP_CALIBRATED_CLASSIFIER.md).
+
+The fixed full-batch SGD momentum hypergradient lane uses the same fixture and
+checks the exact classical-momentum recurrence, all three packed
+`[log_learning_rate, log_l2, momentum]` gradient components, and a directional
+JVP against an independent central-finite-difference NumPy oracle:
+
+```bash
+.venv/bin/python -B scripts/bench_sgd_momentum_hypergradient.py \
+    --fortml ../fortml --output results/sgd_momentum_hypergradient.csv
+```
+
+See [`results/SGD_MOMENTUM_HYPERGRADIENT.md`](results/SGD_MOMENTUM_HYPERGRADIENT.md).
+
 The resident CUDA contract lane independently checks the native kNN prediction
 plan, the resident dense-affine inference primitive (all eight MLP activations
 and their forward-mode JVP/reverse-mode VJP), its single-layer tanh MSE update,
