@@ -8,8 +8,11 @@ RBF log variance and log length scale. The bound solution and the invalid-bound
 refusal are checked before timings are retained.
 
 This is deliberately a mode-log-posterior benchmark, not a claim of full
-Laplace evidence or likelihood-parameter optimization. Variational inference,
-implicit mode HVPs, and device-resident training remain separate roadmap work.
+Laplace evidence or likelihood-parameter optimization. The CPU variational
+Bernoulli-GP contract has its own lane in
+[`GP_VARIATIONAL_CLASSIFICATION.md`](GP_VARIATIONAL_CLASSIFICATION.md);
+implicit mode HVPs, likelihood catalogs, and device-resident training remain
+separate roadmap work.
 
 Run:
 
