@@ -26,13 +26,20 @@ FIELDS = (
 )
 
 
-def revision(repository: Path) -> str:
+def revision(repository: Path, ignored: tuple[Path, ...] = ()) -> str:
     value = subprocess.check_output(
         ["git", "-C", str(repository), "rev-parse", "HEAD"], text=True
     ).strip()
-    dirty = subprocess.check_output(
+    status = subprocess.check_output(
         ["git", "-C", str(repository), "status", "--porcelain"], text=True
-    ).strip()
+    )
+    ignored_names = set()
+    for path in ignored:
+        try:
+            ignored_names.add(path.resolve().relative_to(repository.resolve()).as_posix())
+        except ValueError:
+            continue
+    dirty = any(line[3:].strip() not in ignored_names for line in status.splitlines())
     return value + ("+dirty" if dirty else "")
 
 
@@ -75,7 +82,7 @@ def main() -> None:
         raise RuntimeError("independent grid oracle is invalid")
     rows: list[dict[str, str]] = []
     fortml_rev = revision(fortml)
-    bench_rev = revision(root)
+    bench_rev = revision(root, (args.output,))
 
     def row(**kwargs: object) -> dict[str, str]:
         output = {field: "" for field in FIELDS}
