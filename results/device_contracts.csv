@@ -1,0 +1,10 @@
+workload,phase,backend,device,status,seconds_per_operation,metric,value,max_abs_error,oracle,python_version,numpy_version,fortml_revision,benchmark_revision,compiler,flags,notes
+knn_device_predict,predict,fortml,cuda,pass,,prediction_label_checksum,4.0,0.0,"independent NumPy nearest-neighbor labels [-7,11] and checksum",3.14.6,2.5.1,fff3f20da37b4cd7acc7b08710523ea032889dca+dirty,f782457c229d82197ead0702dbc6df97db04c44e+dirty,gfortran,-O3 -arch=native,"native gate checks resident prediction; expected labels=[-7, 11]; er_cuda.f90:
+/mnt/storage/code/lazy-fortran/fortnum/src/fortnum_kinds.f90:
+/mnt/storage/code/lazy-fortran/fortnum/src/fortnum_status.f90:
+/mnt/storage/code/lazy-fortran/fortml/src/gp/fortml_cuda_kernel_stub.f90:
+/mnt/storage/code/lazy-fortran/fortml/src/gp/fortml_cuda_rbf_stub.f90:
+/mnt/storage/code/lazy-fortran/fortml/src/fortml_device.f90:
+/mnt/storage/code/lazy-fortran/fortml/src/classification/fortml_knn_classifier.f90:
+/mnt/storage/code/lazy-fortran/fortml/test/test_knn_classifier_cuda.f90:"
+rmsprop_device_state,optimizer_step,fortml,cuda,pass,,parameter_l2_norm,0.5731622547095053,1.11e-16,independent NumPy centered RMSprop state recurrence,3.14.6,2.5.1,fff3f20da37b4cd7acc7b08710523ea032889dca+dirty,f782457c229d82197ead0702dbc6df97db04c44e+dirty,gfortran,-O3 -arch=native,expected state checksum=-1.8508517188642806e+00; native gate checks five resident steps; PASS CUDA RMSprop resident-state oracle (max error 1.110e-16)

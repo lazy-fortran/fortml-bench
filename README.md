@@ -274,6 +274,20 @@ explicit refusal for the complete MLP HVP trajectory:
 
 See [`results/RMSPROP_HYPERGRADIENT.md`](results/RMSPROP_HYPERGRADIENT.md).
 
+The resident CUDA contract lane independently checks the native kNN prediction
+plan and the no-autodiff RMSprop optimizer-state kernel. NumPy computes the
+expected labels, checksums, and five-step centered recurrence before the native
+gates run. These are correctness rows, not timings for a complete estimator or
+trainer; missing CUDA toolchains/devices remain explicit `skipped` records:
+
+```bash
+.venv/bin/python -B scripts/bench_device_contracts.py \
+  --fortml ../fortml --output results/device_contracts.csv
+```
+
+See [`results/DEVICE_CONTRACTS.md`](results/DEVICE_CONTRACTS.md) for the exact
+fixtures, GPU/toolchain metadata, and remaining resident-workload boundaries.
+
 The dense k-nearest-neighbor lane checks sorted arbitrary integer classes,
 stable original-row distance ties, uniform and inverse-distance weighting,
 complete probability checksums, and predicted labels with an independent
