@@ -73,9 +73,9 @@ as GPU evidence.
 The squared-log XGBoost record independently reconstructs the one-tree
 `log1p(target)` Newton update, including the geometric base margin, analytic
 gradient, positive Hessian floor, and guarded `expm1` inverse link, before
-timing the 256-row exact and weighted-histogram workload from FortML source
-revision `1f2b82b`. Its CUDA refusal is explicit because no resident
-squared-log tree kernel is linked.
+timing the 256-row exact and weighted-histogram workload. The raw CSV records
+the exact FortML source revision used by each run. Its CUDA refusal is
+explicit because no resident squared-log tree kernel is linked.
 
 The generic hyperparameter-search record independently enumerates the 5×5×5
 Cartesian grid, checks a deterministic 128-candidate stream seeded with
