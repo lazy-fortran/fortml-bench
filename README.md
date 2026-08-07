@@ -229,6 +229,21 @@ See [`results/PCA.md`](results/PCA.md). The current FortML release app exports
 an orthonormality guard and fit timing; complete fitted-array export remains an
 explicit follow-up boundary in the report.
 
+The weighted ridge lane checks the closed-form multi-output fit, vector and
+matrix prediction, and packed coefficient/input JVP and VJP products against
+an independent NumPy implementation. It times complete NumPy operations only
+after finite-difference and adjoint checks pass. A complete-array FortML
+release target is required before a FortML timing is retained; until then all
+seven FortML operations are explicit `unavailable` rows:
+
+```bash
+.venv/bin/python -B scripts/bench_ridge.py \
+  --fortml ../fortml --output results/ridge.csv
+```
+
+See [`results/RIDGE.md`](results/RIDGE.md) for the weighted fixture, strict
+release protocol, and derivative boundary.
+
 The Adagrad lane independently checks the accumulated-square recurrence and
 interrupted-versus-uninterrupted state resume. FortML's trainer target is
 recorded as `unavailable` until a release app exports the same state, with no
@@ -287,6 +302,22 @@ trainer; missing CUDA toolchains/devices remain explicit `skipped` records:
 
 See [`results/DEVICE_CONTRACTS.md`](results/DEVICE_CONTRACTS.md) for the exact
 fixtures, GPU/toolchain metadata, and remaining resident-workload boundaries.
+
+The resident CUDA AdamW state lane wraps
+`../fortml/test/run_cuda_adamw_state.sh` and independently reconstructs its
+seven-step bias-corrected recurrence and decoupled weight decay in NumPy. A
+native pass requires the reported maximum error to be at most `3e-13`.
+Compilation/device absence is recorded as `unavailable`; the gate's
+compile-inclusive subprocess duration is not presented as a kernel timing:
+
+```bash
+.venv/bin/python -B scripts/bench_cuda_adamw.py \
+  --fortml ../fortml --output results/cuda_adamw.csv
+```
+
+See [`results/CUDA_ADAMW.md`](results/CUDA_ADAMW.md). This is a resident
+no-autodiff optimizer-state contract, not full MLP gradient or hypergradient
+GPU evidence.
 
 The dense k-nearest-neighbor lane checks sorted arbitrary integer classes,
 stable original-row distance ties, uniform and inverse-distance weighting,

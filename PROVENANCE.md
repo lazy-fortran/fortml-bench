@@ -34,6 +34,20 @@ momentum-SGD/Nesterov MLP trajectories and mean/median/constant NaN imputation,
 including transform JVP/VJP products.  Those host-only paths carry no CUDA
 claim until a device-resident implementation is available.
 
+The weighted ridge record independently forms the weighted normal-equation
+solution with an unregularized intercept, then checks every prediction,
+coefficient/input JVP, and coefficient/input VJP array. The centered
+finite-difference and complete adjoint identities are checked before NumPy
+timing. A FortML result requires every element of each array from the strict
+release-app protocol; a missing or incomplete target remains `unavailable`.
+
+The resident CUDA AdamW record reconstructs the exact seven-step moment,
+bias-correction, and decoupled-decay recurrence in NumPy. Its native row is
+accepted only from `run_cuda_adamw_state.sh` when the reported maximum error is
+within `3e-13`. Because that test does not expose a resident kernel timer, the
+benchmark records correctness only and never treats compile-inclusive wall
+time as GPU performance.
+
 The KeOps and GPyTorch adapters follow their public PyTorch interfaces. The
 Fortran adapter invokes the pinned `fortml` benchmark entry point and records
 the source revision it used. No competitor source is linked into the MIT

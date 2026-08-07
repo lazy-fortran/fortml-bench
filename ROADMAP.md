@@ -175,8 +175,12 @@ a different workload, precision, device, or residency policy.
   no-autodiff RMSprop state kernel. The independent NumPy fixtures and native
   gate results are recorded in `results/device_contracts.csv`; this lane has
   no timing claim.
+- [x] Add a resident CUDA AdamW state correctness gate with an independent
+  NumPy seven-step moment/bias-correction/decoupled-decay oracle. The raw
+  record is `results/cuda_adamw.csv`; compile-inclusive gate wall time is not
+  presented as resident kernel performance.
 - [ ] Add resident CUDA/OpenACC timing rows for kNN search, RMSprop
-  optimizer/trainer state, staged XGBoost diagnostics, and GP classification
+  optimizer/trainer state, AdamW trainer state, staged XGBoost diagnostics, and GP classification
   hyperparameter training. Native CUDA kNN and a direct RMSprop state-kernel
   oracle now exist in the FortML checkout, but these benchmark rows still need
   matched transfer-inclusive and resident timings. Until those rows pass, CPU
@@ -241,6 +245,11 @@ a different workload, precision, device, or residency policy.
   FortML release-app orthonormality/timing protocol. The raw record is
   `results/pca.csv`; complete FortML fitted-array export remains explicitly
   open in `results/PCA.md`.
+- [x] Add a weighted multi-output ridge lane with an independent NumPy
+  closed-form oracle, vector/matrix prediction, and packed coefficient/input
+  JVP/VJP checks. The raw record is `results/ridge.csv`; a complete-array
+  FortML release app remains an explicit unavailable boundary until it is
+  added.
 - [ ] Add variational GP classification with GPyTorch likelihood references and
   independent dense small-data oracles. Binary and one-vs-rest Laplace lanes
   are complete. Variational inference and calibrated likelihood comparisons
