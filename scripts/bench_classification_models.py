@@ -858,7 +858,7 @@ def main() -> None:
     ]
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fields)
+        writer = csv.DictWriter(stream, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
     print(f"wrote {len(rows)} rows to {args.output}")
