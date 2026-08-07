@@ -241,6 +241,33 @@ other optimizer timing substituted:
 
 See [`results/ADAGRAD.md`](results/ADAGRAD.md).
 
+The RMSprop lane checks both the canonical FortOpt state recurrence and the
+centered, momentum-enabled MLP trainer path against independent NumPy updates.
+The release app exports separate direct-optimizer and MLP rows; a missing
+target is retained as an explicit refusal rather than substituting an Adam or
+Adagrad timing:
+
+```bash
+.venv/bin/python -B scripts/bench_rmsprop.py \
+  --fortml ../fortml --output results/rmsprop.csv
+```
+
+See [`results/RMSPROP.md`](results/RMSPROP.md).
+
+The dense k-nearest-neighbor lane checks sorted arbitrary integer classes,
+stable original-row distance ties, uniform and inverse-distance weighting,
+complete probability checksums, and predicted labels with an independent
+NumPy oracle:
+
+```bash
+.venv/bin/python -B scripts/bench_knn.py \
+  --fortml ../fortml --output results/knn.csv
+```
+
+See [`results/KNN.md`](results/KNN.md). Neighbor selection is discrete, so
+input JVP/VJP refusal is recorded by the FortML unit contract rather than
+inventing a derivative timing.
+
 The exact second-order XGBoost-style lane has its own workload and raw record.
 It checks squared, binary logistic, one-vs-rest multiclass, and learned-NaN
 default-direction depth-two boosting against independent recursive NumPy
@@ -255,6 +282,9 @@ histogram/LightGBM capability rows:
 See [`results/XGBOOST.md`](results/XGBOOST.md) for the regularisation settings,
 oracle boundary, and recorded timings. The optional package row never turns a
 different histogram or tree-growth policy into a bitwise comparison.
+The same release protocol now checks regression margins, binary positive-class
+probabilities, multiclass simplex probabilities, staged raw margins, and
+normalized gain feature importance after every boosting stage.
 
 The scalable-model report <!-- slop-ok --> also contains the current corrected GRBCM,
 contiguous-versus-clustered expert, and multidimensional-SKI records. Older

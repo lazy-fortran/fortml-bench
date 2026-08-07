@@ -6,6 +6,8 @@ Complete-call studies:
 - [MLP training, basis pipeline, and tree workloads](FEATURES.md)
 - [SGD/Nesterov training and differentiable imputation](TRAINING_IMPUTER.md)
 - [AdamW training and MLP hypergradients](ADAMW_HYPERGRADIENT.md)
+- [RMSprop optimizer and MLP training](RMSPROP.md)
+- [Deterministic k-nearest-neighbor classification](KNN.md)
 - [GP classification and fitted preprocessing](CLASSIFICATION_EXTENSIONS.md)
 - [Multinomial and neural classification](CLASSIFICATION_MODELS.md)
 - [Differentiable Multinomial Naive Bayes](MULTINOMIAL_NB.md)

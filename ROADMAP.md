@@ -138,6 +138,14 @@ a different workload, precision, device, or residency policy.
   recurrence lane. The raw record is `results/adagrad.csv`; the missing
   dedicated FortML release app remains an explicit `unavailable` row rather
   than borrowing an Adam/AdamW timing.
+- [x] Add independent FortOpt RMSprop and centered/momentum MLP-training
+  recurrences with release-app rows for both paths. The raw record is
+  `results/rmsprop.csv`; direct parameter norms and final MLP losses are
+  checked before timing.
+- [x] Add deterministic dense k-nearest-neighbor classification with sorted
+  arbitrary integer labels, stable distance ties, uniform and inverse-distance
+  votes, and complete probability/prediction checksums. The raw record is
+  `results/knn.csv`; discrete input JVP/VJP refusals remain explicit.
 - [x] Add a fixed full-batch MLP SGD hypergradient workload over log learning
   rate and log L2, including a central finite-difference value/gradient/JVP
   oracle and explicit FortML release-target refusal rows.  The raw record is
@@ -173,6 +181,10 @@ a different workload, precision, device, or residency policy.
   prediction and split gain, and records fit/predict timings. The same CSV
   retains explicit unavailable rows for weighted histograms and LightGBM
   leaf-wise/GOSS/EFB policies rather than conflating them with exact growth.
+- [x] Add correctness-gated binary and multiclass staged XGBoost diagnostics,
+  raw multiclass margins, and normalized gain feature importance. The release
+  app exports first/final stage checksums and the raw records are retained in
+  `results/xgboost_workloads.csv`.
 - [x] Add matched multinomial softmax regression and multiclass neural
   classifier lanes. `scripts/bench_classification_models.py` uses independent
   NumPy damped-Newton and full-batch Adam oracles, records scikit-learn and

@@ -354,6 +354,41 @@ def fit_boosting(
     return prediction, trees
 
 
+def staged_boosting(
+    x: np.ndarray, target: np.ndarray, *, logistic: bool
+) -> tuple[np.ndarray, list[TreeNode]]:
+    """Return independent cumulative raw/probability stages."""
+    if logistic:
+        margin = np.full(x.shape[0], logit(float(np.mean(target))))
+    else:
+        margin = np.full(x.shape[0], float(np.mean(target)))
+    stages = np.empty((x.shape[0], N_ESTIMATORS), dtype=np.float64)
+    trees: list[TreeNode] = []
+    for stage in range(N_ESTIMATORS):
+        if logistic:
+            probability = sigmoid(margin)
+            gradient = probability - target
+            hessian = np.maximum(probability * (1.0 - probability), 1.0e-12)
+        else:
+            gradient = margin - target
+            hessian = np.ones(x.shape[0], dtype=np.float64)
+        tree = build_tree(
+            x,
+            gradient,
+            hessian,
+            l1=0.0 if logistic else L1_REG,
+            l2=1.0 if logistic else L2_REG,
+            gamma=GAMMA,
+            min_child_weight=MIN_CHILD_WEIGHT,
+            max_depth=MAX_DEPTH,
+            min_samples_leaf=MIN_SAMPLES_LEAF,
+        )
+        trees.append(tree)
+        margin = margin + LEARNING_RATE * tree_predict(x, tree)
+        stages[:, stage] = sigmoid(margin) if logistic else margin
+    return stages, trees
+
+
 def root_diagnostics(tree: TreeNode) -> tuple[float, float, float, float, float]:
     """Return the public first-tree diagnostics reported by the Fortran app."""
     if tree.left is None or tree.right is None:
@@ -382,6 +417,24 @@ def multiclass_oracle(x: np.ndarray) -> tuple[float, float]:
     return float(np.mean(predicted == labels)), float(np.sum(probabilities))
 
 
+def multiclass_staged_oracle(x: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Return normalized OVR probability stages and raw margin stages."""
+    labels = multiclass_fixture(x)
+    positive_stages: list[np.ndarray] = []
+    margin_stages: list[np.ndarray] = []
+    for class_label in MULTICLASS_CLASSES:
+        stages, _trees = staged_boosting(
+            x, (labels == class_label).astype(np.float64), logistic=True
+        )
+        positive_stages.append(stages)
+        margin_stages.append(np.log(np.clip(stages, 1.0e-15, 1.0 - 1.0e-15) /
+                                   np.clip(1.0 - stages, 1.0e-15, 1.0)))
+    positive = np.stack(positive_stages, axis=1)
+    margins = np.stack(margin_stages, axis=1)
+    probabilities = positive / np.sum(positive, axis=1, keepdims=True)
+    return probabilities, margins
+
+
 def row(metadata_values: dict[str, str], **values: Any) -> dict[str, Any]:
     result = {field: "" for field in FIELDS}
     result.update(metadata_values)
@@ -398,10 +451,14 @@ def parse_fortran(stdout: str) -> dict[str, list[str]]:
     expected = {
         "xgb_regression_fit",
         "xgb_regression_predict",
+        "xgb_regression_staged",
         "xgb_logistic_fit",
         "xgb_logistic_predict",
+        "xgb_logistic_staged",
         "xgb_multiclass_fit",
         "xgb_multiclass_predict",
+        "xgb_multiclass_staged",
+        "xgb_multiclass_staged_margin",
         "xgb_missing_fit",
         "xgb_missing_predict",
     }
@@ -432,7 +489,10 @@ def run_fortran(
         x, regression, logistic=False
     )
     logistic_prediction, logistic_trees = fit_boosting(x, labels, logistic=True)
+    regression_stages, _ = staged_boosting(x, regression, logistic=False)
+    logistic_stages, _ = staged_boosting(x, labels, logistic=True)
     multiclass_accuracy, multiclass_probability_sum = multiclass_oracle(x)
+    multiclass_stages, multiclass_margin_stages = multiclass_staged_oracle(x)
     missing_prediction, missing_gain = missing_oracle()
     regression_root = root_diagnostics(regression_trees[0])
     logistic_root = root_diagnostics(logistic_trees[0])
@@ -480,6 +540,36 @@ def run_fortran(
     if multiclass_error > 2.0e-11:
         raise RuntimeError(
             f"FortML XGBoost multiclass oracle mismatch: {multiclass_error:.3e}"
+        )
+    regression_staged_error = max(
+        abs(float(parsed["xgb_regression_staged"][4]) - np.sum(regression_stages[:, 0])),
+        abs(float(parsed["xgb_regression_staged"][5]) - np.sum(regression_stages[:, -1])),
+        abs(float(parsed["xgb_regression_staged"][6]) - 1.0),
+    )
+    logistic_staged_error = max(
+        abs(float(parsed["xgb_logistic_staged"][4]) - np.sum(logistic_stages[:, 0])),
+        abs(float(parsed["xgb_logistic_staged"][5]) - np.sum(logistic_stages[:, -1])),
+        abs(float(parsed["xgb_logistic_staged"][6]) - 1.0),
+    )
+    multiclass_staged_error = max(
+        abs(float(parsed["xgb_multiclass_staged"][4]) - np.sum(multiclass_stages[:, :, 0])),
+        abs(float(parsed["xgb_multiclass_staged"][5]) - np.sum(multiclass_stages[:, :, -1])),
+        abs(float(parsed["xgb_multiclass_staged"][6]) - 1.0),
+    )
+    multiclass_margin_error = max(
+        abs(float(parsed["xgb_multiclass_staged_margin"][4]) -
+            np.max(np.abs(multiclass_margin_stages[:, :, -1]))),
+        abs(float(parsed["xgb_multiclass_staged_margin"][5]) -
+            np.max(np.abs(multiclass_margin_stages[:, :, -1]))),
+    )
+    if max(regression_staged_error, logistic_staged_error, multiclass_staged_error,
+           multiclass_margin_error) > 2.0e-10:
+        raise RuntimeError(
+            "FortML XGBoost staged/importance oracle mismatch: "
+            f"regression={regression_staged_error:.3e}; "
+            f"logistic={logistic_staged_error:.3e}; "
+            f"multiclass={multiclass_staged_error:.3e}; "
+            f"margins={multiclass_margin_error:.3e}"
         )
     missing_fit_values = np.asarray(
         [float(value) for value in parsed["xgb_missing_fit"][6:12]], dtype=np.float64
@@ -569,6 +659,38 @@ def run_fortran(
         ),
         row(
             metadata_values,
+            workload="xgboost_regression_staged",
+            phase="diagnostics",
+            backend="fortml",
+            status="pass",
+            n_samples=N_SAMPLES,
+            n_features=N_FEATURES,
+            n_estimators=N_ESTIMATORS,
+            seconds_per_operation=float(parsed["xgb_regression_staged"][3]),
+            metric="final_stage_sum",
+            value=float(np.sum(regression_stages[:, -1])),
+            max_abs_error=regression_staged_error,
+            oracle="independent NumPy cumulative exact-tree stage oracle",
+            notes="regression margins; normalized gain importance sum checked",
+        ),
+        row(
+            metadata_values,
+            workload="xgboost_logistic_staged",
+            phase="diagnostics",
+            backend="fortml",
+            status="pass",
+            n_samples=N_SAMPLES,
+            n_features=N_FEATURES,
+            n_estimators=N_ESTIMATORS,
+            seconds_per_operation=float(parsed["xgb_logistic_staged"][3]),
+            metric="final_stage_positive_probability_sum",
+            value=float(np.sum(logistic_stages[:, -1])),
+            max_abs_error=logistic_staged_error,
+            oracle="independent NumPy cumulative logistic stage oracle",
+            notes="positive-class staged probabilities; normalized gain importance sum checked",
+        ),
+        row(
+            metadata_values,
             workload="xgboost_multiclass",
             phase="fit",
             backend="fortml",
@@ -598,6 +720,38 @@ def run_fortran(
             max_abs_error=multiclass_error,
             oracle="independent NumPy one-vs-rest recursive second-order tree search",
             notes="simplex sum checked at the independent row-normalization oracle",
+        ),
+        row(
+            metadata_values,
+            workload="xgboost_multiclass_staged",
+            phase="diagnostics",
+            backend="fortml",
+            status="pass",
+            n_samples=N_SAMPLES,
+            n_features=N_FEATURES,
+            n_estimators=N_ESTIMATORS,
+            seconds_per_operation=float(parsed["xgb_multiclass_staged"][3]),
+            metric="final_stage_probability_sum",
+            value=float(np.sum(multiclass_stages[:, :, -1])),
+            max_abs_error=multiclass_staged_error,
+            oracle="independent NumPy normalized one-vs-rest stage oracle",
+            notes="probability simplex and normalized gain importance sum checked",
+        ),
+        row(
+            metadata_values,
+            workload="xgboost_multiclass_staged_margin",
+            phase="diagnostics",
+            backend="fortml",
+            status="pass",
+            n_samples=N_SAMPLES,
+            n_features=N_FEATURES,
+            n_estimators=N_ESTIMATORS,
+            seconds_per_operation=float(parsed["xgb_multiclass_staged_margin"][3]),
+            metric="max_abs_final_margin",
+            value=float(np.max(np.abs(multiclass_margin_stages[:, :, -1]))),
+            max_abs_error=multiclass_margin_error,
+            oracle="independent NumPy cumulative one-vs-rest margin oracle",
+            notes="staged raw margins agree with final decision_function",
         ),
         row(
             metadata_values,

@@ -16,7 +16,8 @@ Hessian, and learning rate. The NumPy oracle recursively reconstructs the
 base score, gradient/Hessian arrays, regularized leaf weights, split gains,
 depth limit, minimum leaf constraints, deterministic feature/threshold tie
 order, and all staged predictions. It also checks the public first-tree root
-diagnostics reported by the release app.
+diagnostics and normalized gain feature-importance checksum reported by the
+release app.
 
 The recorded Fortran rows pass with maximum absolute oracle errors of
 `7.11e-14` for squared loss, `3.70e-13` for binary logistic loss, and
@@ -27,14 +28,18 @@ prediction vector. The current gfortran CPU timings are:
 
 | workload / phase | seconds per operation | checked metric |
 |---|---:|---:|
-| squared objective / fit | 3.640435e-4 | MSE 2.3896623698615184e-3 |
-| squared objective / predict | 9.063344e-6 | MSE 2.3896623698615184e-3 |
-| logistic objective / fit | 3.403815e-4 | log loss 3.1036146708733506e-2 |
-| logistic objective / predict | 6.820656e-6 | accuracy 1.0 |
-| multiclass OVR / fit | 1.170693e-3 | accuracy 1.0, simplex sum 192 |
-| multiclass OVR / predict | 2.487438e-5 | accuracy 1.0, simplex sum 192 |
-| missing/default-direction / fit | 8.5475e-7 | prediction sum 30, gain 75 |
-| missing/default-direction / predict | 9.7992e-8 | prediction sum 30, gain 75 |
+| squared objective / fit | 3.7025e-4 | MSE 2.3896623698615184e-3 |
+| squared objective / predict | 9.01634375e-6 | MSE 2.3896623698615184e-3 |
+| logistic objective / fit | 3.456835e-4 | log loss 3.1036146708733506e-2 |
+| logistic objective / predict | 6.6296875e-6 | accuracy 1.0 |
+| multiclass OVR / fit | 1.12418775e-3 | accuracy 1.0, simplex sum 192 |
+| multiclass OVR / predict | 2.369996875e-5 | accuracy 1.0, simplex sum 192 |
+| squared objective / staged diagnostics | release-app diagnostic row | final margin sum 53.408336292406815, gain sum 1 |
+| logistic objective / staged diagnostics | release-app diagnostic row | final positive-probability sum 111.93386233281304, gain sum 1 |
+| multiclass OVR / staged diagnostics | release-app diagnostic row | final simplex sum 192, gain sum 1 |
+| multiclass OVR / staged margins | release-app diagnostic row | max absolute margin 3.816443060176254 |
+| missing/default-direction / fit | 8.03375e-7 | prediction sum 30, gain 75 |
+| missing/default-direction / predict | 9.41640625e-8 | prediction sum 30, gain 75 |
 
 Timings are machine-specific. The CSV records compiler flags, source commits,
 Python/NumPy versions, and the optional XGBoost package version.
@@ -48,7 +53,10 @@ deterministic feature/threshold order, and shrinkage. Predictions expose raw
 margins, probabilities for logistic loss, and a piecewise input JVP. The
 multiclass rows fit one recursive binary logistic model per sorted label,
 normalize the positive OVR probabilities, and check the same exact-split
-formulas independently with NumPy.
+formulas independently with NumPy. Staged APIs are checked at every tree
+boundary by comparing first-stage and final-stage checksums; multiclass staged
+margins are compared with the final decision function. Gain-normalized feature
+importance is required to sum to one for each fitted workload.
 
 The `xgboost_missing` rows use six samples, one finite feature, and one IEEE
 NaN. The independent oracle enumerates finite thresholds and both missing
