@@ -5,8 +5,8 @@ The fixture has two independent sigmoid heads over the same two-feature data.
 Each head performs one full-batch Adam step.  The NumPy oracle reproduces the
 deterministic MLP initializer, weighted binary cross entropy, parameter
 gradient, and exact parameter Hessian-vector product independently.  The
-multilabel wrapper contract is a concatenation of head parameters/derivatives
-and a sum of the two per-head objectives.
+multilabel wrapper contract is a concatenation of head parameters and a mean
+of the two per-head objectives/derivatives.
 """
 
 from __future__ import annotations
@@ -115,11 +115,11 @@ def oracle() -> dict[str, np.ndarray | float | int]:
         losses.append(loss)
     return {
         "theta": np.concatenate(theta_parts),
-        "gradient": np.concatenate(gradient_parts),
-        "hvp": np.concatenate(hvp_parts),
         "probabilities": np.column_stack(probability_parts),
         "predicted": np.column_stack(prediction_parts),
-        "loss": float(np.sum(losses)),
+        "loss": float(np.mean(losses)),
+        "gradient": np.concatenate(gradient_parts) / LABELS,
+        "hvp": np.concatenate(hvp_parts) / LABELS,
         "direction": direction,
     }
 
@@ -233,7 +233,7 @@ def main() -> None:
             notes="two sigmoid heads; layers=2->1 each; one full-batch Adam step; l2=0.02; seed=29"),
         row(details, workload="mlp_multilabel_classifier", phase="derivatives", backend="fortml",
             device="cpu", status="pass", metric="gradient_hvp_probability_error", value=error,
-            max_abs_error=error, seconds="", notes="concatenated per-head BCE gradient and exact parameter HVP"),
+            max_abs_error=error, seconds="", notes="mean per-head BCE gradient and exact parameter HVP"),
         row(details, workload="mlp_multilabel_classifier", phase="device_capability", backend="fortml",
             device="cuda", status="unavailable", metric="predict_proba", value="nan",
             max_abs_error="nan", oracle="typed device contract", seconds="",
