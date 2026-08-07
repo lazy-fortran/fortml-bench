@@ -7,6 +7,7 @@ Complete-call studies:
 - [SGD/Nesterov training and differentiable imputation](TRAINING_IMPUTER.md)
 - [AdamW training and MLP hypergradients](ADAMW_HYPERGRADIENT.md)
 - [RMSprop optimizer and MLP training](RMSPROP.md)
+- [RMSprop trajectory hypergradients](RMSPROP_HYPERGRADIENT.md)
 - [Deterministic k-nearest-neighbor classification](KNN.md)
 - [GP classification hyperparameter training](GP_CLASSIFICATION_TRAINING.md)
 - [GP classification and fitted preprocessing](CLASSIFICATION_EXTENSIONS.md)

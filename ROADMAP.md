@@ -151,6 +151,13 @@ a different workload, precision, device, or residency policy.
   oracle and explicit FortML release-target refusal rows.  The raw record is
   `results/mlp_hypergradient.csv`; Adam/momentum/CUDA trajectory derivatives
   are outside this contract.
+- [x] Add a fixed full-batch RMSprop hypergradient workload over log learning
+  rate, log L2, decay, log epsilon, and momentum. The independent NumPy lane
+  central-differences every packed component and a directional JVP for both
+  centered and uncentered state, while the FortML release app emits a checked
+  value/gradient/JVP timing. The raw record is
+  `results/rmsprop_hypergradient.csv`; CUDA remains an explicit refusal until
+  optimizer state and MLP HVPs are resident.
 - [x] Add mean, median, and constant differentiable simple-imputer workloads
   with independent statistic, transform, JVP, and VJP checks. Host-only device
   boundaries are retained as explicit capability notes.

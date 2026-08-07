@@ -254,6 +254,19 @@ Adagrad timing:
 
 See [`results/RMSPROP.md`](results/RMSPROP.md).
 
+The fixed full-batch RMSprop hypergradient lane independently finite-differences
+the value, all five packed hyperparameters, and a directional JVP for centered
+and uncentered trajectories. The FortML release app is retained only after its
+value, gradient, and JVP products pass the NumPy oracle; CUDA remains an
+explicit refusal until the state is resident:
+
+```bash
+.venv/bin/python -B scripts/bench_rmsprop_hypergradient.py \
+  --fortml ../fortml --output results/rmsprop_hypergradient.csv
+```
+
+See [`results/RMSPROP_HYPERGRADIENT.md`](results/RMSPROP_HYPERGRADIENT.md).
+
 The dense k-nearest-neighbor lane checks sorted arbitrary integer classes,
 stable original-row distance ties, uniform and inverse-distance weighting,
 complete probability checksums, and predicted labels with an independent
