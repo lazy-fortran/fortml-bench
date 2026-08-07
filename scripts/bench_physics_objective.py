@@ -4,10 +4,10 @@
 The NumPy fixture is an independent affine residual oracle for four weighted
 terms (data, differential-equation residual, boundary, and conservation).  It
 checks value, gradient, directional JVP, scalar VJP, and central differences.
-Second-order residual products are deliberately recorded as a typed refusal:
-the public FortML seam has no hidden finite-difference HVP fallback.  The
-Fortran gate additionally checks malformed weights/shape and the FortOpt
-objective adapter.
+A second nonlinear fixture checks the exact reverse-over-forward HVP contract;
+the public seam still records a typed refusal when a provider omits that
+optional callback.  The Fortran gate additionally checks malformed
+weights/shape and the FortOpt objective adapter.
 """
 
 from __future__ import annotations
@@ -45,8 +45,8 @@ def revision(repository: Path, ignored: tuple[Path, ...] = ()) -> str:
     return head + ("+dirty" if dirty else "")
 
 
-def oracle() -> tuple[float, float, float, float]:
-    """Return objective value, gradient FD error, JVP FD error, VJP error."""
+def oracle() -> tuple[float, float, float, float, float]:
+    """Return affine value/errors and an independent nonlinear HVP error."""
     theta = np.array([0.37, -0.42], dtype=np.float64)
     direction = np.array([0.23, -0.31], dtype=np.float64)
     terms = (
@@ -83,7 +83,46 @@ def oracle() -> tuple[float, float, float, float]:
     error = max(float(gradient_error), float(jvp_error), vjp_error)
     if error > 3.0e-8 or not np.isfinite(value):
         raise RuntimeError(f"independent physics objective oracle failed: {error:.3e}")
-    return float(value), float(gradient_error), float(jvp_error), float(vjp_error)
+    nonlinear_theta = np.array([0.37, -0.42], dtype=np.float64)
+    nonlinear_direction = np.array([0.23, -0.31], dtype=np.float64)
+    nonlinear_offset = np.array([0.17, -0.23], dtype=np.float64)
+    nonlinear_weight = 1.75
+
+    def nonlinear_value_gradient(parameters: np.ndarray) -> tuple[float, np.ndarray]:
+        first, second = parameters
+        residual = np.array(
+            [first * first + 0.5 * second - nonlinear_offset[0],
+             first * second - nonlinear_offset[1]],
+            dtype=np.float64,
+        )
+        jacobian = np.array([[2.0 * first, 0.5], [second, first]])
+        return (nonlinear_weight * float(np.dot(residual, residual)) / 4.0,
+                nonlinear_weight * (jacobian.T @ residual) / 2.0)
+
+    first, second = nonlinear_theta
+    dfirst, dsecond = nonlinear_direction
+    residual = np.array(
+        [first * first + 0.5 * second - nonlinear_offset[0],
+         first * second - nonlinear_offset[1]], dtype=np.float64)
+    residual_dot = np.array(
+        [2.0 * first * dfirst + 0.5 * dsecond,
+         second * dfirst + first * dsecond], dtype=np.float64)
+    jacobian = np.array([[2.0 * first, 0.5], [second, first]])
+    residual_bar = nonlinear_weight * residual / 2.0
+    residual_bar_dot = nonlinear_weight * residual_dot / 2.0
+    exact_hvp = jacobian.T @ residual_bar_dot + np.array(
+        [2.0 * dfirst * residual_bar[0] + dsecond * residual_bar[1],
+         dfirst * residual_bar[1]], dtype=np.float64)
+    step = 2.0e-6
+    _, gradient_plus = nonlinear_value_gradient(
+        nonlinear_theta + step * nonlinear_direction)
+    _, gradient_minus = nonlinear_value_gradient(
+        nonlinear_theta - step * nonlinear_direction)
+    finite_hvp = (gradient_plus - gradient_minus) / (2.0 * step)
+    hvp_error = float(np.max(np.abs(exact_hvp - finite_hvp)))
+    if hvp_error > 3.0e-8:
+        raise RuntimeError(f"independent physics HVP oracle failed: {hvp_error:.3e}")
+    return float(value), float(gradient_error), float(jvp_error), float(vjp_error), hvp_error
 
 
 def main() -> None:
@@ -96,7 +135,7 @@ def main() -> None:
     root = Path(__file__).resolve().parents[1]
     fortml = args.fortml.resolve()
     output = args.output.resolve()
-    value, gradient_error, jvp_error, vjp_error = oracle()
+    value, gradient_error, jvp_error, vjp_error, hvp_error = oracle()
     started = time.perf_counter()
     if args.skip_fortml:
         status, notes = "skipped", "--skip-fortml"
@@ -104,7 +143,7 @@ def main() -> None:
         subprocess.run(["fo", "test", "test_physics_objective"],
                        cwd=fortml, check=True)
         status = "pass"
-        notes = "test checks four weighted slots, products, FortOpt adapter, and HVP refusal"
+        notes = "test checks four weighted slots, products, FortOpt adapter, typed refusal, and nonlinear exact HVP"
     elapsed = time.perf_counter() - started
     details = {
         "python_version": platform.python_version(), "numpy_version": np.__version__,
@@ -130,9 +169,10 @@ def main() -> None:
     add(phase="public_contract_gate", status=status, seconds_per_operation=elapsed,
         metric="oracle_max_abs_error", value=oracle_error, max_abs_error=oracle_error,
         oracle="FortML test_physics_objective independent behavioral gate", notes=notes)
-    add(phase="hvp_contract", status="pass", metric="hvp_supported", value=0.0,
-        max_abs_error=0.0, oracle="typed FORTNUM_NOT_IMPLEMENTED residual-HVP refusal",
-        notes="no finite-difference fallback; residual HVP callback is not in the seam")
+    add(phase="hvp_contract", status="pass", metric="hvp_max_abs_error",
+        value=hvp_error, max_abs_error=hvp_error,
+        oracle="independent NumPy nonlinear reverse-over-forward HVP oracle",
+        notes="exact weighted least-squares HVP; providers without hvp_proc retain typed refusal")
     add(phase="device_contract", device="cuda", status="unavailable",
         metric="resident_residual_objective", value="nan", max_abs_error="nan",
         oracle="typed capability boundary", notes="callbacks may provide a resident path; no built-in CUDA dispatch")

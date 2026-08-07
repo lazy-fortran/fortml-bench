@@ -293,9 +293,10 @@ a different workload, precision, device, or residency policy.
   are recorded in `results/mlp_binary_objective.csv`; no resident CUDA graph is
   implied.
 - [x] Add the composable physics-residual objective lane. Four weighted
-  affine residual slots are checked with independent value/gradient/JVP/VJP
-  products, while the residual-HVP typed refusal and callback-based CUDA
-  boundary remain explicit in `results/physics_objective.csv`.
+  affine residual slots and a nonlinear reverse-over-forward HVP are checked
+  with independent value/gradient/JVP/VJP products; providers without an HVP
+  callback retain the typed refusal, and the callback-based CUDA boundary
+  remains explicit in `results/physics_objective.csv`.
 - [ ] Add resident CUDA/OpenACC timing rows for kNN search, RMSprop
   optimizer/trainer state, AdamW trainer state, staged XGBoost diagnostics, and GP classification
   hyperparameter training. Native CUDA kNN and a direct RMSprop state-kernel

@@ -465,6 +465,21 @@ See [`results/PROBABILITY_CALIBRATION.md`](results/PROBABILITY_CALIBRATION.md).
 CUDA capability rows are explicit refusals because no resident calibration
 kernel is linked.
 
+The composable physics-residual lane checks four weighted affine PINN-style
+terms plus an independent nonlinear reverse-over-forward HVP fixture. The
+FortML gate covers the FortOpt adapter, malformed-input refusals, the exact
+HVP callback path, and the typed refusal retained when a provider does not
+register an HVP callback:
+
+```bash
+python3 -B scripts/bench_physics_objective.py \
+    --fortml ../fortml --output results/physics_objective.csv
+```
+
+See [`results/PHYSICS_OBJECTIVE.md`](results/PHYSICS_OBJECTIVE.md). The
+objective is callback-based and has no built-in resident CUDA dispatch, so
+CUDA remains an explicit capability row until a resident adapter is linked.
+
 The matched multinomial softmax and multiclass neural-classifier lane uses an
 independent NumPy damped-Newton/Adam oracle, scikit-learn and optional resident
 PyTorch context rows, and an explicit FortML app protocol. Missing FortML
