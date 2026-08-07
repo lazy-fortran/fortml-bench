@@ -12,7 +12,6 @@ try:
     from scripts.bench_rbf_mvm import (
         make_inputs,
         prepare_keops_runtime,
-        synchronize,
         timed,
         version,
     )
@@ -20,7 +19,6 @@ except ImportError:
     from bench_rbf_mvm import (  # type: ignore
         make_inputs,
         prepare_keops_runtime,
-        synchronize,
         timed,
         version,
     )
