@@ -127,6 +127,12 @@ a different workload, precision, device, or residency policy.
   time in `results/classification_workloads.csv`.
 - [x] Add a deterministic MLP-training lane with an independent NumPy Adam
   oracle, full loss/prediction checks, and release-build fit timings.
+- [x] Add release-build momentum-SGD and Nesterov MLP-training workloads with
+  independent NumPy recurrences, complete prediction/loss arrays, and strict
+  fit timing records.
+- [x] Add mean, median, and constant differentiable simple-imputer workloads
+  with independent statistic, transform, JVP, and VJP checks. Host-only device
+  boundaries are retained as explicit capability notes.
 - [x] Add a composable polynomial/Fourier basis-pipeline lane with independent
   transform, JVP, and VJP checks and timings.
 - [x] Add the fitted basis-linear regression composition lane with an
@@ -163,6 +169,11 @@ a different workload, precision, device, or residency policy.
   matched FortML release-app rows (with an explicit refusal if the target is
   absent). The raw record is `results/bernoulli_naive_bayes.csv` and the
   protocol is documented in `results/BERNOULLI_NB.md`.
+- [x] Add a differentiable Multinomial Naive Bayes lane with independent
+  smoothed token-mass, log-softmax, prediction, and input-JVP oracles, a
+  scikit-learn context row, and complete FortML release-app output arrays. The
+  raw record is `results/multinomial_naive_bayes.csv` and the protocol is
+  documented in `results/MULTINOMIAL_NB.md`.
 - [ ] Add variational GP classification with GPyTorch likelihood references and
   independent dense small-data oracles. Binary and one-vs-rest Laplace lanes
   are complete. Variational inference and calibrated likelihood comparisons

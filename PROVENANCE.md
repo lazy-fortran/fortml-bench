@@ -24,6 +24,16 @@ separately; the current app passes complete-output checks, while a checkout
 without the target retains explicit `unavailable` rows and makes no timing or
 device claim.
 
+The Multinomial Naive Bayes record independently reconstructs weighted
+token-mass smoothing, stable log-softmax probabilities, predictions, and the
+input JVP for nonnegative real-valued counts.  A FortML pass requires every
+log-probability, probability, prediction, and JVP entry; scikit-learn's
+non-differentiable JVP phase is recorded as an explicit refusal.  The trainer
+and imputer record applies the same complete-array gate to deterministic
+momentum-SGD/Nesterov MLP trajectories and mean/median/constant NaN imputation,
+including transform JVP/VJP products.  Those host-only paths carry no CUDA
+claim until a device-resident implementation is available.
+
 The KeOps and GPyTorch adapters follow their public PyTorch interfaces. The
 Fortran adapter invokes the pinned `fortml` benchmark entry point and records
 the source revision it used. No competitor source is linked into the MIT

@@ -160,6 +160,20 @@ XGBoost comparisons. It also records explicit FortML CUDA capability refusals
 for host-only GaussianNB, MLP-training, and logistic-objective paths. These
 rows contain no timing and never relabel a CPU run as device evidence.
 
+The production trainer/preprocessing lane separately benchmarks full-batch MLP
+momentum SGD and Nesterov updates plus the differentiable mean, median, and
+constant simple imputer.  It checks complete predictions, losses, fitted
+statistics, transforms, JVPs, and VJPs against independent NumPy formulas:
+
+```bash
+.venv/bin/python -B scripts/bench_training.py \
+  --fortml ../fortml --output results/training_imputer.csv
+```
+
+See [`results/TRAINING_IMPUTER.md`](results/TRAINING_IMPUTER.md).  The lane is
+CPU-only until FortML exposes a device-resident trainer/imputer path; no CPU
+timing is relabeled as CUDA evidence.
+
 The exact second-order XGBoost-style lane has its own workload and raw record.
 It checks squared, binary logistic, and one-vs-rest multiclass depth-two
 boosting against independent recursive NumPy gradient/Hessian oracles, then
