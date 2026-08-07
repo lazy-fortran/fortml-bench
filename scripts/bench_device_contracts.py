@@ -49,7 +49,8 @@ def revision(repository: Path, ignored: tuple[Path, ...] = ()) -> str:
 def metadata(root: Path, fortml: Path, output: Path) -> dict[str, str]:
     ignored = tuple((root / "results" / name).resolve()
                     for name in ("multilabel_metrics.csv", "roc_auc.csv",
-                                 "device_contracts.csv"))
+                                 "device_contracts.csv",
+                                 "basis_pipeline_training.csv"))
     return {
         "python_version": platform.python_version(),
         "numpy_version": np.__version__,
