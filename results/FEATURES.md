@@ -8,7 +8,7 @@ Fortran app is `fortml_bench_features`. It is built with `fo build --flag
 
 ## What is checked
 
-The lane contains eight families of complete calls:
+The lane contains nine families of complete calls:
 
 - `mlp_training` trains a deterministic 3-8-1 tanh MLP for 24 full-batch
   Adam epochs. NumPy reproduces the Xavier/phase initializer, MSE plus L2
@@ -21,6 +21,10 @@ The lane contains eight families of complete calls:
 - `basis_linear_regression` fits a one-frequency Fourier basis followed by a
   linear regressor. NumPy independently solves the design least-squares
   problem and checks the composed prediction and basis/coefficients/input JVP.
+- `gaussian_naive_bayes` fits three arbitrary integer classes with weighted
+  Gaussian moments and global variance smoothing. NumPy independently forms
+  class means, population variances, shifted log densities, and the analytic
+  input JVP; the FortML log-probability and JVP sums agree below `5e-8`.
 - `decision_stump` checks the exhaustive squared-error split, leaf values,
   predictions, and piecewise-constant result against an independent NumPy
   split search. The prediction JVP is zero away from split boundaries.
@@ -50,6 +54,9 @@ The recorded FortML rows all pass. The current gfortran CPU timings are:
 | basis-linear / fit | 1.2645125e-5 | MSE 3.4915906185525344e-31 |
 | basis-linear / predict | 1.065125e-6 | prediction sum 118.30705401978305 |
 | basis-linear / JVP | 2.392171875e-6 | JVP sum 105.28373944064631 |
+| GaussianNB / fit | 6.38575e-6 | log-probability sum -9.813379464436336e5 |
+| GaussianNB / predict | 1.648934375e-5 | log-probability sum -9.813379464436336e5 |
+| GaussianNB / JVP | 2.6518859375e-5 | JVP sum 1.254372277354169e3 |
 | basis pipeline / transform | 1.000071875e-5 | feature sum 2753.0921746559225 |
 | basis pipeline / JVP | 2.124284375e-5 | JVP sum 1231.6432747014742 |
 | basis pipeline / VJP | 1.098759375e-5 | parameter cotangent sum -5.287453498417015 |
@@ -76,6 +83,13 @@ depth and minimum leaf size, but split tie behavior is contextual. The
 scikit-learn depth-1 boosting row
 uses the same learning rate, number of estimators, and minimum leaf size, and
 matches the fixture's predictions to roundoff.
+
+The GaussianNB row is checked against an independent NumPy density
+implementation rather than a scikit-learn call, because the FortML contract
+also includes packed-parameter and input derivative products that are outside
+scikit-learn's estimator API. The fixture uses equal class weights and
+`var_smoothing=1e-9`; weighted-fit and explicit-prior behavior is covered by
+the FortML unit oracle.
 
 PyTorch, JAX, and XGBoost are represented by explicit dependency-check rows.
 On the recorded machine PyTorch is installed but is not timed by this lane.

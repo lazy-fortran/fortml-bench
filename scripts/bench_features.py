@@ -42,6 +42,10 @@ TREE_LEAF = 3
 CART_DEPTH = 3
 METRIC_N = 128
 METRIC_OUTPUTS = 2
+GAUSSIAN_NB_N = 192
+GAUSSIAN_NB_D = 2
+GAUSSIAN_NB_CLASSES = np.array([-4, 7, 19], dtype=np.int64)
+GAUSSIAN_NB_SMOOTHING = 1.0e-9
 
 FIELDS = (
     "workload",
@@ -303,6 +307,60 @@ def basis_linear_oracle() -> dict[str, float]:
     }
 
 
+def gaussian_nb_inputs() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Reconstruct the deterministic GaussianNB fixture independently."""
+
+    index = np.arange(1, GAUSSIAN_NB_N + 1, dtype=np.float64)
+    class_index = np.arange(GAUSSIAN_NB_N, dtype=np.int64) % 3
+    labels = GAUSSIAN_NB_CLASSES[class_index]
+    x = np.column_stack(
+        (
+            3.0 * class_index + 0.1 * np.sin(0.11 * index),
+            -2.0 * class_index + 0.1 * np.cos(0.07 * index),
+        )
+    )
+    x_dot = np.column_stack((np.cos(0.013 * index), np.sin(0.017 * index)))
+    return x, labels, x_dot
+
+
+def gaussian_nb_oracle() -> dict[str, float]:
+    x, labels, x_dot = gaussian_nb_inputs()
+    means = np.vstack(
+        [x[labels == label].mean(axis=0) for label in GAUSSIAN_NB_CLASSES]
+    )
+    variance = np.vstack(
+        [x[labels == label].var(axis=0) for label in GAUSSIAN_NB_CLASSES]
+    )
+    epsilon = GAUSSIAN_NB_SMOOTHING * float(np.max(np.var(x, axis=0)))
+    epsilon = max(epsilon, np.finfo(np.float64).tiny)
+    variance += epsilon
+    log_joint = np.empty((x.shape[0], GAUSSIAN_NB_CLASSES.size), dtype=np.float64)
+    for class_index in range(GAUSSIAN_NB_CLASSES.size):
+        delta = x - means[class_index]
+        log_joint[:, class_index] = -0.5 * np.sum(
+            np.log(2.0 * np.pi * variance[class_index])
+            + delta * delta / variance[class_index],
+            axis=1,
+        ) - np.log(float(GAUSSIAN_NB_CLASSES.size))
+    maximum = np.max(log_joint, axis=1)
+    log_probabilities = log_joint - maximum[:, None]
+    log_probabilities -= np.log(np.sum(np.exp(log_probabilities), axis=1))[:, None]
+    joint_dot = np.empty_like(log_joint)
+    for class_index in range(GAUSSIAN_NB_CLASSES.size):
+        joint_dot[:, class_index] = -np.sum(
+            (x - means[class_index]) / variance[class_index] * x_dot, axis=1
+        )
+    log_dot = joint_dot - np.sum(np.exp(log_probabilities) * joint_dot, axis=1)[:, None]
+    target_class_indices = np.arange(GAUSSIAN_NB_N, dtype=np.int64) % 3
+    return {
+        "log_sum": float(np.sum(log_probabilities)),
+        "jvp_sum": float(np.sum(log_dot)),
+        "accuracy": float(
+            np.mean(np.argmax(log_probabilities, axis=1) == target_class_indices)
+        ),
+    }
+
+
 def tree_inputs() -> tuple[np.ndarray, np.ndarray]:
     x = np.empty((TREE_N, TREE_D), dtype=np.float64)
     y = np.empty(TREE_N, dtype=np.float64)
@@ -548,6 +606,7 @@ def parse_fortran(stdout: str) -> dict[str, list[list[str]]]:
             "basis_jvp",
             "basis_vjp",
             "basis_linear",
+            "gaussian_nb",
             "stump",
             "cart",
             "cart_classifier",
@@ -562,6 +621,7 @@ def parse_fortran(stdout: str) -> dict[str, list[list[str]]]:
         "basis_jvp",
         "basis_vjp",
         "basis_linear",
+        "gaussian_nb",
         "stump",
         "cart",
         "cart_classifier",
@@ -646,6 +706,20 @@ def run_fortran(
     if basis_linear_error > 5.0e-10:
         raise RuntimeError(
             f"FortML basis-linear oracle mismatch: {basis_linear_error:.3e}"
+        )
+
+    gaussian_nb = gaussian_nb_oracle()
+    gaussian_nb_row = parsed["gaussian_nb"][0]
+    gaussian_nb_values = {
+        "log_sum": float(gaussian_nb_row[6]),
+        "jvp_sum": float(gaussian_nb_row[7]),
+    }
+    gaussian_nb_error = max(
+        abs(gaussian_nb_values[key] - gaussian_nb[key]) for key in gaussian_nb_values
+    )
+    if gaussian_nb_error > 5.0e-8:
+        raise RuntimeError(
+            f"FortML GaussianNB oracle mismatch: {gaussian_nb_error:.3e}"
         )
 
     tree = boosting_oracle()
@@ -756,6 +830,57 @@ def run_fortran(
     )
     records.extend(
         [
+            row(
+                metadata,
+                workload="gaussian_naive_bayes",
+                phase="fit",
+                backend="fortml",
+                status="pass",
+                n_samples=GAUSSIAN_NB_N,
+                n_features=GAUSSIAN_NB_D,
+                n_estimators=GAUSSIAN_NB_CLASSES.size,
+                repetitions=8,
+                seconds_per_operation=float(gaussian_nb_row[3]),
+                metric="log_probability_sum",
+                value=gaussian_nb_values["log_sum"],
+                max_abs_error=gaussian_nb_error,
+                oracle="independent NumPy weighted Gaussian density/log-softmax",
+                notes="three arbitrary integer classes; var_smoothing=1e-9",
+            ),
+            row(
+                metadata,
+                workload="gaussian_naive_bayes",
+                phase="predict",
+                backend="fortml",
+                status="pass",
+                n_samples=GAUSSIAN_NB_N,
+                n_features=GAUSSIAN_NB_D,
+                n_estimators=GAUSSIAN_NB_CLASSES.size,
+                repetitions=64,
+                seconds_per_operation=float(gaussian_nb_row[4]),
+                metric="log_probability_sum",
+                value=gaussian_nb_values["log_sum"],
+                max_abs_error=gaussian_nb_error,
+                oracle="independent NumPy weighted Gaussian density/log-softmax",
+                notes="stable shifted log-probability normalization",
+            ),
+            row(
+                metadata,
+                workload="gaussian_naive_bayes",
+                phase="jvp",
+                backend="fortml",
+                status="pass",
+                n_samples=GAUSSIAN_NB_N,
+                n_features=GAUSSIAN_NB_D,
+                n_estimators=GAUSSIAN_NB_CLASSES.size,
+                repetitions=64,
+                seconds_per_operation=float(gaussian_nb_row[5]),
+                metric="log_probability_jvp_sum",
+                value=gaussian_nb_values["jvp_sum"],
+                max_abs_error=gaussian_nb_error,
+                oracle="independent NumPy input directional derivative",
+                notes="analytic log-softmax JVP; finite-only input contract",
+            ),
             row(
                 metadata,
                 workload="basis_linear_regression",
