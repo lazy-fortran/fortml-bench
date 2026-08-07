@@ -161,6 +161,11 @@ a different workload, precision, device, or residency policy.
   arbitrary integer labels, stable distance ties, uniform and inverse-distance
   votes, and complete probability/prediction checksums. The raw record is
   `results/knn.csv`; discrete input JVP/VJP refusals remain explicit.
+- [x] Add a dense multilabel-indicator logistic lane with independent
+  per-output Newton oracle checks, complete positive-probability and hard
+  indicator outputs, contextual scikit-learn timing, and explicit CUDA
+  capability-refusal rows. Sparse targets, ordinal outcomes, and resident
+  multi-head CUDA kernels remain separate work packages.
 - [x] Add a fixed full-batch MLP SGD hypergradient workload over log learning
   rate and log L2, including a central finite-difference value/gradient/JVP
   oracle and explicit FortML release-target refusal rows.  The raw record is

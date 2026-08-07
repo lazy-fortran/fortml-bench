@@ -115,6 +115,19 @@ See [`results/OVO_LOGISTIC.md`](results/OVO_LOGISTIC.md). The CSV includes
 explicit CUDA capability-refusal rows; scikit-learn is contextual because its
 pairwise probability coupling policy differs from FortML's declared vote map.
 
+The dense multilabel-indicator lane fits one independent logistic head per
+zero/one target column and checks the complete positive-probability matrix and
+hard indicator matrix against an independent NumPy Newton oracle:
+
+```bash
+.venv/bin/python -B scripts/bench_multilabel_logistic.py \
+  --fortml ../fortml --output results/multilabel_logistic.csv
+```
+
+See [`results/MULTILABEL_LOGISTIC.md`](results/MULTILABEL_LOGISTIC.md). CUDA
+capability rows are explicit refusals until a resident multi-head kernel is
+linked; host timings are never relabeled as accelerator evidence.
+
 The shared binary GP likelihood lane separately checks signed-margin logistic
 and probit value/JVP/VJP products, including a stable negative-probit tail and
 an independent adjoint oracle:
