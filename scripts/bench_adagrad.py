@@ -2,9 +2,9 @@
 """Independent Adagrad recurrence and checkpoint/resume benchmark.
 
 The NumPy lane is a behavioral oracle for FortOpt's canonical update
-``G <- G + g**2`` and epsilon-stabilized diagonal step.  FortML's trainer has
-no dedicated release app yet, so the script records an explicit unavailable
-target row instead of substituting another optimizer's timing.
+``G <- G + g**2`` and epsilon-stabilized diagonal step.  The FortML release
+app exports its final parameter norm and timing; the timing is retained only
+after that norm matches the independent recurrence.
 """
 
 from __future__ import annotations
@@ -13,6 +13,7 @@ import argparse
 import csv
 import os
 import platform
+import re
 import subprocess
 import time
 from pathlib import Path
@@ -120,7 +121,8 @@ def run_oracle() -> list[dict[str, Any]]:
             notes=f"split_step={SPLIT_STEP}; state includes parameters and accumulator")]
 
 
-def run_fortml(fortml: Path, target: str, details: dict[str, str]) -> dict[str, Any]:
+def run_fortml(fortml: Path, target: str, details: dict[str, str],
+               expected_norm: float) -> dict[str, Any]:
     environment = os.environ.copy()
     environment.update({"FO_FC": environment.get("FO_FC", "gfortran"), "OMP_NUM_THREADS": "1"})
     source = fortml / "app" / f"{target}.f90"
@@ -137,8 +139,24 @@ def run_fortml(fortml: Path, target: str, details: dict[str, str]) -> dict[str, 
     run = subprocess.run(["fo", "exec", "--no-build", target], cwd=fortml,
                          env=environment, capture_output=True, text=True)
     if run.returncode == 0:
+        match = re.search(
+            r"^adagrad_training,\s*\d+,\s*\d+,\s*([0-9Ee+.-]+),\s*([0-9Ee+.-]+)$",
+            run.stdout, re.MULTILINE)
+        if match is None:
+            return base_row(details, phase="train", backend="fortml", status="unavailable",
+                            oracle="FortML release-app protocol",
+                            notes="release app emitted no parseable recurrence record")
+        actual_norm = float(match.group(1))
+        seconds = float(match.group(2))
+        error = abs(actual_norm - expected_norm)
+        if error > 1.0e-12:
+            raise RuntimeError(f"FortML Adagrad parameter norm mismatch: {error:.3e}")
         return base_row(details, phase="train", backend="fortml", status="pass",
-                        oracle="FortML release-app protocol", notes=target)
+                        repetitions=REPETITIONS, seconds_per_operation=seconds,
+                        metric="parameter_l2_norm", value=actual_norm,
+                        max_abs_error=error,
+                        oracle="FortOpt Adagrad release app plus independent NumPy recurrence",
+                        notes=target)
     stderr = run.stderr.strip().splitlines()
     note = f"target {target!r} unavailable"
     for line in stderr:
@@ -161,11 +179,12 @@ def main() -> None:
     fortml = args.fortml.resolve()
     details = metadata(root, fortml, output)
     rows = run_oracle()
+    expected_norm = float(rows[0]["value"])
     if args.skip_fortml:
         rows.append(base_row(details, phase="train", backend="fortml", status="skipped",
                              oracle="FortML release-app protocol", notes="--skip-fortml"))
     else:
-        row = run_fortml(fortml, args.target, details)
+        row = run_fortml(fortml, args.target, details, expected_norm)
         rows.append(row)
     for row in rows:
         row.update(details)

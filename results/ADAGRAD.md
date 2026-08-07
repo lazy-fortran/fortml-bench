@@ -13,11 +13,12 @@ and compares an uninterrupted trajectory with a split-at-step-64 checkpoint
 and resume. The NumPy lane is timed only after both state and recurrence
 checks pass.
 
-FortML currently has no dedicated Adagrad release benchmark app. Its row is
-therefore recorded as `unavailable` for the target
-`fortml_bench_adagrad_training`; no Adam, AdamW, or CPU timing is relabeled as
-Adagrad evidence. Once a release app exports its packed parameters and
-accumulator, the same recurrence and resume oracle can gate a FortML timing.
+The FortML release app `fortml_bench_adagrad_training` exercises the same
+FortOpt recurrence over the fixed parameter vector and exports its final
+parameter norm and timing. The harness compares that norm with the independent
+NumPy result before retaining the timing. The MLP trainer's packed
+accumulator/checkpoint contract remains covered by FortML's independent
+`test_mlp_adagrad` behavioral test.
 
 Run:
 
