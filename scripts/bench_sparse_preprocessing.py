@@ -97,15 +97,22 @@ def parse_oracle(path: Path) -> dict[str, np.ndarray]:
 
 
 def numpy_rows(details: dict[str, str]) -> list[dict[str, Any]]:
-    target = expected()
+    values = dense()
+    scales = values.std(axis=0)
+    scales[scales == 0.0] = 1.0
+    transformed = values / scales
+    tangent = 2.0 * values
+    operations = {
+        "transform": lambda: values / scales,
+        "inverse": lambda: transformed * scales,
+        "jvp": lambda: tangent / scales,
+        "vjp": lambda: tangent / scales,
+    }
     rows: list[dict[str, Any]] = []
     for phase in PHASES:
         started = time.perf_counter()
         for _ in range(REPETITIONS):
-            if phase == "transform":
-                _ = target[phase]
-            else:
-                _ = target[phase].copy()
+            _ = operations[phase]()
         seconds = (time.perf_counter() - started) / REPETITIONS
         rows.append(row(details, phase=phase, backend="numpy_oracle", status="pass",
                         seconds_per_operation=seconds, max_abs_error=0.0,
