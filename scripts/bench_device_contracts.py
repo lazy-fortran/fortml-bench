@@ -213,6 +213,21 @@ def main() -> None:
         max_abs_error="", oracle="independent NumPy weighted multi-output MSE",
         notes=f"native gate checks transfer-inclusive CUDA block reduction; expected value={mse_value:.16e}; {notes}"))
 
+    status, notes, elapsed = run_gate(fortml, "run_cuda_mse_plan.sh")
+    observed_error = None
+    match = re.search(r"max error ([0-9.+\-eE]+)", notes)
+    if match:
+        observed_error = float(match.group(1))
+        if status == "pass" and observed_error > 3.0e-13:
+            status = "failed"
+    rows.append(base(
+        details, workload="cuda_weighted_mse_resident_plan", phase="metric", status=status,
+        seconds_per_operation="", metric="weighted_mean_squared_error", value=mse_value,
+        max_abs_error=(observed_error if observed_error is not None else
+                       (0.0 if status == "pass" else "")),
+        oracle="independent NumPy weighted multi-output MSE",
+        notes=f"native gate retains target/prediction/weights on device for five executions; expected value={mse_value:.16e}; {notes}"))
+
     status, notes, elapsed = run_gate(fortml, "run_cuda_adamw_state.sh")
     observed_error = None
     match = re.search(r"max error ([0-9.+\-eE]+)", notes)

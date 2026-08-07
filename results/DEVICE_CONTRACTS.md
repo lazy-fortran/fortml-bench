@@ -1,6 +1,6 @@
 # CUDA correctness contracts
 
-This lane is a correctness gate for three small resident CUDA paths and one
+This lane is a correctness gate for four small resident CUDA paths and one
 transfer-inclusive metric reduction that are not represented by the CPU
 release-app benchmarks. It deliberately records no device timing: a
 correctness-only gate must not be read as a performance claim for the full
@@ -41,11 +41,17 @@ norm is `0.3149703604198818` and the state checksum is
 resident parameter and moment entry with a maximum error threshold of
 `3e-13`.
 
+The resident weighted-MSE row exercises `run_cuda_mse_plan.sh`. Creation copies
+the target, prediction, and optional weights once; five execute calls reuse
+those device buffers and return the same scalar as the independent NumPy
+oracle. The native maximum error threshold is `3e-13`. This is a resident
+no-autodiff reduction contract, distinct from the transfer-inclusive MSE row.
+
 The recorded run used an NVIDIA GeForce RTX 5060 Ti (driver 610.43.03,
 16,311 MiB), CUDA 13.3, nvfortran 26.5, and gfortran as the host compiler.
-All four rows passed; the RMSprop and AdamW native maximum errors were
+All five rows passed; the RMSprop and AdamW native maximum errors were
 `1.11e-16`, the kNN label checksum matched exactly, and the CUDA MSE scalar
-matched the independent value above. The CSV keeps the FortML and benchmark revisions,
+and the five resident-plan executions matched the independent value above. The CSV keeps the FortML and benchmark revisions,
 compiler flags, device, and oracle boundary. Empty timing fields are
 intentional. If `nvcc`, `nvfortran`, or a CUDA device is unavailable, the same
 rows become explicit `skipped` records instead of being relabeled as CPU
