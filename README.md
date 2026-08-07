@@ -130,6 +130,19 @@ checkout predates that app):
 See [`results/BERNOULLI_NB.md`](results/BERNOULLI_NB.md) for the fixture,
 oracle boundary, and release-app protocol.
 
+The matched Multinomial Naive Bayes lane checks token-mass smoothing,
+stable probabilities, predictions, and an input JVP against an independent
+NumPy oracle.  It includes a contextual scikit-learn row and a strict FortML
+release-app protocol:
+
+```bash
+.venv/bin/python -B scripts/bench_multinomial_nb.py \
+    --fortml ../fortml --output results/multinomial_naive_bayes.csv
+```
+
+See [`results/MULTINOMIAL_NB.md`](results/MULTINOMIAL_NB.md) for the fixture,
+oracle tolerances, and release-app records.
+
 The MLP training, composable polynomial/Fourier basis pipeline, deterministic
 decision stump, depth-limited CART regression and classification, core
 regression metrics, and residual-stump gradient-boosting lanes are in
