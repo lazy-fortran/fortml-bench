@@ -63,6 +63,13 @@ quantile cut, leaf values, binary probabilities, and one-vs-rest normalization
 before any timing is retained. Native CUDA histogram growth and LightGBM
 policies remain explicit unavailable rows and are not inferred from CPU data.
 
+The Poisson XGBoost record reconstructs the canonical log-link Newton update
+independently in NumPy (`base=5`, leaf corrections `-0.8/+0.8`) before timing a
+256-row exact and weighted-histogram count workload. The release app reports a
+maximum oracle error of `1.78e-15`. Its CUDA row remains explicitly unavailable
+because FortML has no resident tree kernel; no CPU objective timing is reused
+as GPU evidence.
+
 The KeOps and GPyTorch adapters follow their public PyTorch interfaces. The
 Fortran adapter invokes the pinned `fortml` benchmark entry point and records
 the source revision it used. No competitor source is linked into the MIT

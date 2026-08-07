@@ -481,6 +481,18 @@ The same release protocol now checks regression margins, binary positive-class
 probabilities, multiclass simplex probabilities, staged raw margins, and
 normalized gain feature importance after every boosting stage.
 
+The Poisson count-objective lane independently reconstructs a one-tree
+log-link Newton fixture and then records exact CPU fit/predict and weighted
+histogram timings on a larger deterministic count workload:
+
+```bash
+.venv/bin/python -B scripts/bench_xgboost_poisson.py \
+  --fortml ../fortml --output results/xgboost_poisson.csv
+```
+
+See [`results/XGBOOST_POISSON.md`](results/XGBOOST_POISSON.md). Its CUDA row
+is an explicit unavailable refusal until a resident tree kernel is linked.
+
 The scalable-model report <!-- slop-ok --> also contains the current corrected GRBCM,
 contiguous-versus-clustered expert, and multidimensional-SKI records. Older
 GRBCM rows are superseded because they predate the communication-set and
