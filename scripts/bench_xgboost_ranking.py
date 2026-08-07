@@ -122,7 +122,7 @@ def main() -> None:
         row.update(values)
         rows.append(row)
 
-    add(phase="independent_oracle", status="pass", metric="pairwise_loss",
+    add(phase="independent_oracle", backend="numpy_oracle", status="pass", metric="pairwise_loss",
         value=loss, max_abs_error=oracle_error,
         oracle="independent NumPy pairwise logistic loss/gradient/Hessian FD oracle",
         notes=f"gradient_error={gradient_error:.3e}; hessian_error={hessian_error:.3e}; cross-query row is zero")

@@ -115,7 +115,7 @@ def main() -> None:
         row.update(values)
         rows.append(row)
 
-    add(phase="independent_oracle", status="pass", metric="probability_simplex_sum",
+    add(phase="independent_oracle", backend="numpy_oracle", status="pass", metric="probability_simplex_sum",
         value=probability_sum, max_abs_error=max(simplex_error, jvp_error),
         oracle="independent NumPy OVR sigmoid normalization and JVP finite difference",
         notes=f"simplex_error={simplex_error:.3e}; jvp_error={jvp_error:.3e}")

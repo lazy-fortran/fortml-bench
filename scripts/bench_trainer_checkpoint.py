@@ -112,7 +112,7 @@ def main() -> None:
         row.update(values)
         rows.append(row)
 
-    add(phase="independent_oracle", status="pass", metric="final_parameter_l2_norm",
+    add(phase="independent_oracle", backend="numpy_oracle", status="pass", metric="final_parameter_l2_norm",
         value=expected_norm, max_abs_error=continuation_error,
         oracle="independent NumPy Adam state continuation",
         notes=f"split_step={split}; parameters/moments/step all compared")

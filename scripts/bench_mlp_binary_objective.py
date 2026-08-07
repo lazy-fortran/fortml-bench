@@ -119,7 +119,7 @@ def main() -> None:
         row.update(values)
         rows.append(row)
 
-    add(phase="independent_oracle", status="pass", seconds_per_operation="",
+    add(phase="independent_oracle", backend="numpy_oracle", status="pass", seconds_per_operation="",
         metric="objective_value", value=value, max_abs_error=error,
         oracle="independent NumPy weighted sigmoid/BCE finite-difference oracle",
         notes="directional derivative=" + repr(tangent))
