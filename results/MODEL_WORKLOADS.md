@@ -4,6 +4,14 @@ Run date: 2026-08-06. The raw record is
 [`model_workloads.csv`](model_workloads.csv). Times below are milliseconds per
 operation. Setup and release-build time are excluded.
 
+This is a historical device-comparison snapshot. Its raw rows deliberately
+retain the FortML and benchmark dirty-tree revisions that were present on
+2026-08-06. The clean 2026-08-07 release evidence for the new classifier,
+GaussianNB, logistic-objective, and host-only CUDA boundaries is in
+[`FEATURES.md`](FEATURES.md), [`CLASSIFICATION_MODELS.md`](CLASSIFICATION_MODELS.md),
+and [`XGBOOST.md`](XGBOOST.md). Do not mix the historical timings with those
+current release rows without matching source and toolchain revisions.
+
 | workload | phase | FortML, gfortran CPU | FortML, nvfortran CPU | PyTorch/GPyTorch CPU | PyTorch/GPyTorch CUDA |
 |---|---:|---:|---:|---:|---:|
 | exact GP | fit | 0.796 | 0.585 | 0.393 | 0.693 |
