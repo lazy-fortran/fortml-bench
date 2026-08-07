@@ -149,6 +149,42 @@ def adamw_oracle() -> tuple[float, float]:
     return norm, checksum
 
 
+def dense_oracle() -> float:
+    """Return the activation-sweep checksum for the resident dense plan.
+
+    The native gate independently checks every output against the same
+    recurrence.  Keeping a NumPy checksum here makes the benchmark row a
+    separate fixture oracle rather than a pass/fail transcription.
+    """
+    weights = np.array([
+        0.5, -1.0, 0.25, -0.75, 0.4, 1.2,
+    ], dtype=np.float64).reshape((2, 3))
+    bias = np.array([-0.1, 0.2], dtype=np.float64)
+    query = np.array([
+        -1.0, 0.0, 0.5, 2.0, -0.25,
+        1.0, -0.5, 1.5, -2.0, 0.75,
+        0.25, -1.0, 2.0, 0.5, -1.5,
+    ], dtype=np.float64).reshape((3, 5))
+    affine = weights @ query + bias[:, None]
+    values: list[np.ndarray] = []
+    values.append(affine)
+    values.append(np.tanh(affine))
+    values.append(np.maximum(affine, 0.0))
+    values.append(0.5 * affine * (1.0 + np.tanh(
+        0.79788456080286535588 *
+        (affine + 0.044715 * affine**3))))
+    values.append(affine / (1.0 + np.exp(-affine)))
+    values.append(np.where(affine >= 0.0, affine, np.exp(affine) - 1.0))
+    values.append(np.where(
+        affine > 20.0, affine,
+        np.where(affine < -20.0, np.exp(affine), np.log1p(np.exp(affine)))))
+    values.append(np.where(affine >= 0.0, affine, 0.01 * affine))
+    checksum = float(sum(np.sum(value) for value in values))
+    if not np.isfinite(checksum):
+        raise RuntimeError("CUDA dense independent oracle is nonfinite")
+    return checksum
+
+
 def run_gate(fortml: Path, script_name: str) -> tuple[str, str, float | None]:
     script = fortml / "test" / script_name
     if not script.is_file():
@@ -185,6 +221,7 @@ def main() -> None:
     rmsprop_norm, rmsprop_checksum = rmsprop_oracle()
     mse_value = mse_oracle()
     adamw_norm, adamw_checksum = adamw_oracle()
+    dense_checksum = dense_oracle()
     rows: list[dict[str, Any]] = []
 
     status, notes, elapsed = run_gate(fortml, "run_knn_classifier_cuda.sh")
@@ -260,6 +297,22 @@ def main() -> None:
                        (0.0 if status == "pass" else "")),
         oracle="independent CPU tree-walk probabilities and sorted-label tie oracle",
         notes=f"native gate retains flattened trees across repeated query batches; {notes}"))
+
+    status, notes, elapsed = run_gate(fortml, "run_cuda_dense_plan.sh")
+    observed_error = None
+    match = re.search(r"max error ([0-9.+\-eE]+)", notes)
+    if match:
+        observed_error = float(match.group(1))
+        if status == "pass" and observed_error > 3.0e-13:
+            status = "failed"
+    rows.append(base(
+        details, workload="cuda_dense_resident_inference", phase="predict", status=status,
+        seconds_per_operation="", metric="activation_sweep_checksum",
+        value=dense_checksum,
+        max_abs_error=(observed_error if observed_error is not None else
+                       (0.0 if status == "pass" else "")),
+        oracle="independent NumPy affine plus eight-activation checksum",
+        notes=f"native gate checks all eight MLP activations and two resident batches; expected checksum={dense_checksum:.16e}; {notes}"))
 
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:

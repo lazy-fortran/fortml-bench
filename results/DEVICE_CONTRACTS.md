@@ -1,6 +1,6 @@
 # CUDA correctness contracts
 
-This lane is a correctness gate for five small resident CUDA paths and one
+This lane is a correctness gate for six small resident CUDA paths and one
 transfer-inclusive metric reduction that are not represented by the CPU
 release-app benchmarks. It deliberately records no device timing: a
 correctness-only gate must not be read as a performance claim for the full
@@ -53,9 +53,17 @@ query batches; strict-threshold routing, class probabilities, sorted-label ties,
 and the reported maximum error are checked before the plan is destroyed. This
 is prediction-only and does not expose Fortran tree fitting or autodiff kernels.
 
+The dense row exercises `run_cuda_dense_plan.sh` against an independent NumPy
+affine/activation checksum. The native plan keeps one output-major weight
+matrix and bias vector resident while checking linear, `tanh`, ReLU, GELU,
+SiLU, ELU, softplus, and leaky-ReLU outputs, followed by a second query batch
+on one plan. The gate also checks finite-input refusal. This is a
+no-autodiff inference primitive; it does not establish resident MLP training,
+gradient assembly, or hypergradient support.
+
 The recorded run used an NVIDIA GeForce RTX 5060 Ti (driver 610.43.03,
 16,311 MiB), CUDA 13.3, nvfortran 26.5, and gfortran as the host compiler.
-All six rows passed; the RMSprop and AdamW native maximum errors were
+All seven rows passed; the RMSprop, AdamW, and dense native maximum errors were
 `1.11e-16`, the kNN label checksum matched exactly, and the CUDA MSE scalar
 and the five resident-plan executions matched the independent value above. The CSV keeps the FortML and benchmark revisions,
 compiler flags, device, and oracle boundary. Empty timing fields are
@@ -63,8 +71,8 @@ intentional. If `nvcc`, `nvfortran`, or a CUDA device is unavailable, the same
 rows become explicit `skipped` records instead of being relabeled as CPU
 measurements.
 
-This gate covers resident kNN and forest prediction, the no-autodiff RMSprop
-and AdamW state kernels, and both weighted MSE reductions. It does not
-establish CUDA support for MLP gradient assembly, RMSprop hypergradients,
-staged XGBoost, or GP classification training; those remain separate workload
-contracts.
+This gate covers resident kNN, forest, and dense-affine prediction, the
+no-autodiff RMSprop and AdamW state kernels, and both weighted MSE reductions.
+It does not establish CUDA support for MLP gradient assembly, RMSprop
+hypergradients, staged XGBoost, or GP classification training; those remain
+separate workload contracts.
