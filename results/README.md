@@ -51,6 +51,7 @@ Complete-call studies:
 - [Smooth kernel catalog](KERNEL_CATALOG.md)
 - [Weighted LDA and QDA](DISCRIMINANT_ANALYSIS.md)
 - [Robust Huber and quantile XGBoost](XGBOOST_ROBUST.md)
+- [XGBoost validation and early stopping](XGBOOST_EARLY_STOPPING.md)
 - [Hyperparameter grid, seeded random, and L-BFGS-B search](HYPERPARAMETER_SEARCH.md)
 - [Large-GP review comparison](SCALABLE_GP.md)
 

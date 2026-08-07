@@ -715,6 +715,20 @@ See [`results/XGBOOST_SQUARED_LOG.md`](results/XGBOOST_SQUARED_LOG.md). Its
 CUDA row remains an explicit unavailable refusal until a resident tree kernel
 is linked.
 
+The XGBoost validation lane independently replays every depth-one Newton
+stage for squared, binary logistic, and squared-log objectives. It checks
+two-round patience, `restore_best` versus retaining the stopped ensemble,
+best-validation metadata, and the typed malformed-validation refusal:
+
+```bash
+python -B scripts/bench_xgboost_early_stopping.py \
+  --fortml ../fortml --output results/XGBOOST_EARLY_STOPPING.md
+```
+
+See [`results/XGBOOST_EARLY_STOPPING.md`](results/XGBOOST_EARLY_STOPPING.md).
+The lane is CPU correctness evidence; tree CUDA remains an explicit typed
+unavailable contract.
+
 The robust XGBoost lane independently reconstructs weighted one-tree Huber and
 pinball/quantile objectives, including base margins and leaf corrections:
 
