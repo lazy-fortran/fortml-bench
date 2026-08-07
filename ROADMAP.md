@@ -164,6 +164,11 @@ a different workload, precision, device, or residency policy.
   sorted arbitrary labels. The NumPy oracle rebuilds one exact binary booster
   per class, checks row normalization and argmax labels, and records fit and
   prediction timings in the same raw CSV.
+- [x] Extend the exact XGBoost lane with an independent six-sample NaN fixture:
+  `missing_policy="learn"` scores both default directions, checks every
+  prediction and split gain, and records fit/predict timings. The same CSV
+  retains explicit unavailable rows for weighted histograms and LightGBM
+  leaf-wise/GOSS/EFB policies rather than conflating them with exact growth.
 - [x] Add matched multinomial softmax regression and multiclass neural
   classifier lanes. `scripts/bench_classification_models.py` uses independent
   NumPy damped-Newton and full-batch Adam oracles, records scikit-learn and
@@ -203,9 +208,10 @@ a different workload, precision, device, or residency policy.
   categorical inputs, and GPU histograms.
 - [ ] Add a matched full XGBoost lane when the optional dependency and a pinned
   release are available. The current exact depth-limited recursive FortML lane
-  is recorded in `results/xgboost_workloads.csv`. Histogram, missing-value, and
-  constraint comparisons remain separate work. A stump benchmark is not called
-  XGBoost.
+  is recorded in `results/xgboost_workloads.csv`; the exact lane now includes a
+  correctness-gated missing/default-direction fixture. Histogram, categorical,
+  ranking, and constraint comparisons remain separate work. A stump benchmark
+  is not called XGBoost.
 - [ ] Add physics-informed, Hamiltonian, Lagrangian, and symplectic workloads
   with analytic harmonic-oscillator and manufactured-PDE oracles. Record
   trajectory error, energy drift, symplectic Jacobian defect, residual norms,

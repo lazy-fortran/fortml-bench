@@ -33,6 +33,7 @@ L2_REG = 1.5
 GAMMA = 0.01
 MIN_CHILD_WEIGHT = 0.1
 MULTICLASS_CLASSES = np.array((-1, 4, 9), dtype=np.int64)
+MISSING_SAMPLES = 6
 
 FIELDS = (
     "workload",
@@ -122,6 +123,51 @@ def multiclass_fixture(x: np.ndarray) -> np.ndarray:
         MULTICLASS_CLASSES[0],
         np.where(x[:, 0] < 0.35, MULTICLASS_CLASSES[1], MULTICLASS_CLASSES[2]),
     )
+
+
+def missing_fixture() -> tuple[np.ndarray, np.ndarray]:
+    """Small fixture whose default direction has an analytic exact oracle."""
+    x = np.array([[0.0], [1.0], [2.0], [3.0], [4.0], [np.nan]], dtype=np.float64)
+    target = np.array([0.0, 0.0, 10.0, 10.0, 10.0, 0.0], dtype=np.float64)
+    return x, target
+
+
+def missing_oracle() -> tuple[np.ndarray, float]:
+    """Independently score finite thresholds and both NaN default branches."""
+    x, target = missing_fixture()
+    base = float(np.mean(target))
+    gradient = base - target
+    hessian = np.ones_like(target)
+    finite = np.isfinite(x[:, 0])
+    values = np.unique(x[finite, 0])
+    total_gradient = float(np.sum(gradient))
+    total_hessian = float(np.sum(hessian))
+    total_score = leaf_score(total_gradient, total_hessian, 0.0, 0.0)
+    best_gain = 0.0
+    best_prediction = np.full(target.shape, base)
+    for threshold in 0.5 * (values[:-1] + values[1:]):
+        for missing_left in (True, False):
+            left = finite & (x[:, 0] < threshold)
+            if missing_left:
+                left |= np.isnan(x[:, 0])
+            right = ~left
+            left_gradient = float(np.sum(gradient[left]))
+            right_gradient = float(np.sum(gradient[right]))
+            gain = 0.5 * (
+                leaf_score(left_gradient, float(np.sum(hessian[left])), 0.0, 0.0)
+                + leaf_score(right_gradient, float(np.sum(hessian[right])), 0.0, 0.0)
+                - total_score
+            )
+            if gain > best_gain:
+                best_gain = gain
+                best_prediction = np.full(target.shape, base)
+                best_prediction[left] += leaf_weight(
+                    left_gradient, float(np.sum(hessian[left])), 0.0, 0.0
+                )
+                best_prediction[right] += leaf_weight(
+                    right_gradient, float(np.sum(hessian[right])), 0.0, 0.0
+                )
+    return best_prediction, best_gain
 
 
 def sigmoid(value: np.ndarray) -> np.ndarray:
@@ -356,6 +402,8 @@ def parse_fortran(stdout: str) -> dict[str, list[str]]:
         "xgb_logistic_predict",
         "xgb_multiclass_fit",
         "xgb_multiclass_predict",
+        "xgb_missing_fit",
+        "xgb_missing_predict",
     }
     if expected - rows.keys():
         raise RuntimeError(f"FortML app omitted {sorted(expected - rows.keys())}")
@@ -385,6 +433,7 @@ def run_fortran(
     )
     logistic_prediction, logistic_trees = fit_boosting(x, labels, logistic=True)
     multiclass_accuracy, multiclass_probability_sum = multiclass_oracle(x)
+    missing_prediction, missing_gain = missing_oracle()
     regression_root = root_diagnostics(regression_trees[0])
     logistic_root = root_diagnostics(logistic_trees[0])
     regression_mse = float(np.mean((regression_prediction - regression) ** 2))
@@ -432,6 +481,22 @@ def run_fortran(
         raise RuntimeError(
             f"FortML XGBoost multiclass oracle mismatch: {multiclass_error:.3e}"
         )
+    missing_fit_values = np.asarray(
+        [float(value) for value in parsed["xgb_missing_fit"][6:12]], dtype=np.float64
+    )
+    missing_predict_values = np.asarray(
+        [float(value) for value in parsed["xgb_missing_predict"][6:12]], dtype=np.float64
+    )
+    missing_error = max(
+        float(np.max(np.abs(missing_fit_values - missing_prediction))),
+        float(np.max(np.abs(missing_predict_values - missing_prediction))),
+        abs(float(parsed["xgb_missing_fit"][4]) - np.sum(missing_prediction)),
+        abs(float(parsed["xgb_missing_predict"][4]) - np.sum(missing_prediction)),
+        abs(float(parsed["xgb_missing_fit"][5]) - missing_gain),
+        abs(float(parsed["xgb_missing_predict"][5]) - missing_gain),
+    )
+    if missing_error > 2.0e-11:
+        raise RuntimeError(f"FortML XGBoost missing-value oracle mismatch: {missing_error:.3e}")
     return [
         row(
             metadata_values,
@@ -534,6 +599,38 @@ def run_fortran(
             oracle="independent NumPy one-vs-rest recursive second-order tree search",
             notes="simplex sum checked at the independent row-normalization oracle",
         ),
+        row(
+            metadata_values,
+            workload="xgboost_missing",
+            phase="fit",
+            backend="fortml",
+            status="pass",
+            n_samples=MISSING_SAMPLES,
+            n_features=1,
+            n_estimators=1,
+            seconds_per_operation=float(parsed["xgb_missing_fit"][3]),
+            metric="prediction_sum",
+            value=float(np.sum(missing_prediction)),
+            max_abs_error=missing_error,
+            oracle="independent NumPy exact threshold/default-direction oracle",
+            notes="learned NaN default direction; finite values plus one IEEE NaN",
+        ),
+        row(
+            metadata_values,
+            workload="xgboost_missing",
+            phase="predict",
+            backend="fortml",
+            status="pass",
+            n_samples=MISSING_SAMPLES,
+            n_features=1,
+            n_estimators=1,
+            seconds_per_operation=float(parsed["xgb_missing_predict"][3]),
+            metric="prediction_sum",
+            value=float(np.sum(missing_prediction)),
+            max_abs_error=missing_error,
+            oracle="independent NumPy exact threshold/default-direction oracle",
+            notes="stored default branch reused by prediction; infinities remain refused",
+        ),
     ]
 
 
@@ -553,6 +650,30 @@ def optional_xgboost_row(metadata_values: dict[str, str]) -> dict[str, Any]:
     )
 
 
+def unsupported_policy_rows(metadata_values: dict[str, str]) -> list[dict[str, Any]]:
+    """Keep unimplemented histogram-family contracts visible in release CSVs."""
+    return [
+        row(
+            metadata_values,
+            workload="xgboost_histogram",
+            phase="capability_check",
+            backend="fortml",
+            status="unavailable",
+            oracle="declared capability boundary",
+            notes="weighted quantile/histogram growth is not implemented in the exact backend",
+        ),
+        row(
+            metadata_values,
+            workload="lightgbm_histogram",
+            phase="capability_check",
+            backend="fortml",
+            status="unavailable",
+            oracle="declared capability boundary",
+            notes="LightGBM leaf-wise histogram, GOSS, and EFB policies remain planned",
+        ),
+    ]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--fortml", type=Path, default=Path("../fortml"))
@@ -565,6 +686,7 @@ def main() -> None:
     metadata_values = metadata(root, fortml, args.output)
     records = run_fortran(root, fortml, metadata_values)
     records.append(optional_xgboost_row(metadata_values))
+    records.extend(unsupported_policy_rows(metadata_values))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")

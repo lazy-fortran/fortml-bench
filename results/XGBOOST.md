@@ -20,8 +20,10 @@ diagnostics reported by the release app.
 
 The recorded Fortran rows pass with maximum absolute oracle errors of
 `7.11e-14` for squared loss, `3.70e-13` for binary logistic loss, and
-`4.27e-13` for one-vs-rest multiclass probabilities. The current gfortran CPU
-timings are:
+`4.27e-13` for one-vs-rest multiclass probabilities. The six-row missing-value
+fixture also passes with zero oracle error: its learned default branch sends
+the NaN sample left at the exact gain tie policy and reproduces the analytic
+prediction vector. The current gfortran CPU timings are:
 
 | workload / phase | seconds per operation | checked metric |
 |---|---:|---:|
@@ -31,6 +33,8 @@ timings are:
 | logistic objective / predict | 7.996625e-6 | accuracy 1.0 |
 | multiclass OVR / fit | 1.04279475e-3 | accuracy 1.0, simplex sum 192 |
 | multiclass OVR / predict | 2.05455625e-5 | accuracy 1.0, simplex sum 192 |
+| missing/default-direction / fit | release CSV | prediction sum 30, gain 75 |
+| missing/default-direction / predict | release CSV | prediction sum 30, gain 75 |
 
 Timings are machine-specific. The CSV records compiler flags, source commits,
 Python/NumPy versions, and the optional XGBoost package version.
@@ -45,6 +49,14 @@ margins, probabilities for logistic loss, and a piecewise input JVP. The
 multiclass rows fit one recursive binary logistic model per sorted label,
 normalize the positive OVR probabilities, and check the same exact-split
 formulas independently with NumPy.
+
+The `xgboost_missing` rows use six samples, one finite feature, and one IEEE
+NaN. The independent oracle enumerates finite thresholds and both missing
+default directions, checks the regularized gain and all six predictions, and
+requires the stored branch to be reused at prediction time. The CSV also keeps
+explicit `xgboost_histogram` and `lightgbm_histogram` unavailable rows: weighted
+quantile/histogram growth, LightGBM leaf-wise/GOSS/EFB policies, and their GPU
+variants are not silently represented by the exact CPU lane.
 
 The optional `xgboost_reference` row is a dependency check. An installed
 XGBoost release is contextual because histogram construction, tie handling,

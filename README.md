@@ -216,9 +216,10 @@ See [`results/ADAMW_HYPERGRADIENT.md`](results/ADAMW_HYPERGRADIENT.md) for
 the fixture, recurrence, finite-difference oracle, and release-app protocol.
 
 The exact second-order XGBoost-style lane has its own workload and raw record.
-It checks squared, binary logistic, and one-vs-rest multiclass depth-two
-boosting against independent recursive NumPy gradient/Hessian oracles, then
-records an explicit optional-XGBoost contextual row:
+It checks squared, binary logistic, one-vs-rest multiclass, and learned-NaN
+default-direction depth-two boosting against independent recursive NumPy
+gradient/Hessian oracles, then records explicit optional-XGBoost and
+histogram/LightGBM capability rows:
 
 ```bash
 .venv/bin/python -B scripts/bench_xgboost.py \
