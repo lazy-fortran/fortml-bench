@@ -35,24 +35,24 @@ zero oracle error. The current gfortran CPU timings are:
 
 | workload / phase | seconds per operation | checked metric |
 |---|---:|---:|
-| squared objective / fit | 3.7025e-4 | MSE 2.3896623698615184e-3 |
-| squared objective / predict | 9.01634375e-6 | MSE 2.3896623698615184e-3 |
-| logistic objective / fit | 3.456835e-4 | log loss 3.1036146708733506e-2 |
-| logistic objective / predict | 6.6296875e-6 | accuracy 1.0 |
-| multiclass OVR / fit | 1.12418775e-3 | accuracy 1.0, simplex sum 192 |
-| multiclass OVR / predict | 2.369996875e-5 | accuracy 1.0, simplex sum 192 |
+| squared objective / fit | 4.195535e-4 | MSE 2.3896623698615184e-3 |
+| squared objective / predict | 8.9311875e-6 | MSE 2.3896623698615184e-3 |
+| logistic objective / fit | 3.8386125e-4 | log loss 3.1036146708733506e-2 |
+| logistic objective / predict | 1.017325e-5 | accuracy 1.0 |
+| multiclass OVR / fit | 1.26960875e-3 | accuracy 1.0, simplex sum 192 |
+| multiclass OVR / predict | 2.340003125e-5 | accuracy 1.0, simplex sum 192 |
 | squared objective / staged diagnostics | release-app diagnostic row | final margin sum 53.408336292406815, gain sum 1 |
 | logistic objective / staged diagnostics | release-app diagnostic row | final positive-probability sum 111.93386233281304, gain sum 1 |
 | multiclass OVR / staged diagnostics | release-app diagnostic row | final simplex sum 192, gain sum 1 |
 | multiclass OVR / staged margins | release-app diagnostic row | max absolute margin 3.816443060176254 |
-| missing/default-direction / fit | 8.03375e-7 | prediction sum 30, gain 75 |
-| missing/default-direction / predict | 9.41640625e-8 | prediction sum 30, gain 75 |
-| weighted histogram regression / fit | 7.794375e-7 | weighted MSE 14.285714285714286 |
-| weighted histogram regression / predict | 9.16953125e-8 | prediction sum 43.33333333333333 |
-| weighted histogram logistic / fit | 8.18109375e-7 | weighted log loss 0.47578533664472117 |
-| weighted histogram logistic / predict | 1.1271484375e-7 | probability sum 3.5830821746458104 |
-| weighted histogram multiclass / fit | 2.8308125e-6 | accuracy 0.3333333333333333, simplex sum 6 |
-| weighted histogram multiclass / predict | 4.2948046875e-7 | class-0 probability sum 1.2359593130807942 |
+| missing/default-direction / fit | 9.4425e-7 | prediction sum 30, gain 75 |
+| missing/default-direction / predict | 9.6203125e-8 | prediction sum 30, gain 75 |
+| weighted histogram regression / fit | 7.77875e-7 | weighted MSE 14.285714285714286 |
+| weighted histogram regression / predict | 9.267578125e-8 | prediction sum 43.33333333333333 |
+| weighted histogram logistic / fit | 8.34078125e-7 | weighted log loss 0.47578533664472117 |
+| weighted histogram logistic / predict | 1.0687890625e-7 | probability sum 3.5830821746458104 |
+| weighted histogram multiclass / fit | 2.81625e-6 | accuracy 0.3333333333333333, simplex sum 6 |
+| weighted histogram multiclass / predict | 4.34609375e-7 | class-0 probability sum 1.2359593130807942 |
 
 Timings are machine-specific. The CSV records compiler flags, source commits,
 Python/NumPy versions, and the optional XGBoost package version.
