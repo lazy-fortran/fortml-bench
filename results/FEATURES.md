@@ -8,7 +8,7 @@ Fortran app is `fortml_bench_features`. It is built with `fo build --flag
 
 ## What is checked
 
-The lane contains five families of complete calls:
+The lane contains six families of complete calls:
 
 - `mlp_training` trains a deterministic 3-8-1 tanh MLP for 24 full-batch
   Adam epochs. NumPy reproduces the Xavier/phase initializer, MSE plus L2
@@ -26,6 +26,9 @@ The lane contains five families of complete calls:
   an independent exhaustive NumPy recursion. The scikit-learn
   `DecisionTreeRegressor` row is contextual because split tie policies may
   differ. The prediction JVP remains zero away from split boundaries.
+- `regression_metrics` checks MSE, MAE, R2, and pinball loss on a two-output
+  fixture against direct NumPy formulas. The aggregate call records all four
+  values and refuses nonfinite or degenerate inputs in the library contract.
 - `gradient_boosting_regressor` checks 16 sequential residual stumps against
   an independent NumPy implementation. The matched scikit-learn
   `GradientBoostingRegressor` row is a second behavioral reference and agrees
@@ -41,6 +44,7 @@ The recorded FortML rows all pass. The current gfortran CPU timings are:
 | basis pipeline / VJP | 1.236171875e-5 | parameter cotangent sum -5.287453498417015 |
 | CART regression / fit | 1.1614625e-4 | MSE 4.564795134272737e-4 |
 | CART regression / predict | 7.1009375e-7 | prediction sum 43.62121219974771 |
+| regression metrics / aggregate | 2.049484375e-6 | MSE 3.6625981037084515e-3 |
 | decision stump / fit | 4.6362375e-5 | MSE 1.254599131397361e-2 |
 | decision stump / predict | 2.19640625e-7 | prediction sum 43.62121219974757 |
 | gradient boosting / fit | 7.98161e-4 | MSE 6.647611998075403e-2 |

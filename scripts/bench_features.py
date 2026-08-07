@@ -38,6 +38,8 @@ TREE_ESTIMATORS = 16
 TREE_RATE = 0.1
 TREE_LEAF = 3
 CART_DEPTH = 3
+METRIC_N = 128
+METRIC_OUTPUTS = 2
 
 FIELDS = (
     "workload",
@@ -395,6 +397,27 @@ def cart_oracle(x: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, int]:
     return prediction, len(nodes)
 
 
+def regression_metric_oracle() -> dict[str, float]:
+    index = np.arange(1, METRIC_N + 1, dtype=np.float64)
+    target = np.column_stack((np.sin(0.03 * index), np.cos(0.05 * index)))
+    prediction = target.copy()
+    prediction[:, 0] += 0.1 * np.cos(0.07 * index)
+    prediction[:, 1] -= 0.07 * np.sin(0.09 * index)
+    residual = prediction - target
+    mse = float(np.mean(residual**2))
+    mae = float(np.mean(np.abs(residual)))
+    target_mean = np.mean(target, axis=0)
+    r2 = float(
+        np.mean(
+            1.0
+            - np.sum(residual**2, axis=0) / np.sum((target - target_mean) ** 2, axis=0)
+        )
+    )
+    error = target - prediction
+    pinball = float(np.mean(np.maximum(0.25 * error, -0.75 * error)))
+    return {"mse": mse, "mae": mae, "r2": r2, "pinball": pinball}
+
+
 def parse_fortran(stdout: str) -> dict[str, list[list[str]]]:
     rows: dict[str, list[list[str]]] = {}
     for line in stdout.splitlines():
@@ -408,6 +431,7 @@ def parse_fortran(stdout: str) -> dict[str, list[list[str]]]:
             "stump",
             "cart",
             "boosting",
+            "regression_metrics",
         }:
             rows.setdefault(fields[0], []).append(fields[1:])
     required = {
@@ -419,6 +443,7 @@ def parse_fortran(stdout: str) -> dict[str, list[list[str]]]:
         "stump",
         "cart",
         "boosting",
+        "regression_metrics",
     }
     if required - rows.keys():
         raise RuntimeError(
@@ -525,6 +550,21 @@ def run_fortran(
             f"FortML CART oracle mismatch: nodes={cart_values['node_count']} "
             f"expected={cart_nodes}; error={cart_error:.3e}"
         )
+    metric_row = parsed["regression_metrics"][0]
+    metric_expected = regression_metric_oracle()
+    metric_values = {
+        "mse": float(metric_row[3]),
+        "mae": float(metric_row[4]),
+        "r2": float(metric_row[5]),
+        "pinball": float(metric_row[6]),
+    }
+    metric_error = max(
+        abs(metric_values[key] - metric_expected[key]) for key in metric_values
+    )
+    if metric_error > 5.0e-14:
+        raise RuntimeError(
+            f"FortML regression metric oracle mismatch: {metric_error:.3e}"
+        )
 
     records: list[dict[str, Any]] = []
     records.append(
@@ -603,6 +643,26 @@ def run_fortran(
     )
     records.extend(
         [
+            row(
+                metadata,
+                workload="regression_metrics",
+                phase="aggregate",
+                backend="fortml",
+                status="pass",
+                n_samples=METRIC_N,
+                n_features=METRIC_OUTPUTS,
+                repetitions=64,
+                seconds_per_operation=float(metric_row[2]),
+                metric="mse_mae_r2_pinball",
+                value=metric_values["mse"],
+                mse=metric_values["mse"],
+                max_abs_error=metric_error,
+                oracle="independent NumPy MSE/MAE/R2/pinball formulas",
+                notes=(
+                    f"mae={metric_values['mae']:.16e}; r2={metric_values['r2']:.16e}; "
+                    f"pinball(q=0.25)={metric_values['pinball']:.16e}"
+                ),
+            ),
             row(
                 metadata,
                 workload="cart_regressor",
