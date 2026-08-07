@@ -249,6 +249,11 @@ a different workload, precision, device, or residency policy.
   hyperparameter-training rows with an independent NumPy mode/envelope-gradient
   oracle. This records the mode-log-posterior adapter, not full Laplace
   evidence; the raw record is `results/gp_classification_training.csv`.
+- [x] Add an inducing-point Bernoulli variational-GP classification lane with
+  an independent NumPy ELBO/packed-gradient finite-difference fixture and the
+  FortML seeded-Monte-Carlo/JVP/minibatch/refusal test gate. The raw record is
+  `results/gp_variational_classification.csv`; CUDA remains a typed refusal
+  until the inducing solve and likelihood reduction are resident.
 - [x] Add the shared binary GP likelihood value/JVP/VJP lane for logistic and
   probit signed margins, including a stable negative-tail oracle and an
   independent adjoint check. The raw record is `results/gp_likelihood.csv`;
@@ -341,10 +346,11 @@ a different workload, precision, device, or residency policy.
   raw record is `results/mlp_chain.csv`, with separate predict/JVP/VJP/HVP
   timings and an explicit CUDA refusal until a resident fused chain kernel is
   available. The protocol is documented in `results/MLP_CHAIN.md`.
-- [ ] Add variational GP classification with GPyTorch likelihood references and
-  independent dense small-data oracles. Binary and one-vs-rest Laplace lanes
-  are complete. Variational inference and calibrated likelihood comparisons
-  remain separate work.
+- [ ] Add matched GPyTorch variational-likelihood and calibrated-likelihood
+  comparisons. FortML's CPU inducing-point Bernoulli ELBO, packed gradient,
+  JVP, and CUDA refusal are covered by
+  `results/gp_variational_classification.csv`; full likelihood catalogs,
+  natural-gradient optimization, and resident GPU training remain open.
 - [ ] Add the remaining histogram/CART feature matrix: weighted missing-bin
   workloads, class weights, monotonic constraints, early stopping, feature
   importance, categorical inputs, and native GPU histograms. CPU weighted

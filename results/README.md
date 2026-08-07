@@ -36,6 +36,7 @@ Complete-call studies:
 - [Weighted ordinal logistic classification](ORDINAL_LOGISTIC.md)
 - [Weighted softmax training objective and HVP](../README.md#weighted-softmax-training-lane)
 - [GP classification hyperparameter training](GP_CLASSIFICATION_TRAINING.md)
+- [Variational GP classification](GP_VARIATIONAL_CLASSIFICATION.md)
 - [Exact-GP seeded hyperparameter multistart](GP_HYPERPARAMETER_TRAINING.md)
 - [Trainable exact-GP constant and linear means](GP_MEAN.md)
 - [ARD RBF kernel and exact-GP products](GP_ARD.md)

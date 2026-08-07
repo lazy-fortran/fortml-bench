@@ -741,6 +741,19 @@ not full Laplace evidence:
 
 See [`results/GP_CLASSIFICATION_TRAINING.md`](results/GP_CLASSIFICATION_TRAINING.md).
 
+The inducing-point Bernoulli variational-GP lane checks a dense two-inducing
+point ELBO and packed variational-parameter gradient against an independent
+NumPy finite-difference oracle, then runs FortML's seeded Monte Carlo, JVP,
+minibatch, and malformed-label tests. CUDA is an explicit typed refusal until
+the inducing solve, likelihood table, and reduction are resident:
+
+```bash
+python3 -B scripts/bench_gp_variational_classification.py \
+  --fortml ../fortml --output results/gp_variational_classification.csv
+```
+
+See [`results/GP_VARIATIONAL_CLASSIFICATION.md`](results/GP_VARIATIONAL_CLASSIFICATION.md).
+
 The XGBoost-style lane has its own workload and raw record. It checks squared,
 binary logistic, one-vs-rest multiclass, and learned-NaN default-direction
 depth-two boosting against independent recursive NumPy gradient/Hessian
