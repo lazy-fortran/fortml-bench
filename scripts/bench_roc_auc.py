@@ -101,7 +101,7 @@ def main() -> None:
     macro_expected = float(np.mean(per_class))
     metadata = {
         "python_version": platform.python_version(), "numpy_version": np.__version__,
-        "fortml_revision": revision(fortml), "benchmark_revision": revision(root, (ignored,)),
+        "fortml_revision": revision(fortml), "benchmark_revision": revision(root, ignored),
         "compiler": os.environ.get("FO_FC", "gfortran"), "flags": "-O3",
     }
     rows: list[dict[str, object]] = []
