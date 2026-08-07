@@ -81,6 +81,15 @@ def row(details: dict[str, str], **values: object) -> dict[str, object]:
     return result
 
 
+def timing(stdout: str, name: str) -> float | None:
+    pattern = re.compile(rf"^{re.escape(name)},\s*([0-9Ee+.-]+)$")
+    for line in stdout.splitlines():
+        match = pattern.match(line.strip())
+        if match:
+            return float(match.group(1))
+    return None
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--fortml", type=Path, default=Path("../fortml"))
@@ -122,9 +131,12 @@ def main() -> None:
                             else: actual[index, int(record["column"]) - 1] = float(record["value"])
                     error = max(float(np.max(np.abs(actual - expected))),
                                 float(np.max(np.abs(actual_labels - expected_labels))))
-                    fortml_rows.append(row(details, phase="predict", backend="fortml", status="pass",
-                        metric="probability_sum", value=float(actual.sum()), max_abs_error=error,
-                        oracle="complete CategoricalNB probabilities and labels", notes=args.target))
+                    for phase, seconds in (("fit", timing(run.stdout, "categorical_nb_fit")),
+                                           ("predict", timing(run.stdout, "categorical_nb_predict"))):
+                        fortml_rows.append(row(details, phase=phase, backend="fortml", status="pass",
+                            seconds_per_operation=seconds, metric="probability_sum",
+                            value=float(actual.sum()), max_abs_error=error,
+                            oracle="complete CategoricalNB probabilities and labels", notes=args.target))
         if not fortml_rows:
             fortml_rows.append(row(details, phase="predict", backend="fortml", status="unavailable",
                 oracle="FortML release-app protocol", notes="target or build unavailable"))
