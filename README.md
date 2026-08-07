@@ -145,8 +145,9 @@ oracle tolerances, and release-app records.
 
 The Complement Naive Bayes lane independently checks complement counts,
 positive feature weights, stable probabilities, predictions, and an input JVP.
-It retains the scikit-learn prior-intercept difference as contextual evidence
-and records an explicit refusal when the FortML release target is unavailable:
+It retains the scikit-learn prior-intercept difference as contextual evidence;
+the checked-in FortML release app passes the complete oracle, while future
+missing-target runs remain explicit unavailable rows:
 
 ```bash
 .venv/bin/python -B scripts/bench_complement_nb.py \

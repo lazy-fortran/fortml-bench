@@ -36,4 +36,6 @@ timing records.  The harness checks every output element against NumPy with a
 retained as explicit `unavailable` rows and never treated as a timing result.
 
 The checked-in CSV records source revisions, compiler flags, Python/NumPy/
-scikit-learn versions, and the CPU-only boundary.  It contains no CUDA claim.
+scikit-learn versions, and the CPU-only boundary.  The current FortML release
+app passes the complete fit/predict/JVP oracle; future missing-target reruns
+remain parseable `unavailable` rows.  It contains no CUDA claim.
