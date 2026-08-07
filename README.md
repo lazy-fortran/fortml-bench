@@ -1185,6 +1185,23 @@ kernel exists yet, so a CUDA request returns `FORTNUM_NOT_IMPLEMENTED` and is
 never timed through a host fallback. Details are in
 [`results/MLP_CHAIN.md`](results/MLP_CHAIN.md).
 
+## Unfactored Adafactor training
+
+The Adafactor lane checks the deterministic unfactored vector recurrence used
+by `fortml_trainer` and `mlp_train`: exponentially averaged squared gradients,
+update-RMS clipping, and exact split/resume state. An independent NumPy oracle
+runs before the public `test_trainer` and `test_mlp_adafactor` gates. The flat
+API has no parameter-layout metadata, so this lane does not claim matrix
+row/column factorization; CUDA remains a typed unavailable result until a
+resident no-autodiff kernel and a layout-aware adapter are linked.
+
+```bash
+python -B scripts/bench_adafactor.py \
+  --fortml ../fortml --output results/adafactor.csv
+```
+
+See [`results/ADAFACTOR.md`](results/ADAFACTOR.md).
+
 ## Validity boundary
 
 The first comparison is a kernel-product comparison. It does not claim that a
