@@ -423,8 +423,8 @@ See [`results/MLP_SCHEDULE_HYPERGRADIENT.md`](results/MLP_SCHEDULE_HYPERGRADIENT
 The lane records explicit CUDA and outer-hyper-HVP refusal rows rather than
 silently falling back to host finite differences.
 
-Binary probability calibration (Platt sigmoid and weighted PAVA isotonic) is
-checked against an independent NumPy oracle:
+Binary probability calibration (positive temperature scaling, Platt sigmoid,
+and weighted PAVA isotonic) is checked against an independent NumPy oracle:
 
 ```bash
 .venv/bin/python -B scripts/bench_probability_calibration.py \
