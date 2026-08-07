@@ -57,13 +57,22 @@ FIELDS = (
 )
 
 
-def revision(repository: Path) -> str:
+def revision(repository: Path, *, ignored: tuple[Path, ...] = ()) -> str:
     value = subprocess.check_output(
         ["git", "-C", str(repository), "rev-parse", "HEAD"], text=True
     ).strip()
-    dirty = subprocess.check_output(
+    status = subprocess.check_output(
         ["git", "-C", str(repository), "status", "--porcelain"], text=True
-    ).strip()
+    )
+    ignored_names = set()
+    for path in ignored:
+        try:
+            ignored_names.add(
+                path.resolve().relative_to(repository.resolve()).as_posix()
+            )
+        except ValueError:
+            continue
+    dirty = any(line[3:].strip() not in ignored_names for line in status.splitlines())
     return value + ("+dirty" if dirty else "")
 
 
@@ -75,13 +84,13 @@ def package_version(name: str) -> str:
     return str(getattr(module, "__version__", "installed"))
 
 
-def metadata(root: Path, fortml: Path) -> dict[str, str]:
+def metadata(root: Path, fortml: Path, output: Path) -> dict[str, str]:
     return {
         "python_version": platform.python_version(),
         "numpy_version": np.__version__,
         "xgboost_version": package_version("xgboost"),
         "fortml_revision": revision(fortml),
-        "benchmark_revision": revision(root),
+        "benchmark_revision": revision(root, ignored=(output,)),
         "compiler": "gfortran",
         "flags": "-O3",
         "device": "cpu",
@@ -466,7 +475,7 @@ def main() -> None:
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     fortml = args.fortml.resolve()
-    metadata_values = metadata(root, fortml)
+    metadata_values = metadata(root, fortml, args.output)
     records = run_fortran(root, fortml, metadata_values)
     records.append(optional_xgboost_row(metadata_values))
     args.output.parent.mkdir(parents=True, exist_ok=True)
