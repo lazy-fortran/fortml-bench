@@ -139,11 +139,15 @@ a different workload, precision, device, or residency policy.
   gradient/Hessian, regularized leaf-weight, split-gain, squared-objective, and
   logistic-objective checks. Record a dedicated FortML workload and an explicit
   optional-XGBoost contextual/refusal row in `results/xgboost_workloads.csv`.
-- [ ] Add matched multinomial softmax regression and neural classifier lanes.
-  FortML now has the softmax and multiclass MLP implementations (including
-  deterministic input-shape oracles), but this repository still needs the
-  matched probability/metric/timing record before the benchmark lane is
-  complete.
+- [x] Add matched multinomial softmax regression and multiclass neural
+  classifier lanes. `scripts/bench_classification_models.py` uses independent
+  NumPy damped-Newton and full-batch Adam oracles, records scikit-learn and
+  optional resident PyTorch context timings, and emits explicit FortML
+  target/dependency refusals. A FortML pass
+  additionally requires complete probability/prediction arrays and the
+  release-app timing protocol documented in
+  `results/CLASSIFICATION_MODELS.md`. The current raw record is
+  `results/classification_models.csv`.
 - [ ] Add variational GP classification with GPyTorch likelihood references and
   independent dense small-data oracles. Binary and one-vs-rest Laplace lanes
   are complete. Variational inference and calibrated likelihood comparisons

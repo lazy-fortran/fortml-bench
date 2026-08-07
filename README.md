@@ -99,8 +99,22 @@ binary Laplace GP logistic/probit inference against independent NumPy solves:
 ```
 
 See [`results/CLASSIFICATION_EXTENSIONS.md`](results/CLASSIFICATION_EXTENSIONS.md).
-It is deliberately a binary Laplace workload. Multiclass and variational GP
-classification remain separate benchmark contracts.
+The lane now includes one-vs-rest multiclass Laplace GP probabilities. Variational
+GP classification remains a separate benchmark contract.
+
+The matched multinomial softmax and multiclass neural-classifier lane uses an
+independent NumPy damped-Newton/Adam oracle, scikit-learn and optional resident
+PyTorch context rows, and an explicit FortML app protocol. Missing FortML
+targets or optional dependencies are recorded as machine-readable
+`unavailable` rows:
+
+```bash
+.venv/bin/python -B scripts/bench_classification_models.py \
+    --fortml ../fortml --output results/classification_models.csv
+```
+
+See [`results/CLASSIFICATION_MODELS.md`](results/CLASSIFICATION_MODELS.md) for
+the fixture, oracle tolerances, and required release-app records.
 
 The MLP training, composable polynomial/Fourier basis pipeline, deterministic
 decision stump, and residual-stump gradient-boosting lanes are in

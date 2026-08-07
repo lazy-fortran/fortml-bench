@@ -9,6 +9,13 @@ The independent RBF oracle evaluates the stated pairwise formula in blocked
 NumPy loops. It is separate from the dense PyTorch, KeOps, GPyTorch, and
 Fortran implementations.
 
+The classifier lanes use the same provenance rule. The softmax and MLP
+classification record is gated by independent NumPy damped-Newton and
+full-batch Adam implementations before any FortML, scikit-learn, or PyTorch
+timing is retained. Missing optional packages and release targets are written
+as explicit refusal rows, and a FortML pass requires complete probabilities
+and labels in addition to a successful process exit.
+
 The KeOps and GPyTorch adapters follow their public PyTorch interfaces. The
 Fortran adapter invokes the pinned `fortml` benchmark entry point and records
 the source revision it used. No competitor source is linked into the MIT

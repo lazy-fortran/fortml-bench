@@ -5,6 +5,7 @@ Complete-call studies:
 - [Exact GP and MLP workloads](MODEL_WORKLOADS.md)
 - [MLP training, basis pipeline, and tree workloads](FEATURES.md)
 - [GP classification and fitted preprocessing](CLASSIFICATION_EXTENSIONS.md)
+- [Multinomial and neural classification](CLASSIFICATION_MODELS.md)
 - [Stochastic, derivative, multi-output, and variational GP features](GP_FEATURES.md)
 - [Large-GP review comparison](SCALABLE_GP.md)
 
