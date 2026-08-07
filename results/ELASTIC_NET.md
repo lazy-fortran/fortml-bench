@@ -22,10 +22,9 @@ seven FortML):
 
 | Backend | Fit matrix s | Fit vector s | Predict matrix s | Predict vector s | JVP s | VJP parameter s | VJP input s | Maximum oracle error |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| NumPy oracle | 1.438168e-3 | 3.490831e-4 | 2.492210e-6 | 1.337083e-6 | 4.399124e-6 | 3.623502e-6 | 2.458374e-6 | 0 |
-| FortML | 2.896292e-5 | 7.588042e-6 | 6.829583e-7 | 4.375000e-7 | 1.774167e-6 | 1.672750e-6 | 1.672750e-6 | 7.105e-15 |
+| NumPy oracle | 1.452070e-3 | 3.413210e-4 | 2.591543e-6 | 1.337125e-6 | 4.430874e-6 | 3.620541e-6 | 2.365707e-6 | 0 |
+| FortML | 3.296338e-5 | 9.701167e-6 | 9.104583e-7 | 4.654583e-7 | 1.960375e-6 | 1.785833e-6 | 1.785833e-6 | 7.105e-15 |
 
-The CSV records compiler flags and both repository revisions.  This first
-shared-workspace measurement carries `+dirty` provenance while other release
-lanes are being finalized; rerun after those commits for a clean revision
-stamp.
+The CSV records compiler flags and both repository revisions. The current
+FortML rows use revision `263b6b4`; the benchmark revision is recorded per run
+in the CSV.

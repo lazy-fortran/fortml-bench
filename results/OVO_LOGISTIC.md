@@ -19,11 +19,10 @@ probability normalization and labels. The current run has six passing rows:
 
 | Backend | Fit seconds | Predict seconds | Accuracy | Maximum oracle error |
 | --- | ---: | ---: | ---: | ---: |
-| NumPy oracle | 2.648495e-3 | 2.529099e-3 | 0.43359375 | 0 |
-| FortML | 5.544740e-4 | 1.101027e-5 | 0.43359375 | 7.573e-8 |
-| scikit-learn context | 2.308844e-2 | 1.507239e-3 | 0.4375 | not reported |
+| NumPy oracle | 2.749297e-3 | 2.596082e-3 | 0.43359375 | 0 |
+| FortML | 5.600550e-4 | 1.092997e-5 | 0.43359375 | 7.573e-8 |
+| scikit-learn context | 4.472010e-2 | 1.372005e-3 | 0.4375 | not reported |
 
 The CSV records compiler, package, repository, and benchmark revisions. The
-FortML revision carries a `+dirty` suffix because unrelated shared-workspace
-changes were present when this lane was measured. Rerun after those changes
-are committed for a clean provenance stamp.
+current FortML rows use revision `263b6b4`; the benchmark revision is recorded
+per run in the CSV.
