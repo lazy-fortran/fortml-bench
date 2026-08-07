@@ -229,6 +229,15 @@ a different workload, precision, device, or residency policy.
   and XGBoost additive tree contributions. The raw record is
   `results/training_core.csv`; the rows are correctness wall times, not
   throughput claims, and the independent NumPy/Fortran oracles remain explicit.
+- [x] Add the generic trainer portable text checkpoint/resume lane. An
+  independent NumPy Adam state continuation oracle is paired with the
+  `test_trainer` malformed/truncated/extra-record gate in
+  `results/trainer_checkpoint.csv`; host-resident state has an explicit CUDA
+  refusal row.
+- [x] Add the weighted binary MLP objective adapter and bounded L-BFGS-B lane.
+  The independent value/JVP/HVP finite-difference oracle and FortOpt contract
+  are recorded in `results/mlp_binary_objective.csv`; no resident CUDA graph is
+  implied.
 - [ ] Add resident CUDA/OpenACC timing rows for kNN search, RMSprop
   optimizer/trainer state, AdamW trainer state, staged XGBoost diagnostics, and GP classification
   hyperparameter training. Native CUDA kNN and a direct RMSprop state-kernel
@@ -254,6 +263,10 @@ a different workload, precision, device, or residency policy.
   FortML seeded-Monte-Carlo/JVP/minibatch/refusal test gate. The raw record is
   `results/gp_variational_classification.csv`; CUDA remains a typed refusal
   until the inducing solve and likelihood reduction are resident.
+- [x] Add one-vs-rest multiclass variational-GP prediction and parameter-JVP
+  evidence. Sorted arbitrary labels, packed per-class ELBO/gradient/JVP, simplex
+  normalization, and CUDA refusal are gated in
+  `results/gp_variational_multiclass_classification.csv`.
 - [x] Add the shared binary GP likelihood value/JVP/VJP lane for logistic and
   probit signed margins, including a stable negative-tail oracle and an
   independent adjoint check. The raw record is `results/gp_likelihood.csv`;
@@ -296,6 +309,9 @@ a different workload, precision, device, or residency policy.
   while the release app records exact CPU fit/predict, weighted-histogram
   diagnostics, and a typed CUDA refusal in
   `results/xgboost_squared_log.csv`.
+- [x] Add the `rank:pairwise` XGBoost lane. An independent pairwise logistic
+  loss/gradient/Hessian oracle is paired with FortML fit ordering, query
+  isolation, and singleton-query refusal in `results/xgboost_ranking.csv`.
 - [x] Add matched multinomial softmax regression and multiclass neural
   classifier lanes. `scripts/bench_classification_models.py` uses independent
   NumPy damped-Newton and full-batch Adam oracles, records scikit-learn and
@@ -359,9 +375,11 @@ a different workload, precision, device, or residency policy.
 - [ ] Add a matched full XGBoost lane when the optional dependency and a pinned
   release are available. The current exact depth-limited and weighted CPU
   histogram FortML lanes are recorded in `results/xgboost_workloads.csv`; both
-  have independent NumPy correctness gates. Categorical, ranking, constraint,
-  and native GPU histogram comparisons remain separate work. A stump benchmark
-  is not called XGBoost.
+  have independent NumPy correctness gates. Categorical, constraint, and native
+  GPU histogram comparisons remain separate work. The CPU `rank:pairwise`
+  objective now has its own independent gate in `results/xgboost_ranking.csv`;
+  matched external ranking comparisons remain open. A stump benchmark is not
+  called XGBoost.
 - [ ] Add physics-informed, Hamiltonian, Lagrangian, and symplectic workloads
   with analytic harmonic-oscillator and manufactured-PDE oracles. Record
   trajectory error, energy drift, symplectic Jacobian defect, residual norms,
