@@ -181,7 +181,7 @@ def main() -> None:
         result = {field: "" for field in FIELDS}
         result.update({"workload": "derivative_gp", "backend": "fortml", "device": "cpu",
                        "status": "pass", "n_samples": str(N), "n_features": str(D),
-                       "n_query": str(Q), "oracle": "independent NumPy covariance finite-difference oracle",
+                       "n_query": str(Q), "oracle": "independent NumPy analytic covariance and posterior finite-difference oracle",
                        **metadata})
         result.update({key: str(value) for key, value in values.items()})
         return result
