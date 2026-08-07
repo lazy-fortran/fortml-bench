@@ -27,14 +27,14 @@ prediction vector. The current gfortran CPU timings are:
 
 | workload / phase | seconds per operation | checked metric |
 |---|---:|---:|
-| squared objective / fit | 3.781825e-4 | MSE 2.3896623698615184e-3 |
-| squared objective / predict | 8.253375e-6 | MSE 2.3896623698615184e-3 |
-| logistic objective / fit | 3.09438e-4 | log loss 3.1036146708733506e-2 |
-| logistic objective / predict | 7.996625e-6 | accuracy 1.0 |
-| multiclass OVR / fit | 1.04279475e-3 | accuracy 1.0, simplex sum 192 |
-| multiclass OVR / predict | 2.05455625e-5 | accuracy 1.0, simplex sum 192 |
-| missing/default-direction / fit | release CSV | prediction sum 30, gain 75 |
-| missing/default-direction / predict | release CSV | prediction sum 30, gain 75 |
+| squared objective / fit | 3.640435e-4 | MSE 2.3896623698615184e-3 |
+| squared objective / predict | 9.063344e-6 | MSE 2.3896623698615184e-3 |
+| logistic objective / fit | 3.403815e-4 | log loss 3.1036146708733506e-2 |
+| logistic objective / predict | 6.820656e-6 | accuracy 1.0 |
+| multiclass OVR / fit | 1.170693e-3 | accuracy 1.0, simplex sum 192 |
+| multiclass OVR / predict | 2.487438e-5 | accuracy 1.0, simplex sum 192 |
+| missing/default-direction / fit | 8.5475e-7 | prediction sum 30, gain 75 |
+| missing/default-direction / predict | 9.7992e-8 | prediction sum 30, gain 75 |
 
 Timings are machine-specific. The CSV records compiler flags, source commits,
 Python/NumPy versions, and the optional XGBoost package version.

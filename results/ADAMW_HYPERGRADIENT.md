@@ -43,16 +43,18 @@ targets `fortml_bench_adamw_training` and
 file contains every prediction, scalar, gradient component, and JVP and the
 values agree with the independent NumPy record.  A missing target or build
 failure is emitted as explicit `unavailable` rows, never silently dropped.
-The current record therefore retains the NumPy pass rows and the FortML
-target boundary.  It also records untimed CUDA refusal rows for each phase:
-the current trainer and hypergradient release apps are host-only, and no CPU
-timing is relabeled as CUDA evidence.
+The current record contains passing NumPy and FortML rows.  The release apps
+write complete prediction/loss or value/gradient/JVP arrays; the measured
+maximum absolute errors are below `1.2e-12` for the fixed-SGD trajectory and
+`1.0e-15` for AdamW training.  It also records untimed CUDA refusal rows for
+each phase: the current trainer and hypergradient release apps are host-only,
+and no CPU timing is relabeled as CUDA evidence.
 
 The AdamW target protocol uses `FORTML_BENCH_ADAMW_ORACLE` and CSV quantities
 `prediction`, `initial_loss`, and `final_loss`; it emits
 `mlp_adamw_fit,<...>,seconds` and `mlp_adamw_predict,<...>,seconds` records.
 The hypergradient target uses `FORTML_BENCH_HYPERGRADIENT_ORACLE` and
 quantities `value`, `gradient` (indices 1 and 2), and `jvp`; it emits
-`mlp_hypergradient_value_gradient,<...>,seconds`.  These protocols make the
-release-app integration a reproducible follow-on rather than a guessed timing
-row.
+`mlp_hypergradient_value_gradient,<...>,seconds`.  These protocols keep
+release timings tied to complete arrays and independent oracles rather than
+guessed scalar rows.

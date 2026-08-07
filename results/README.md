@@ -10,6 +10,7 @@ Complete-call studies:
 - [Multinomial and neural classification](CLASSIFICATION_MODELS.md)
 - [Differentiable Multinomial Naive Bayes](MULTINOMIAL_NB.md)
 - [Differentiable Complement Naive Bayes](COMPLEMENT_NB.md)
+- [Categorical Naive Bayes](CATEGORICAL_NB.md)
 - [Integer one-hot encoder](ONE_HOT_ENCODER.md)
 - [Stochastic, derivative, multi-output, and variational GP features](GP_FEATURES.md)
 - [Large-GP review comparison](SCALABLE_GP.md)
