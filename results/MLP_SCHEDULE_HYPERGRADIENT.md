@@ -25,7 +25,9 @@ operation on the recorded GNU Fortran host.
 CUDA rows are explicit `unavailable` capability records.  The current MLP
 trajectory has no resident CUDA kernel, so the benchmark never relabels a
 host run as GPU work or hides a transfer.  This boundary is independently
-tested by the FortML release test.
+tested by the FortML release test. The report also retains a CPU `hvp` refusal
+row: an outer hyper-HVP needs third derivatives of the nonlinear network and
+is not approximated by finite differences.
 
 The outer objective is wrapped in FortOpt L-BFGS-B in the FortML API.  A
 second-order hyper-HVP would require third derivatives of the nonlinear MLP;

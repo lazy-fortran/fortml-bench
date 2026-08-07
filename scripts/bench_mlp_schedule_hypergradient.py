@@ -259,6 +259,8 @@ def main() -> None:
     for phase in ("value_gradient", "jvp"):
         rows.append(make_row(details, phase, "fortml", "cuda", "unavailable", "", "", "", "",
                              "resident CUDA trajectory kernel is not linked; no host fallback"))
+    rows.append(make_row(details, "hvp", "fortml", "cpu", "unavailable", "", "", "", "",
+                         "outer hyper-HVP requires third network derivatives; typed refusal"))
     with output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS)
         writer.writeheader(); writer.writerows(rows)
