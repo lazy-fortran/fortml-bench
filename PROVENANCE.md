@@ -70,6 +70,11 @@ maximum oracle error of `1.78e-15`. Its CUDA row remains explicitly unavailable
 because FortML has no resident tree kernel; no CPU objective timing is reused
 as GPU evidence.
 
+The generic hyperparameter-search record independently enumerates the 5×5×5
+Cartesian grid for a three-parameter quadratic and checks FortOpt L-BFGS-B
+against its analytic minimum. The CUDA row is an explicit unavailable refusal
+because no resident objective/search state is linked.
+
 The KeOps and GPyTorch adapters follow their public PyTorch interfaces. The
 Fortran adapter invokes the pinned `fortml` benchmark entry point and records
 the source revision it used. No competitor source is linked into the MIT

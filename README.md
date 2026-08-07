@@ -493,6 +493,18 @@ histogram timings on a larger deterministic count workload:
 See [`results/XGBOOST_POISSON.md`](results/XGBOOST_POISSON.md). Its CUDA row
 is an explicit unavailable refusal until a resident tree kernel is linked.
 
+The generic hyperparameter-search lane uses an independent three-parameter
+quadratic oracle to gate Cartesian grid and FortOpt L-BFGS-B timings:
+
+```bash
+.venv/bin/python -B scripts/bench_hyperparameter_search.py \
+  --fortml ../fortml --output results/hyperparameter_search.csv
+```
+
+See [`results/HYPERPARAMETER_SEARCH.md`](results/HYPERPARAMETER_SEARCH.md).
+The CUDA row is an explicit unavailable refusal until resident objective/search
+state is implemented.
+
 The scalable-model report <!-- slop-ok --> also contains the current corrected GRBCM,
 contiguous-versus-clustered expert, and multidimensional-SKI records. Older
 GRBCM rows are superseded because they predate the communication-set and
