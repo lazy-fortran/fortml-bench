@@ -32,6 +32,7 @@ Complete-call studies:
 - [Weighted linear SVM classification](LINEAR_SVM.md)
 - [Weighted linear SVR regression](LINEAR_SVR.md)
 - [Weighted ordinal logistic classification](ORDINAL_LOGISTIC.md)
+- [Weighted softmax training objective and HVP](../README.md#weighted-softmax-training-lane)
 - [GP classification hyperparameter training](GP_CLASSIFICATION_TRAINING.md)
 - [Exact-GP seeded hyperparameter multistart](GP_HYPERPARAMETER_TRAINING.md)
 - [GP classification and fitted preprocessing](CLASSIFICATION_EXTENSIONS.md)

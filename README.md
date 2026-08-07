@@ -306,6 +306,22 @@ See [`results/ORDINAL_LOGISTIC.md`](results/ORDINAL_LOGISTIC.md). CUDA rows
 are explicit `unavailable` capability records until a resident ordinal kernel
 is linked; no host fallback is timed.
 
+### Weighted softmax-training lane
+
+The weighted softmax-training lane checks the packed FortOpt value, gradient,
+and exact joint L2 HVP from `softmax_training_objective_t` against an
+independent NumPy multinomial cross-entropy oracle. It also exercises bounded
+FortOpt L-BFGS-B and records the release-app CPU fit plus a typed CUDA refusal:
+
+```bash
+python -B scripts/bench_softmax_training.py \
+  --fortml ../fortml --output results/softmax_training.csv
+```
+
+The CSV retains componentwise value/gradient/HVP errors and the explicit
+`FORTNUM_NOT_IMPLEMENTED` device record; no CPU result is relabeled as GPU
+work.
+
 The shared binary GP likelihood lane separately checks signed-margin logistic
 and probit value/JVP/VJP products, including a stable negative-probit tail and
 an independent adjoint oracle:
