@@ -149,8 +149,8 @@ def adamw_oracle() -> tuple[float, float]:
     return norm, checksum
 
 
-def dense_oracle() -> float:
-    """Return the activation-sweep checksum for the resident dense plan.
+def dense_oracle() -> tuple[float, float]:
+    """Return value and JVP activation-sweep checksums for the dense plan.
 
     The native gate independently checks every output against the same
     recurrence.  Keeping a NumPy checksum here makes the benchmark row a
@@ -166,23 +166,49 @@ def dense_oracle() -> float:
         0.25, -1.0, 2.0, 0.5, -1.5,
     ], dtype=np.float64).reshape((3, 5))
     affine = weights @ query + bias[:, None]
+    query_dot = np.array([
+        0.25, -0.5, 1.0, -0.75, 0.2,
+        -0.4, 0.8, -0.6, 0.3, -0.1,
+        0.7, -0.2, 0.5, 0.9, -0.8,
+    ], dtype=np.float64).reshape((3, 5))
+    weights_dot = np.array([
+        -0.2, 0.3, 0.1, 0.4, -0.5, 0.6,
+    ], dtype=np.float64).reshape((2, 3))
+    bias_dot = np.array([0.15, -0.25], dtype=np.float64)
+    affine_dot = weights @ query_dot + weights_dot @ query + bias_dot[:, None]
     values: list[np.ndarray] = []
+    tangents: list[np.ndarray] = []
     values.append(affine)
+    tangents.append(affine_dot)
     values.append(np.tanh(affine))
+    tangents.append((1.0 - np.tanh(affine)**2) * affine_dot)
     values.append(np.maximum(affine, 0.0))
+    tangents.append(np.where(affine >= 0.0, affine_dot, 0.0))
+    gelu_inner = 0.79788456080286535588 * (affine + 0.044715 * affine**3)
+    gelu_tanh = np.tanh(gelu_inner)
     values.append(0.5 * affine * (1.0 + np.tanh(
         0.79788456080286535588 *
         (affine + 0.044715 * affine**3))))
+    tangents.append((0.5 * (1.0 + gelu_tanh) +
+                     0.5 * affine * (1.0 - gelu_tanh**2) *
+                     0.79788456080286535588 * (1.0 + 3.0 * 0.044715 * affine**2)) *
+                    affine_dot)
+    sigmoid = 1.0 / (1.0 + np.exp(-affine))
     values.append(affine / (1.0 + np.exp(-affine)))
+    tangents.append((sigmoid + affine * sigmoid * (1.0 - sigmoid)) * affine_dot)
     values.append(np.where(affine >= 0.0, affine, np.exp(affine) - 1.0))
+    tangents.append(np.where(affine >= 0.0, 1.0, np.exp(affine)) * affine_dot)
     values.append(np.where(
         affine > 20.0, affine,
         np.where(affine < -20.0, np.exp(affine), np.log1p(np.exp(affine)))))
+    tangents.append(sigmoid * affine_dot)
     values.append(np.where(affine >= 0.0, affine, 0.01 * affine))
+    tangents.append(np.where(affine >= 0.0, 1.0, 0.01) * affine_dot)
     checksum = float(sum(np.sum(value) for value in values))
-    if not np.isfinite(checksum):
+    jvp_checksum = float(sum(np.sum(tangent) for tangent in tangents))
+    if not np.isfinite(checksum) or not np.isfinite(jvp_checksum):
         raise RuntimeError("CUDA dense independent oracle is nonfinite")
-    return checksum
+    return checksum, jvp_checksum
 
 
 def run_gate(fortml: Path, script_name: str) -> tuple[str, str, float | None]:
@@ -221,7 +247,7 @@ def main() -> None:
     rmsprop_norm, rmsprop_checksum = rmsprop_oracle()
     mse_value = mse_oracle()
     adamw_norm, adamw_checksum = adamw_oracle()
-    dense_checksum = dense_oracle()
+    dense_checksum, dense_jvp_checksum = dense_oracle()
     rows: list[dict[str, Any]] = []
 
     status, notes, elapsed = run_gate(fortml, "run_knn_classifier_cuda.sh")
@@ -313,6 +339,14 @@ def main() -> None:
                        (0.0 if status == "pass" else "")),
         oracle="independent NumPy affine plus eight-activation checksum",
         notes=f"native gate checks all eight MLP activations and two resident batches; expected checksum={dense_checksum:.16e}; {notes}"))
+    rows.append(base(
+        details, workload="cuda_dense_resident_jvp", phase="jvp", status=status,
+        seconds_per_operation="", metric="activation_jvp_checksum",
+        value=dense_jvp_checksum,
+        max_abs_error=(observed_error if observed_error is not None else
+                       (0.0 if status == "pass" else "")),
+        oracle="independent NumPy affine tangent plus eight activation derivatives",
+        notes=f"native gate checks value/JVP for all eight activations; expected checksum={dense_jvp_checksum:.16e}; {notes}"))
 
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:

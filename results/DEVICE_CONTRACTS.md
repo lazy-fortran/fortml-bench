@@ -53,13 +53,14 @@ query batches; strict-threshold routing, class probabilities, sorted-label ties,
 and the reported maximum error are checked before the plan is destroyed. This
 is prediction-only and does not expose Fortran tree fitting or autodiff kernels.
 
-The dense row exercises `run_cuda_dense_plan.sh` against an independent NumPy
-affine/activation checksum. The native plan keeps one output-major weight
-matrix and bias vector resident while checking linear, `tanh`, ReLU, GELU,
-SiLU, ELU, softplus, and leaky-ReLU outputs, followed by a second query batch
-on one plan. The gate also checks finite-input refusal. This is a
-no-autodiff inference primitive; it does not establish resident MLP training,
-gradient assembly, or hypergradient support.
+The dense rows exercise `run_cuda_dense_plan.sh` against independent NumPy
+affine/activation and forward-mode tangent checks. The native plan keeps one
+output-major weight matrix and bias vector resident while checking linear,
+`tanh`, ReLU, GELU, SiLU, ELU, softplus, and leaky-ReLU outputs and JVPs,
+followed by a second query batch on one plan. The gate also checks finite-input
+refusal. This is a resident value/JVP primitive; it does not establish resident
+MLP training, reverse products, HVPs, gradient assembly, or hypergradient
+support.
 
 The recorded run used an NVIDIA GeForce RTX 5060 Ti (driver 610.43.03,
 16,311 MiB), CUDA 13.3, nvfortran 26.5, and gfortran as the host compiler.
@@ -71,7 +72,7 @@ intentional. If `nvcc`, `nvfortran`, or a CUDA device is unavailable, the same
 rows become explicit `skipped` records instead of being relabeled as CPU
 measurements.
 
-This gate covers resident kNN, forest, and dense-affine prediction, the
+This gate covers resident kNN, forest, and dense-affine prediction/JVP, the
 no-autodiff RMSprop and AdamW state kernels, and both weighted MSE reductions.
 It does not establish CUDA support for MLP gradient assembly, RMSprop
 hypergradients, staged XGBoost, or GP classification training; those remain

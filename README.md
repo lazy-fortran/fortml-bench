@@ -661,8 +661,9 @@ See [`results/RMSPROP_HYPERGRADIENT.md`](results/RMSPROP_HYPERGRADIENT.md).
 
 The resident CUDA contract lane independently checks the native kNN prediction
 plan, the resident dense-affine inference primitive (all eight MLP
-activations), and the no-autodiff RMSprop optimizer-state kernel. NumPy
-computes the expected labels, activation checksum, and five-step centered
+activations and their forward-mode JVP), and the no-autodiff RMSprop
+optimizer-state kernel. NumPy computes the expected labels, activation and
+activation-JVP checksums, and five-step centered
 recurrence before the native gates run. These are correctness rows, not timings
 for a complete estimator or trainer; missing CUDA toolchains/devices remain
 explicit `skipped` records:
