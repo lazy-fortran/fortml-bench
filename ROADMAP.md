@@ -223,6 +223,10 @@ a different workload, precision, device, or residency policy.
 - [x] Add mean, median, and constant differentiable simple-imputer workloads
   with independent statistic, transform, JVP, and VJP checks. Host-only device
   boundaries are retained as explicit capability notes.
+- [x] Add dense missing-indicator workloads for both `all` and `missing-only`
+  policies, with complete transform and zero JVP/VJP array checks, release CPU
+  timings, independent NumPy NaN-mask oracles, and explicit CUDA refusal rows.
+  Sparse CSR/CSC views and resident indicator kernels remain separate work.
 - [x] Add a composable polynomial/Fourier basis-pipeline lane with independent
   transform, JVP, and VJP checks and timings.
 - [x] Add the fitted basis-linear regression composition lane with an

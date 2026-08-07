@@ -561,6 +561,19 @@ See [`results/TRAINING_IMPUTER.md`](results/TRAINING_IMPUTER.md).  The lane is
 CPU-only until FortML exposes a device-resident trainer/imputer path; no CPU
 timing is relabeled as CUDA evidence.
 
+The dense missing-indicator lane checks both `all` and `missing-only` fit-time
+column policies against an independent NumPy NaN-mask oracle. It compares
+every transform entry and exact zero JVP/VJP product, records release CPU
+timings, and retains typed CUDA refusals:
+
+```bash
+python3 scripts/bench_missing_indicator.py \
+  --fortml ../fortml --output results/missing_indicator.csv
+```
+
+See [`results/MISSING_INDICATOR.md`](results/MISSING_INDICATOR.md). Sparse
+CSR/CSC views and resident device kernels remain separate work packages.
+
 The AdamW and fixed-trajectory MLP hypergradient lanes use separate release
 contracts.  NumPy independently checks the AdamW moments/decoupled decay and
 the validation objective, log-hyperparameter finite-difference gradient, and
