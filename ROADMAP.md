@@ -173,8 +173,10 @@ a different workload, precision, device, or residency policy.
   PyTorch CUDA rows remain independent evidence.
 - [ ] Add resident CUDA/OpenACC correctness-gated rows for kNN search, RMSprop
   optimizer/trainer state, staged XGBoost diagnostics, and GP classification
-  hyperparameter training. Until those rows pass, their CPU timings remain
-  provisional and device refusals must stay explicit.
+  hyperparameter training. Native CUDA kNN and a direct RMSprop state-kernel
+  oracle now exist in the FortML checkout, but these benchmark rows still need
+  matched transfer-inclusive and resident timings. Until those rows pass, CPU
+  timings remain provisional and device refusals must stay explicit.
 - [x] Add fitted standard/min-max scaler, binary Laplace GP logistic/probit,
   and one-vs-rest multiclass Laplace-GP lanes with independent NumPy transform
   and Newton posterior oracles. The raw record is

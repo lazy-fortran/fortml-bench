@@ -254,11 +254,18 @@ Adagrad timing:
 
 See [`results/RMSPROP.md`](results/RMSPROP.md).
 
+FortML also ships a resident native-CUDA RMSprop state kernel for direct
+device-resident gradients. `../fortml/test/run_cuda_rmsprop_state.sh` checks
+its centered recurrence against an independent CPU oracle. The benchmark CSV
+does not claim a CUDA timing for the full MLP trainer until gradient assembly,
+transfer accounting, and matched device timing are included.
+
 The fixed full-batch RMSprop hypergradient lane independently finite-differences
 the value, all five packed hyperparameters, and a directional JVP for separate
 centered and uncentered trajectories. The FortML release app is retained only after its
-value, gradient, and JVP products pass the NumPy oracle; CUDA remains an
-explicit refusal until the state is resident:
+value, gradient, and JVP products pass the NumPy oracle. The no-autodiff
+optimizer state has a separate resident CUDA oracle, while CUDA remains an
+explicit refusal for the complete MLP HVP trajectory:
 
 ```bash
 .venv/bin/python -B scripts/bench_rmsprop_hypergradient.py \

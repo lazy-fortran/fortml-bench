@@ -19,9 +19,11 @@ fixture. It exports the
 validation value, five packed gradient components, and JVP through
 `FORTML_BENCH_RMSPROP_HYPERGRADIENT_ORACLE`, followed by a repeated
 `value_gradient` timing. The harness rejects the release timing when any
-reported product differs from NumPy by more than `3e-10`. CUDA rows remain an
-explicit `unavailable` capability boundary until the optimizer state and MLP
-HVP are resident on device; no CPU timing is relabeled as CUDA evidence.
+reported product differs from NumPy by more than `3e-10`. The direct
+no-autodiff RMSprop state kernel is checked separately by
+`../fortml/test/run_cuda_rmsprop_state.sh`. CUDA rows for the complete MLP
+HVP trajectory remain explicit `unavailable` capability boundaries, and no
+CPU timing is relabeled as CUDA evidence.
 
 Run:
 
