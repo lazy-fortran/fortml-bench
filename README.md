@@ -117,7 +117,8 @@ See [`results/CLASSIFICATION_MODELS.md`](results/CLASSIFICATION_MODELS.md) for
 the fixture, oracle tolerances, and required release-app records.
 
 The MLP training, composable polynomial/Fourier basis pipeline, deterministic
-decision stump, and residual-stump gradient-boosting lanes are in
+decision stump, depth-limited CART regression, and residual-stump gradient-
+boosting lanes are in
 [`results/FEATURES.md`](results/FEATURES.md). Run them with:
 
 ```bash

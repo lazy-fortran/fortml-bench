@@ -8,7 +8,7 @@ Fortran app is `fortml_bench_features`. It is built with `fo build --flag
 
 ## What is checked
 
-The lane contains four families of complete calls:
+The lane contains five families of complete calls:
 
 - `mlp_training` trains a deterministic 3-8-1 tanh MLP for 24 full-batch
   Adam epochs. NumPy reproduces the Xavier/phase initializer, MSE plus L2
@@ -21,6 +21,11 @@ The lane contains four families of complete calls:
 - `decision_stump` checks the exhaustive squared-error split, leaf values,
   predictions, and piecewise-constant result against an independent NumPy
   split search. The prediction JVP is zero away from split boundaries.
+- `cart_regressor` checks a depth-3 recursive weighted-squared-error tree
+  (uniform weights in this fixture), node count, predictions, and MSE against
+  an independent exhaustive NumPy recursion. The scikit-learn
+  `DecisionTreeRegressor` row is contextual because split tie policies may
+  differ. The prediction JVP remains zero away from split boundaries.
 - `gradient_boosting_regressor` checks 16 sequential residual stumps against
   an independent NumPy implementation. The matched scikit-learn
   `GradientBoostingRegressor` row is a second behavioral reference and agrees
@@ -34,6 +39,8 @@ The recorded FortML rows all pass. The current gfortran CPU timings are:
 | basis pipeline / transform | 1.13705e-5 | feature sum 2753.0921746559225 |
 | basis pipeline / JVP | 2.346484375e-5 | JVP sum 1231.6432747014742 |
 | basis pipeline / VJP | 1.224746875e-5 | parameter cotangent sum -5.287453498417015 |
+| CART regression / fit | 1.17512625e-4 | MSE 4.564795134272737e-4 |
+| CART regression / predict | 7.21515625e-7 | prediction sum 43.62121219974771 |
 | decision stump / fit | 4.7289125e-5 | MSE 1.254599131397361e-2 |
 | decision stump / predict | 1.04578125e-7 | prediction sum 43.62121219974757 |
 | gradient boosting / fit | 7.56505625e-4 | MSE 6.647611998075403e-2 |
@@ -47,9 +54,10 @@ records source revisions and package versions for that purpose.
 
 The scikit-learn MLP row is a contextual optimizer comparison: its estimator
 initialization and update details are not expected to be bitwise identical to
-FortML. The scikit-learn depth-1 boosting row uses the same learning rate,
-number of estimators, and minimum leaf size, and matches the fixture's
-predictions to roundoff.
+FortML. The scikit-learn CART row uses the same depth and minimum leaf size,
+but split tie behavior is contextual. The scikit-learn depth-1 boosting row
+uses the same learning rate, number of estimators, and minimum leaf size, and
+matches the fixture's predictions to roundoff.
 
 PyTorch, JAX, and XGBoost are represented by explicit dependency-check rows.
 On the recorded machine PyTorch is installed but is not timed by this lane.

@@ -37,6 +37,7 @@ TREE_D = 2
 TREE_ESTIMATORS = 16
 TREE_RATE = 0.1
 TREE_LEAF = 3
+CART_DEPTH = 3
 
 FIELDS = (
     "workload",
@@ -334,6 +335,66 @@ def boosting_oracle() -> dict[str, float]:
     }
 
 
+def cart_oracle(x: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, int]:
+    """Return a deterministic exhaustive CART prediction and node count."""
+
+    nodes: list[dict[str, Any]] = []
+
+    def build(indices: np.ndarray, depth: int) -> int:
+        node = len(nodes)
+        nodes.append({"leaf": True, "value": float(np.mean(y[indices]))})
+        if depth >= CART_DEPTH or indices.size < 2 * TREE_LEAF:
+            return node
+        parent_sse = float(np.sum((y[indices] - np.mean(y[indices])) ** 2))
+        best: tuple[float, int, float, np.ndarray, np.ndarray] | None = None
+        for feature in range(x.shape[1]):
+            order = np.argsort(x[indices, feature], kind="stable")
+            for k in range(TREE_LEAF, indices.size - TREE_LEAF + 1):
+                left_order = order[:k]
+                right_order = order[k:]
+                left_values = x[indices[left_order], feature]
+                right_values = x[indices[right_order], feature]
+                if left_values[-1] >= right_values[0]:
+                    continue
+                threshold = 0.5 * (left_values[-1] + right_values[0])
+                left = indices[left_order]
+                right = indices[right_order]
+                left_mean = float(np.mean(y[left]))
+                right_mean = float(np.mean(y[right]))
+                sse = float(
+                    np.sum((y[left] - left_mean) ** 2)
+                    + np.sum((y[right] - right_mean) ** 2)
+                )
+                candidate = (sse, feature, threshold, left, right)
+                if best is None or sse < best[0]:
+                    best = candidate
+        if best is None or best[0] >= parent_sse:
+            return node
+        _, feature, threshold, left, right = best
+        nodes[node].update(
+            {
+                "leaf": False,
+                "feature": feature,
+                "threshold": threshold,
+                "left": build(left, depth + 1),
+                "right": build(right, depth + 1),
+            }
+        )
+        return node
+
+    build(np.arange(x.shape[0]), 0)
+    prediction = np.empty_like(y)
+    for i in range(x.shape[0]):
+        node = 0
+        while not nodes[node]["leaf"]:
+            if x[i, nodes[node]["feature"]] < nodes[node]["threshold"]:
+                node = nodes[node]["left"]
+            else:
+                node = nodes[node]["right"]
+        prediction[i] = nodes[node]["value"]
+    return prediction, len(nodes)
+
+
 def parse_fortran(stdout: str) -> dict[str, list[list[str]]]:
     rows: dict[str, list[list[str]]] = {}
     for line in stdout.splitlines():
@@ -345,6 +406,7 @@ def parse_fortran(stdout: str) -> dict[str, list[list[str]]]:
             "basis_jvp",
             "basis_vjp",
             "stump",
+            "cart",
             "boosting",
         }:
             rows.setdefault(fields[0], []).append(fields[1:])
@@ -355,6 +417,7 @@ def parse_fortran(stdout: str) -> dict[str, list[list[str]]]:
         "basis_jvp",
         "basis_vjp",
         "stump",
+        "cart",
         "boosting",
     }
     if required - rows.keys():
@@ -443,6 +506,25 @@ def run_fortran(
     )
     if tree_error > 5.0e-12:
         raise RuntimeError(f"FortML tree oracle mismatch: {tree_error:.3e}")
+    cart_row = parsed["cart"][0]
+    cart_prediction, cart_nodes = cart_oracle(*tree_inputs())
+    cart_values = {
+        "mse": float(cart_row[5]),
+        "prediction_sum": float(cart_row[6]),
+        "node_count": int(cart_row[7]),
+    }
+    cart_error = max(
+        abs(
+            cart_values["mse"]
+            - float(np.mean((cart_prediction - tree_inputs()[1]) ** 2))
+        ),
+        abs(cart_values["prediction_sum"] - float(np.sum(cart_prediction))),
+    )
+    if cart_values["node_count"] != cart_nodes or cart_error > 5.0e-12:
+        raise RuntimeError(
+            f"FortML CART oracle mismatch: nodes={cart_values['node_count']} "
+            f"expected={cart_nodes}; error={cart_error:.3e}"
+        )
 
     records: list[dict[str, Any]] = []
     records.append(
@@ -523,6 +605,39 @@ def run_fortran(
         [
             row(
                 metadata,
+                workload="cart_regressor",
+                phase="fit",
+                backend="fortml",
+                status="pass",
+                n_samples=TREE_N,
+                n_features=TREE_D,
+                repetitions=8,
+                seconds_per_operation=float(cart_row[3]),
+                metric="mse",
+                value=cart_values["mse"],
+                mse=cart_values["mse"],
+                max_abs_error=cart_error,
+                oracle="independent NumPy exhaustive recursive CART",
+                notes=f"max_depth={CART_DEPTH}; min_samples_leaf={TREE_LEAF}; nodes={cart_nodes}",
+            ),
+            row(
+                metadata,
+                workload="cart_regressor",
+                phase="predict",
+                backend="fortml",
+                status="pass",
+                n_samples=TREE_N,
+                n_features=TREE_D,
+                repetitions=64,
+                seconds_per_operation=float(cart_row[4]),
+                metric="prediction_sum",
+                value=cart_values["prediction_sum"],
+                max_abs_error=cart_error,
+                oracle="independent NumPy exhaustive recursive CART",
+                notes="piecewise constant prediction; input JVP is zero away from splits",
+            ),
+            row(
+                metadata,
                 workload="decision_stump",
                 phase="fit",
                 backend="fortml",
@@ -597,6 +712,7 @@ def run_fortran(
 def run_sklearn(metadata: dict[str, str]) -> list[dict[str, Any]]:
     try:
         from sklearn.ensemble import GradientBoostingRegressor
+        from sklearn.tree import DecisionTreeRegressor
         from sklearn.neural_network import MLPRegressor
     except ImportError as exc:
         return [
@@ -631,6 +747,18 @@ def run_sklearn(metadata: dict[str, str]) -> list[dict[str, Any]]:
     mlp_mse = float(np.mean((prediction - target[:, 0]) ** 2))
     x_tree, y_tree = tree_inputs()
     started = time.perf_counter()
+    cart = DecisionTreeRegressor(
+        max_depth=CART_DEPTH,
+        min_samples_leaf=TREE_LEAF,
+        random_state=0,
+        criterion="squared_error",
+    )
+    cart.fit(x_tree, y_tree)
+    cart_fit_seconds = time.perf_counter() - started
+    started = time.perf_counter()
+    cart_prediction = cart.predict(x_tree)
+    cart_predict_seconds = time.perf_counter() - started
+    started = time.perf_counter()
     booster = GradientBoostingRegressor(
         n_estimators=TREE_ESTIMATORS,
         learning_rate=TREE_RATE,
@@ -661,6 +789,37 @@ def run_sklearn(metadata: dict[str, str]) -> list[dict[str, Any]]:
             mse=mlp_mse,
             oracle="NumPy fixture; sklearn Adam implementation",
             notes="estimator initialization differs; quality is contextual, not bitwise",
+        ),
+        row(
+            metadata,
+            workload="cart_regressor",
+            phase="fit",
+            backend="sklearn",
+            status="pass",
+            n_samples=TREE_N,
+            n_features=TREE_D,
+            repetitions=1,
+            seconds_per_operation=cart_fit_seconds,
+            metric="mse",
+            value=float(np.mean((cart_prediction - y_tree) ** 2)),
+            mse=float(np.mean((cart_prediction - y_tree) ** 2)),
+            oracle="NumPy fixture; sklearn DecisionTreeRegressor",
+            notes=f"max_depth={CART_DEPTH}; min_samples_leaf={TREE_LEAF}",
+        ),
+        row(
+            metadata,
+            workload="cart_regressor",
+            phase="predict",
+            backend="sklearn",
+            status="pass",
+            n_samples=TREE_N,
+            n_features=TREE_D,
+            repetitions=1,
+            seconds_per_operation=cart_predict_seconds,
+            metric="prediction_sum",
+            value=float(np.sum(cart_prediction)),
+            oracle="NumPy fixture; sklearn DecisionTreeRegressor",
+            notes="sklearn tree prediction is contextual; split ties may differ",
         ),
         row(
             metadata,
