@@ -170,11 +170,13 @@ def main() -> None:
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     fortml = args.fortml.resolve()
+    ignored_outputs = tuple((root / "results" / name).resolve() for name in (
+        "kernel_catalog.csv", "discriminant_analysis.csv", "xgboost_robust.csv"))
     x, labels, weights, query, _ = fixture()
     metadata = {
         "python_version": platform.python_version(), "numpy_version": np.__version__,
         "fortml_revision": revision(fortml),
-        "benchmark_revision": revision(root, (args.output.resolve(),)),
+        "benchmark_revision": revision(root, ignored_outputs),
         "compiler": os.environ.get("FO_FC", "gfortran"), "flags": "-O3",
     }
 

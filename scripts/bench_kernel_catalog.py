@@ -171,9 +171,11 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=Path("results/kernel_catalog.csv"))
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
+    ignored_outputs = tuple((root / "results" / name).resolve() for name in (
+        "kernel_catalog.csv", "discriminant_analysis.csv", "xgboost_robust.csv"))
     metadata = {
         "python_version": platform.python_version(), "numpy_version": np.__version__,
-        "fortml_revision": revision(args.fortml), "benchmark_revision": revision(root, (args.output,)),
+        "fortml_revision": revision(args.fortml), "benchmark_revision": revision(root, ignored_outputs),
         "compiler": "gfortran", "flags": "-O3",
     }
     expected = {name: oracle(name) for name in PARAMETERS}
