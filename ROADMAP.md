@@ -134,6 +134,10 @@ a different workload, precision, device, or residency policy.
   NumPy first/second-moment and decoupled-weight-decay oracle.  The raw record
   is `results/adamw_training.csv`; an absent FortML release app remains an
   explicit `unavailable` target row.
+- [x] Add an independent Adagrad accumulated-square and checkpoint/resume
+  recurrence lane. The raw record is `results/adagrad.csv`; the missing
+  dedicated FortML release app remains an explicit `unavailable` row rather
+  than borrowing an Adam/AdamW timing.
 - [x] Add a fixed full-batch MLP SGD hypergradient workload over log learning
   rate and log L2, including a central finite-difference value/gradient/JVP
   oracle and explicit FortML release-target refusal rows.  The raw record is
@@ -199,6 +203,11 @@ a different workload, precision, device, or residency policy.
   Categorical JVP/VJP are explicit refusals because integer categories have no
   canonical tangent space.  The raw record is `results/one_hot_encoder.csv`
   and the protocol is documented in `results/ONE_HOT_ENCODER.md`.
+- [x] Add a centered dense PCA lane with an independent NumPy thin-SVD oracle,
+  scikit-learn full-SVD context, deterministic sign/rank checks, and the
+  FortML release-app orthonormality/timing protocol. The raw record is
+  `results/pca.csv`; complete FortML fitted-array export remains explicitly
+  open in `results/PCA.md`.
 - [ ] Add variational GP classification with GPyTorch likelihood references and
   independent dense small-data oracles. Binary and one-vs-rest Laplace lanes
   are complete. Variational inference and calibrated likelihood comparisons

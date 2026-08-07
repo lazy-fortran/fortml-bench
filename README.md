@@ -215,6 +215,32 @@ are explicit `unavailable` rows:
 See [`results/ADAMW_HYPERGRADIENT.md`](results/ADAMW_HYPERGRADIENT.md) for
 the fixture, recurrence, finite-difference oracle, and release-app protocol.
 
+The centered dense PCA lane compares the NumPy thin-SVD oracle with a
+scikit-learn full-SVD context and the FortML release app. It checks centering,
+deterministic sign alignment, rank ordering, and component orthonormality
+before retaining timings:
+
+```bash
+.venv/bin/python -B scripts/bench_pca.py \
+  --fortml ../fortml --output results/pca.csv
+```
+
+See [`results/PCA.md`](results/PCA.md). The current FortML release app exports
+an orthonormality guard and fit timing; complete fitted-array export remains an
+explicit follow-up boundary in the report.
+
+The Adagrad lane independently checks the accumulated-square recurrence and
+interrupted-versus-uninterrupted state resume. FortML's trainer target is
+recorded as `unavailable` until a release app exports the same state, with no
+other optimizer timing substituted:
+
+```bash
+.venv/bin/python -B scripts/bench_adagrad.py \
+  --fortml ../fortml --output results/adagrad.csv
+```
+
+See [`results/ADAGRAD.md`](results/ADAGRAD.md).
+
 The exact second-order XGBoost-style lane has its own workload and raw record.
 It checks squared, binary logistic, one-vs-rest multiclass, and learned-NaN
 default-direction depth-two boosting against independent recursive NumPy
