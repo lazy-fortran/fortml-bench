@@ -778,6 +778,19 @@ python -B scripts/bench_xgboost_sampling.py \
 
 See [`results/XGBOOST_SAMPLING.md`](results/XGBOOST_SAMPLING.md).
 
+The XGBoost persistence lane fits a validation-aware four-tree ensemble,
+round-trips its versioned text state, and independently parses and walks every
+serialized node. Predictions, raw margins, staged outputs, missing-routing
+metadata, and monotone constraints are checked before timings are retained;
+resident tree CUDA remains an explicit typed refusal:
+
+```bash
+python -B scripts/bench_xgboost_serialization.py \
+  --fortml ../fortml --output results/xgboost_serialization.csv
+```
+
+See [`results/XGBOOST_SERIALIZATION.md`](results/XGBOOST_SERIALIZATION.md).
+
 The robust XGBoost lane independently reconstructs weighted one-tree Huber and
 pinball/quantile objectives, including base margins and leaf corrections:
 
