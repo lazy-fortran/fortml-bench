@@ -171,7 +171,11 @@ a different workload, precision, device, or residency policy.
   trainer, the logistic objective, and the classifier release app. A missing
   FortML device path is never replaced with a relabeled CPU timing. Resident
   PyTorch CUDA rows remain independent evidence.
-- [ ] Add resident CUDA/OpenACC correctness-gated rows for kNN search, RMSprop
+- [x] Add resident CUDA correctness gates for kNN prediction and the direct
+  no-autodiff RMSprop state kernel. The independent NumPy fixtures and native
+  gate results are recorded in `results/device_contracts.csv`; this lane has
+  no timing claim.
+- [ ] Add resident CUDA/OpenACC timing rows for kNN search, RMSprop
   optimizer/trainer state, staged XGBoost diagnostics, and GP classification
   hyperparameter training. Native CUDA kNN and a direct RMSprop state-kernel
   oracle now exist in the FortML checkout, but these benchmark rows still need
