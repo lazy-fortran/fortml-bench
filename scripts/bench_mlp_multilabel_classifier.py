@@ -66,6 +66,14 @@ def fixture() -> tuple[np.ndarray, np.ndarray]:
     return x, targets
 
 
+def input_tangent() -> np.ndarray:
+    x_dot = np.empty((N, P), dtype=np.float64)
+    for i in range(N):
+        x_dot[i, 0] = 0.017 * (i + 1 + 2)
+        x_dot[i, 1] = 0.017 * (i + 1 + 4)
+    return x_dot
+
+
 def sigmoid(value: np.ndarray) -> np.ndarray:
     return np.where(value >= 0.0, 1.0 / (1.0 + np.exp(-value)),
                     np.exp(value) / (1.0 + np.exp(value)))
@@ -92,6 +100,8 @@ def oracle() -> dict[str, np.ndarray | float | int]:
     hvp_parts = []
     probability_parts = []
     prediction_parts = []
+    probability_jvp_parts = []
+    x_dot = input_tangent()
     losses = []
     direction = 0.01 * np.arange(1, LABELS * (P + 1) + 1, dtype=np.float64)
     for label in range(LABELS):
@@ -110,12 +120,15 @@ def oracle() -> dict[str, np.ndarray | float | int]:
         gradient_parts.append(final_gradient)
         direction_part = direction[label * (P + 1):(label + 1) * (P + 1)]
         hvp_parts.append(hessian @ direction_part)
+        score_dot = x @ direction_part[:P] + direction_part[P] + x_dot @ theta[:P]
+        probability_jvp_parts.append(weights * score_dot)
         probability_parts.append(positive)
         prediction_parts.append((logits >= 0.0).astype(np.int64))
         losses.append(loss)
     return {
         "theta": np.concatenate(theta_parts),
         "probabilities": np.column_stack(probability_parts),
+        "probability_jvp": np.column_stack(probability_jvp_parts),
         "predicted": np.column_stack(prediction_parts),
         "loss": float(np.mean(losses)),
         "gradient": np.concatenate(gradient_parts) / LABELS,
@@ -189,6 +202,7 @@ def main() -> None:
     required = {"mlp_multilabel_parameter_count", "mlp_multilabel_loss",
                 "mlp_multilabel_theta", "mlp_multilabel_gradient",
                 "mlp_multilabel_hvp", "mlp_multilabel_probability",
+                "mlp_multilabel_probability_jvp",
                 "mlp_multilabel_prediction", "mlp_multilabel_cuda"}
     if not required.issubset(observed):
         raise RuntimeError(f"probe rows missing: {sorted(required - set(observed))}\n{stdout}")
@@ -201,9 +215,12 @@ def main() -> None:
     hvp = np.array([token(values[1]) for values in sorted(
         observed["mlp_multilabel_hvp"], key=lambda values: int(values[0]))])
     probabilities = np.zeros((N, LABELS))
+    probability_jvp = np.zeros((N, LABELS))
     predicted = np.zeros((N, LABELS), dtype=np.int64)
     for values in observed["mlp_multilabel_probability"]:
         probabilities[int(values[0]) - 1, int(values[1]) - 1] = token(values[2])
+    for values in observed["mlp_multilabel_probability_jvp"]:
+        probability_jvp[int(values[0]) - 1, int(values[1]) - 1] = token(values[2])
     for values in observed["mlp_multilabel_prediction"]:
         predicted[int(values[0]) - 1, int(values[1]) - 1] = int(values[2])
     errors = [
@@ -212,6 +229,7 @@ def main() -> None:
         np.max(np.abs(gradient - expected["gradient"])),
         np.max(np.abs(hvp - expected["hvp"])),
         np.max(np.abs(probabilities - expected["probabilities"])),
+        np.max(np.abs(probability_jvp - expected["probability_jvp"])),
     ]
     error = float(max(errors))
     if error > 3.0e-11 or not np.array_equal(predicted, expected["predicted"]):

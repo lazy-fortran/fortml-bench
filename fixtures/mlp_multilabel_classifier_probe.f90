@@ -8,7 +8,8 @@ program mlp_multilabel_classifier_probe
 
     integer, parameter :: n = 6, p = 2, labels_count = 2
     real(dp) :: x(n, p), targets(n, labels_count)
-    real(dp) :: probabilities(n, labels_count), loss
+    real(dp) :: probabilities(n, labels_count), probabilities_dot(n, labels_count), &
+        x_dot(n, p), loss
     real(dp), allocatable :: theta(:), gradient(:), direction(:), hvp(:)
     integer :: predicted(n, labels_count), i, j
     type(mlp_multilabel_classifier_t) :: model
@@ -39,8 +40,13 @@ program mlp_multilabel_classifier_probe
     do i = 1, size(theta)
         direction(i) = 0.01_dp*real(i, dp)
     end do
+    do i = 1, n
+        x_dot(i, 1) = 0.017_dp*real(i + 2, dp)
+        x_dot(i, 2) = 0.017_dp*real(i + 4, dp)
+    end do
     call model%predict_proba(x, probabilities, status)
     call model%predict(x, predicted, status)
+    call model%predict_proba_jvp(x, direction, x_dot, probabilities, probabilities_dot, status)
     call model%loss_gradient(x, targets, options%l2, loss, gradient, status)
     call model%loss_hvp(x, targets, options%l2, direction, hvp, status)
     if (.not. status_ok(status)) error stop "multilabel MLP probe derivative failed"
@@ -55,6 +61,8 @@ program mlp_multilabel_classifier_probe
         do j = 1, labels_count
             write (*, '(a,2(i0,a),es24.16)') "mlp_multilabel_probability,", i, ",", &
                 j, ",", probabilities(i, j)
+            write (*, '(a,2(i0,a),es24.16)') "mlp_multilabel_probability_jvp,", i, ",", &
+                j, ",", probabilities_dot(i, j)
             write (*, '(a,2(i0,a),i0)') "mlp_multilabel_prediction,", i, ",", &
                 j, ",", predicted(i, j)
         end do
