@@ -192,9 +192,9 @@ See [`results/LINEAR_SVR.md`](results/LINEAR_SVR.md). CUDA is an explicit
 unavailable capability row until a resident linear-SVR kernel is linked.
 
 The differentiable neural-loss lane checks BCE/logistic, softmax
-cross-entropy, weighted MSE, Huber, MAE, and focal BCE-with-logits products
-against independent NumPy value/derivative formulas, and checks the
-weighted-MSE path used by the MLP objective:
+cross-entropy, weighted MSE, Huber, MAE, focal BCE-with-logits, Gaussian NLL,
+and Poisson/count NLL products against independent NumPy value/derivative
+formulas, and checks the weighted-MSE path used by the MLP objective:
 
 ```bash
 python -B scripts/bench_neural_losses.py \

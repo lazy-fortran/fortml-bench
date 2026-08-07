@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Correctness-gated benchmark for FortML's differentiable neural losses.
 
-The NumPy formulas are independent value/curvature oracles.  The release app
+The NumPy formulas are independent value/derivative oracles.  The release app
 reports checksums for the same fixed fixture before its CPU timings are kept;
 CUDA is recorded as an explicit capability refusal until resident loss kernels
 exist.
@@ -59,11 +59,22 @@ def fixture() -> tuple[np.ndarray, ...]:
     prediction = logits[:, :1]
     target = 0.4 * np.sin(0.05 * indices)[:, None]
     weights = 0.5 + (indices.astype(int) % 7) / 7.0
-    return logits, targets, direction, prediction, target, weights
+    log_variance = np.column_stack((0.2 * np.sin(0.03 * indices),
+                                    -0.1 * np.cos(0.05 * indices),
+                                    0.15 * np.sin(0.07 * indices)))
+    count_targets = np.column_stack(((indices.astype(int) % 5).astype(float),
+                                     ((indices.astype(int) + 1) % 5).astype(float),
+                                     0.5 + ((indices.astype(int) + 2) % 4)))
+    variance_direction = np.column_stack((0.02 * np.cos(0.09 * indices),
+                                          -0.01 * np.sin(0.08 * indices),
+                                          np.full(N, 0.015)))
+    return (logits, targets, direction, prediction, target, weights,
+            log_variance, count_targets, variance_direction)
 
 
 def oracle() -> dict[str, float]:
-    logits, targets, direction, prediction, target, weights = fixture()
+    (logits, targets, direction, prediction, target, weights, log_variance,
+     count_targets, variance_direction) = fixture()
     probabilities = 1.0 / (1.0 + np.exp(-logits))
     bce_hvp = probabilities * (1.0 - probabilities) * direction / logits.size
     exponent = np.exp(logits - logits.max(axis=1, keepdims=True))
@@ -82,6 +93,15 @@ def oracle() -> dict[str, float]:
     focal_factor_dot = -2.0 * (1.0 - pt) * (2.0 * targets - 1.0) * p * (1.0 - p)
     focal_derivative = alpha_t * (focal_factor_dot * bce + focal_factor * (p - targets))
     focal_bce = (weights[:, None] * focal_derivative * direction).sum() / weights.sum()
+    residual = logits - targets
+    inverse_variance = np.exp(-log_variance)
+    gaussian_hvp = (weights[:, None] * inverse_variance *
+                    (direction - residual * variance_direction) / weights.sum())
+    gaussian_variance_hvp = (weights[:, None] * inverse_variance *
+                             (-residual * direction +
+                              0.5 * residual * residual * variance_direction) /
+                             weights.sum())
+    poisson_hvp = (weights[:, None] * np.exp(logits) * direction / weights.sum())
     return {
         "bce_hvp": float(bce_hvp.sum()),
         "softmax_cross_entropy_hvp": float(softmax_hvp.sum()),
@@ -89,6 +109,8 @@ def oracle() -> dict[str, float]:
         "huber_hvp": float(huber.sum()),
         "mae_jvp": float(mae),
         "focal_bce_jvp": float(focal_bce),
+        "gaussian_nll_hvp": float(gaussian_hvp.sum() + gaussian_variance_hvp.sum()),
+        "poisson_nll_hvp": float(poisson_hvp.sum()),
     }
 
 
