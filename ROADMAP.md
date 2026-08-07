@@ -218,6 +218,10 @@ a different workload, precision, device, or residency policy.
   no-autodiff RMSprop state kernel, and dense-affine value/JVP/VJP across all eight
   MLP activations. The independent NumPy fixtures and native gate results are
   recorded in `results/device_contracts.csv`; this lane has no timing claim.
+- [x] Extend the resident dense-affine gate with one full-batch tanh MSE update,
+  an independent NumPy loss/gradient/parameter oracle, and transfer/residency
+  counter checks. The same CSV records the MSE-update row. A missing CUDA
+  toolchain or device remains an explicit skipped row.
 - [x] Add a resident CUDA AdamW state correctness gate with an independent
   NumPy seven-step moment/bias-correction/decoupled-decay oracle. The raw
   record is `results/cuda_adamw.csv`; compile-inclusive gate wall time is not

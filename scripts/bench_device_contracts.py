@@ -235,6 +235,29 @@ def dense_oracle() -> tuple[float, float, float]:
     return checksum, jvp_checksum, vjp_checksum
 
 
+def dense_mse_oracle() -> float:
+    """Return the pre-update loss for the resident dense MSE fixture."""
+    weights = np.array([
+        0.5, -1.0, 0.25, -0.75, 0.4, 1.2,
+    ], dtype=np.float64).reshape((2, 3))
+    bias = np.array([-0.1, 0.2], dtype=np.float64)
+    query = np.array([
+        -1.0, 0.0, 0.5, 2.0, -0.25,
+        1.0, -0.5, 1.5, -2.0, 0.75,
+        0.25, -1.0, 2.0, 0.5, -1.5,
+    ], dtype=np.float64).reshape((3, 5))
+    target = np.array([
+        0.2, -0.1, 0.7, -0.3, 0.4,
+        -0.5, 0.6, -0.2, 0.8, -0.15,
+    ], dtype=np.float64).reshape((2, 5))
+    prediction = np.tanh(weights @ query + bias[:, None])
+    residual = prediction - target
+    loss = float(0.5 * np.mean(residual**2))
+    if not np.isfinite(loss):
+        raise RuntimeError("resident dense MSE independent oracle is nonfinite")
+    return loss
+
+
 def run_gate(fortml: Path, script_name: str) -> tuple[str, str, float | None]:
     script = fortml / "test" / script_name
     if not script.is_file():
@@ -272,6 +295,7 @@ def main() -> None:
     mse_value = mse_oracle()
     adamw_norm, adamw_checksum = adamw_oracle()
     dense_checksum, dense_jvp_checksum, dense_vjp_checksum = dense_oracle()
+    dense_mse_loss = dense_mse_oracle()
     rows: list[dict[str, Any]] = []
 
     status, notes, elapsed = run_gate(fortml, "run_knn_classifier_cuda.sh")
@@ -379,6 +403,14 @@ def main() -> None:
                        (0.0 if status == "pass" else "")),
         oracle="independent NumPy affine cotangent plus eight activation derivatives",
         notes=f"native gate checks value/JVP/VJP for all eight activations; expected checksum={dense_vjp_checksum:.16e}; {notes}"))
+    rows.append(base(
+        details, workload="cuda_dense_resident_mse_update", phase="train_step", status=status,
+        seconds_per_operation="", metric="pre_update_mean_squared_error",
+        value=dense_mse_loss,
+        max_abs_error=(observed_error if observed_error is not None else
+                       (0.0 if status == "pass" else "")),
+        oracle="independent NumPy tanh dense MSE loss and parameter-gradient update",
+        notes=f"native gate checks one resident full-batch update, parameter snapshot, and transfer counters; expected loss={dense_mse_loss:.16e}; {notes}"))
 
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:

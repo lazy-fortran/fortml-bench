@@ -1,6 +1,6 @@
 # CUDA correctness contracts
 
-This lane is a correctness gate for eight small resident CUDA paths and one
+This lane is a correctness gate for nine small resident CUDA paths and one
 transfer-inclusive metric reduction that are not represented by the CPU
 release-app benchmarks. It deliberately records no device timing: a
 correctness-only gate must not be read as a performance claim for the full
@@ -54,17 +54,20 @@ and the reported maximum error are checked before the plan is destroyed. This
 is prediction-only and does not expose Fortran tree fitting or autodiff kernels.
 
 The dense rows exercise `run_cuda_dense_plan.sh` against independent NumPy
-affine/activation, forward-mode tangent, and reverse-mode cotangent checks. The
-native plan keeps one
+affine/activation, forward-mode tangent, reverse-mode cotangent, and single-step
+MSE update checks. The native plan keeps one
 output-major weight matrix and bias vector resident while checking linear,
 `tanh`, ReLU, GELU, SiLU, ELU, softplus, and leaky-ReLU outputs, JVPs, and VJPs,
-followed by a second query batch on one plan. The gate also checks finite-input
-refusal. This is a resident value/JVP/VJP primitive; it does not establish
-resident MLP training, HVPs, gradient assembly, or hypergradient support.
+followed by a second query batch on one plan. The MSE row checks the tanh loss,
+CPU gradient/parameter update, transfer-counter lower bounds, and resident
+parameter snapshot. The gate also checks finite-input refusal. This is a
+single-layer resident value/JVP/VJP/update primitive; it does not establish
+resident multi-layer MLP training, HVPs, gradient assembly, or hypergradient
+support.
 
 The recorded run used an NVIDIA GeForce RTX 5060 Ti (driver 610.43.03,
 16,311 MiB), CUDA 13.3, nvfortran 26.5, and gfortran as the host compiler.
-All nine rows passed; the RMSprop, AdamW, and dense native maximum errors were
+All ten rows passed; the RMSprop, AdamW, and dense native maximum errors were
 `1.11e-16`, the kNN label checksum matched exactly, and the CUDA MSE scalar
 and the five resident-plan executions matched the independent value above. The CSV keeps the FortML and benchmark revisions,
 compiler flags, device, and oracle boundary. Empty timing fields are
