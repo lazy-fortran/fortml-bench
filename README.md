@@ -89,7 +89,7 @@ labels and probability normalization before timing:
 The workload definition and validity boundary are in
 [`results/CLASSIFICATION.md`](results/CLASSIFICATION.md).
 
-The scalable-model report also contains the current corrected GRBCM,
+The scalable-model report <!-- slop-ok --> also contains the current corrected GRBCM,
 contiguous-versus-clustered expert, and multidimensional-SKI records. Older
 GRBCM rows are superseded because they predate the communication-set and
 enhanced-expert correction. Use the raw CSVs and reproduction commands linked

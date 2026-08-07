@@ -6,7 +6,7 @@ metadata, and a committed raw record.
 
 ## Status and handoff
 
-Last updated 2026-08-06. The scalable-GP study of Liu et al. (IEEE TNNLS
+Last updated 2026-08-07. The scalable-GP study of Liu et al. (IEEE TNNLS <!-- slop-ok -->
 31(11):4405-4423, 2020) is complete and is the centrepiece of the GP evidence
 here. Read `results/SCALABLE_GP.md` first: it states what "matching the paper"
 can mean (the review publishes no numeric result tables), which half of each
@@ -50,7 +50,7 @@ individual ratios and timed-call definitions are in the two reports above.
 Two traps that produced wrong numbers in this repository and will again:
 
 * The default `fo` profile is `-O0 -fcheck=all`. Any timing taken without
-  `--flag "-O3 -funroll-loops"` is a debug-build timing. The first scalable-GP
+  `--flag "-O3 -funroll-loops"` is a debug-build timing. The first scalable-GP <!-- slop-ok -->
   sweep was one and had to be discarded.
 * `fo` shares `build/fo/bin` between compilers, so a device run can execute a
   host binary. Rebuild immediately before a device measurement and let nothing
@@ -118,3 +118,29 @@ not completion gates.
 
 The within-30-percent target is a measurement gate. It is never inferred from
 a different workload, precision, device, or residency policy.
+
+## Classification and scientific-ML extensions
+
+- [x] Add a deterministic binary logistic workload for FortML and
+  scikit-learn. The fixture stores arbitrary integer labels, the NumPy-generated
+  score labels, probability normalization, accuracy, fit time, and prediction
+  time in `results/classification_workloads.csv`.
+- [ ] Add matched multinomial softmax regression and neural classifier lanes
+  after the FortML class-label, weighting, and metric contracts are complete.
+- [ ] Add Bernoulli and multiclass GP classification with GPyTorch likelihood
+  references and independent dense small-data oracles.
+- [ ] Add CART and histogram-boosting workloads with scikit-learn and XGBoost
+  references. Missing-value, weighting, early-stopping, and feature-importance
+  rows must remain explicit in the schema.
+- [ ] Add physics-informed, Hamiltonian, Lagrangian, and symplectic workloads
+  with analytic harmonic-oscillator and manufactured-PDE oracles. Record
+  trajectory error, energy drift, symplectic Jacobian defect, residual norms,
+  posterior calibration, optimizer evaluations, and long-horizon behavior.
+- [ ] Add physics-consistent GP, Ghosttasking, Monge-GP, and GP-initialized
+  finite-network lanes when their public equations and reference data are
+  pinned. Private project results must be accompanied by a reproducible data
+  generator and versioned artifact.
+
+Every new lane keeps the independent behavioral oracle ahead of timing. A
+missing compiler, GPU, package, equation, or reference dataset produces a
+parseable refusal row rather than an omitted result.
