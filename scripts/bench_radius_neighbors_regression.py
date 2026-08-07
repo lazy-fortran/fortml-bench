@@ -94,6 +94,8 @@ def main() -> None:
     parser.add_argument("--fortml", type=Path, default=Path("../fortml"))
     parser.add_argument("--output", type=Path,
                         default=Path("results/radius_neighbors_regression.csv"))
+    parser.add_argument("--no-build", action="store_true",
+                        help="reuse a previously built release app")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     fortml = args.fortml.resolve()
@@ -125,7 +127,8 @@ def main() -> None:
     rows.append(row(phase="fit_predict", backend="numpy_oracle",
                     seconds_per_operation=oracle_seconds, max_abs_error="0.0"))
 
-    subprocess.run(["fo", "build", "--flag", "-O3"], cwd=fortml, check=True)
+    if not args.no_build:
+        subprocess.run(["fo", "build", "--flag", "-O3"], cwd=fortml, check=True)
     environment = os.environ.copy()
     with tempfile.TemporaryDirectory(
         dir="/mnt/storage/code/lazy-fortran/fortml/build"
