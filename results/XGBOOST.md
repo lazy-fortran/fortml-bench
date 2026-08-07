@@ -86,6 +86,12 @@ XGBoost release is contextual because histogram construction, tie handling,
 tree depth, and missing-value routing require a separately matched workload.
 An unavailable package is recorded as a refusal row.
 
+Per-feature monotonic constraints (`-1/0/+1`) have a dedicated exact and
+weighted-histogram release lane in
+[`XGBOOST_MONOTONIC_CONSTRAINTS.md`](XGBOOST_MONOTONIC_CONSTRAINTS.md). Its
+independent query-grid oracle checks all adjacent predictions and records
+explicit CUDA resident-kernel refusals.
+
 ## Reproduce
 
 ```bash
