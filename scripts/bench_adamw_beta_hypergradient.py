@@ -66,7 +66,9 @@ def revision(repository: Path, ignored: tuple[Path, ...] = ()) -> str:
 
 
 def metadata(root: Path, fortml: Path, output: Path) -> dict[str, str]:
-    generated_outputs = (output, root / "results" / "adamw_beta_hypergradient.csv")
+    generated_outputs = tuple(root / "results" / name for name in (
+        "adamw_beta_hypergradient.csv", "cuda_adamw.csv", "ridge.csv",
+        "xgboost_workloads.csv"))
     return {
         "python_version": platform.python_version(),
         "numpy_version": np.__version__,
