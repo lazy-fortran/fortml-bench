@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Correctness-gated grouped MLP regularization benchmark.
 
-The NumPy fixture is the independent scalar linear-ridge oracle.  FortML's
+The NumPy fixture is the independent scalar linear-ridge oracle. FortML's
 packed objective is accepted only when its value, gradient norm, HVP norm, and
-JVP agree with that oracle; CUDA remains an explicit refusal until a resident
-MLP derivative graph exists.
+JVP agree with that oracle. The bounded grouped L-BFGS-B result is checked
+against a second closed-form ridge oracle at the active log-L2 bound; CUDA
+remains an explicit refusal until a resident MLP derivative graph exists.
 """
 
 from __future__ import annotations
@@ -89,6 +90,29 @@ def oracle() -> dict[str, float]:
     }
 
 
+def lbfgsb_oracle() -> dict[str, float]:
+    """Closed-form optimum with both log-L2 coordinates fixed at -3."""
+    x, target = fixture()
+    lam = np.exp(-3.0)
+    second_moment = float(np.mean(x * x))
+    weight = 0.8 * second_moment / (second_moment + lam)
+    bias = 0.2 / (1.0 + lam)
+    residual = weight * x + bias - target
+    value = 0.5 * float(np.mean(residual * residual))
+    value += 0.5 * lam * (weight * weight + bias * bias)
+    gradient = np.array([
+        float(np.mean(x * residual) + lam * weight),
+        float(np.mean(residual) + lam * bias),
+        0.5 * lam * weight * weight,
+        0.5 * lam * bias * bias,
+    ])
+    return {
+        "objective": value,
+        "gradient_norm": float(np.linalg.norm(gradient)),
+        "log_l2": -3.0,
+    }
+
+
 def parse(output: str) -> dict[str, str]:
     records = {}
     for line in output.splitlines():
@@ -98,6 +122,9 @@ def parse(output: str) -> dict[str, str]:
     required = {
         "mlp_grouped_value_gradient_seconds", "mlp_grouped_value",
         "mlp_grouped_gradient_norm", "mlp_grouped_hvp_norm", "mlp_grouped_jvp",
+        "mlp_grouped_lbfgsb_iterations", "mlp_grouped_lbfgsb_objective",
+        "mlp_grouped_lbfgsb_gradient_norm", "mlp_grouped_lbfgsb_log_l2_weight",
+        "mlp_grouped_lbfgsb_log_l2_bias",
         "mlp_grouped_cuda",
     }
     missing = required.difference(records)
@@ -145,6 +172,30 @@ def main() -> None:
             "metric": metric, "value": observed, "max_abs_error": error,
             "oracle": "independent NumPy linear ridge value/derivative oracle",
             "notes": f"tolerance={tolerance:.1e}; named log-L2 groups",
+        })
+    lbfgsb_expected = lbfgsb_oracle()
+    lbfgsb_checks = {
+        "lbfgsb_objective": (lbfgsb_expected["objective"], 2e-11),
+        "lbfgsb_gradient_norm": (lbfgsb_expected["gradient_norm"], 2e-8),
+        "lbfgsb_log_l2_weight": (lbfgsb_expected["log_l2"], 2e-11),
+        "lbfgsb_log_l2_bias": (lbfgsb_expected["log_l2"], 2e-11),
+    }
+    iterations = int(records["mlp_grouped_lbfgsb_iterations"])
+    if iterations < 1:
+        raise RuntimeError("grouped L-BFGS-B reported no iterations")
+    for metric, (expected_value, tolerance) in lbfgsb_checks.items():
+        observed = float(records[f"mlp_grouped_{metric}"])
+        error = abs(observed - expected_value)
+        if error > tolerance:
+            raise RuntimeError(f"grouped {metric} mismatch: {error:.3e}")
+        rows.append({
+            **metadata, "workload": "mlp_grouped_training", "phase": "lbfgsb",
+            "backend": "fortml", "device": "cpu", "status": "pass",
+            "n_samples": N_SAMPLES, "n_parameters": 4, "repetitions": 1,
+            "seconds_per_operation": "", "metric": metric,
+            "value": observed, "max_abs_error": error,
+            "oracle": "independent NumPy bounded linear-ridge optimum",
+            "notes": f"iterations={iterations}; log-L2 bounds=[-3,-3]; tolerance={tolerance:.1e}",
         })
     if records["mlp_grouped_cuda"] != "unavailable":
         raise RuntimeError("grouped MLP CUDA refusal changed unexpectedly")
