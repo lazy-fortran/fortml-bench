@@ -28,6 +28,7 @@ Complete-call studies:
 - [Resident CUDA correctness contracts](DEVICE_CONTRACTS.md)
 - [Grouped MLP value, HVP, and bounded L-BFGS-B](MLP_GROUPED_TRAINING.md)
 - [Physics-informed and Hamiltonian model evidence](PHYSICS_MODELS.md)
+- [Composable physics-residual objective](PHYSICS_OBJECTIVE.md)
 - [Resident CUDA AdamW state gate](CUDA_ADAMW.md)
 - [Deterministic k-nearest-neighbor classification](KNN.md)
 - [One-vs-one logistic classification](OVO_LOGISTIC.md)
