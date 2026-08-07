@@ -1,0 +1,5 @@
+backend,phase,status,n_samples,n_features,seconds_per_operation,accuracy,oracle,notes
+sklearn,fit,pass,1024,8,0.00696562702069059,1.0,NumPy generated labels,probability normalization error=0.000e+00
+sklearn,predict,pass,1024,8,0.00030805100686848164,1.0,NumPy generated labels,single-process CPU reference
+fortml,fit,pass,1024,8,0.0003183198,0.982421875,FortML internal invariant plus NumPy labels,fo wall time including process startup=5.605644e-03s
+fortml,predict,pass,1024,8,1.28317e-05,0.982421875,FortML internal invariant plus NumPy labels,fo wall time including process startup=5.605644e-03s

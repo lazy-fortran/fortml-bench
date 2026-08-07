@@ -77,6 +77,18 @@ boundaries, plots, and the recorded machine results are in
 [`results/MODEL_WORKLOADS.md`](results/MODEL_WORKLOADS.md) and
 [`results/GP_FEATURES.md`](results/GP_FEATURES.md).
 
+The binary classification lane compares the FortML logistic estimator with
+scikit-learn on a deterministic two-label fixture and checks the generated
+labels and probability normalization before timing:
+
+```bash
+.venv/bin/python -B scripts/bench_classification.py \
+    --fortml ../fortml --output results/classification_workloads.csv
+```
+
+The workload definition and validity boundary are in
+[`results/CLASSIFICATION.md`](results/CLASSIFICATION.md).
+
 The scalable-model report also contains the current corrected GRBCM,
 contiguous-versus-clustered expert, and multidimensional-SKI records. Older
 GRBCM rows are superseded because they predate the communication-set and

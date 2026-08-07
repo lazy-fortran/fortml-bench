@@ -9,6 +9,7 @@ dependencies = [
     "torch>=2.2,<3",
     "gpytorch>=1.13,<2",
     "pykeops>=2.2,<3",
+    "scikit-learn>=1.4,<2",
 ]
 
 [project.scripts]
