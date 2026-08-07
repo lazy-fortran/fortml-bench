@@ -317,6 +317,20 @@ See [`results/RADIUS_NEIGHBORS_REGRESSION.md`](results/RADIUS_NEIGHBORS_REGRESSI
 CUDA remains an explicit unavailable capability row until a resident
 radius-search reduction is linked.
 
+The dense RBF one-class SVM lane checks a capped-simplex dual fit, KKT offset,
+signed scores, and `+1`/`-1` anomaly labels against an independent NumPy oracle,
+then records CPU NumPy fit/predict timings.  FortML CPU and CUDA rows remain
+explicit unavailable/typed-refusal records until their resident release
+protocols are linked:
+
+```bash
+.venv/bin/python -B scripts/bench_one_class_svm.py \
+  --fortml ../fortml --output results/one_class_svm.csv
+```
+
+See [`results/ONE_CLASS_SVM.md`](results/ONE_CLASS_SVM.md).  Host timings are
+never relabeled as GPU evidence.
+
 The linear-margin lane checks weighted primal squared-hinge SVM fitting,
 arbitrary integer classes, labels, and signed decision margins against an
 independent NumPy/SciPy L-BFGS-B oracle:

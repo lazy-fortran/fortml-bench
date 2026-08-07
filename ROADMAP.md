@@ -186,6 +186,11 @@ a different workload, precision, device, or residency policy.
   checks, and a typed CUDA refusal. The raw record is
   `results/linear_svm.csv`; kernel, one-class, ranking, and SVR variants remain
   separate work packages.
+- [x] Add a bounded dense RBF one-class SVM correctness lane with an independent
+  NumPy capped-simplex dual/score/label oracle and CPU oracle fit/predict
+  timings. FortML CPU availability and typed CUDA refusal are recorded
+  explicitly in `results/one_class_svm.csv`; active-set/hyperparameter
+  derivatives and resident CUDA remain separate FortML work packages.
 - [x] Add independent BCE, softmax cross-entropy, weighted-MSE, and Huber HVP
   workloads, including the weighted-MSE MLP objective path. Exact Huber kinks
   and resident CUDA loss/MLP kernels remain explicit refusal boundaries. The
