@@ -103,6 +103,10 @@ not completion gates.
   logarithmic parameter JVP/VJP/HVP checks with release CPU timings and
   explicit CUDA capability-refusal rows. See
   [`results/KERNEL_CATALOG.md`](results/KERNEL_CATALOG.md).
+- [x] Add mixed value/first-derivative periodic and rational-quadratic GP
+  query-input JVP/VJP workloads. The independent covariance/posterior oracle
+  gates every CPU row; the resident derivative-GP CUDA graph remains an
+  explicit typed refusal. See [`results/DERIVATIVE_GP.md`](results/DERIVATIVE_GP.md).
 
 ## Evidence
 
@@ -166,6 +170,15 @@ a different workload, precision, device, or residency policy.
   arbitrary integer labels, stable distance ties, uniform and inverse-distance
   votes, and complete probability/prediction checksums. The raw record is
   `results/knn.csv`; discrete input JVP/VJP refusals remain explicit.
+- [x] Add weighted primal linear SVM classification with arbitrary binary
+  integer labels, feature-only L2 regularization, complete signed-margin
+  checks, and a typed CUDA refusal. The raw record is
+  `results/linear_svm.csv`; kernel, one-class, ranking, and SVR variants remain
+  separate work packages.
+- [x] Add independent BCE, softmax cross-entropy, weighted-MSE, and Huber HVP
+  workloads, including the weighted-MSE MLP objective path. Exact Huber kinks
+  and resident CUDA loss/MLP kernels remain explicit refusal boundaries. The
+  raw record is `results/neural_losses.csv`.
 - [x] Add a dense multilabel-indicator logistic lane with independent
   per-output Newton oracle checks, complete positive-probability and hard
   indicator outputs, contextual scikit-learn timing, and explicit CUDA
@@ -214,6 +227,12 @@ a different workload, precision, device, or residency policy.
   and one-vs-rest multiclass Laplace-GP lanes with independent NumPy transform
   and Newton posterior oracles. The raw record is
   `results/classification_extensions.csv`.
+- [x] Add a generic hyperparameter-search lane for deterministic bounded
+  Cartesian grids, seeded random candidates, and FortOpt L-BFGS-B over one
+  analytic quadratic objective. The 125-grid and 128-sample random lanes have
+  independent NumPy checks; the CUDA row is an explicit refusal until search
+  state and objective kernels are resident. See
+  [`results/HYPERPARAMETER_SEARCH.md`](results/HYPERPARAMETER_SEARCH.md).
 - [x] Add bounded binary and shared-kernel one-vs-rest GP classification
   hyperparameter-training rows with an independent NumPy mode/envelope-gradient
   oracle. This records the mode-log-posterior adapter, not full Laplace

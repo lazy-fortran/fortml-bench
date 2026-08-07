@@ -571,7 +571,9 @@ See [`results/XGBOOST_POISSON.md`](results/XGBOOST_POISSON.md). Its CUDA row
 is an explicit unavailable refusal until a resident tree kernel is linked.
 
 The generic hyperparameter-search lane uses an independent three-parameter
-quadratic oracle to gate Cartesian grid and FortOpt L-BFGS-B timings:
+quadratic oracle to gate Cartesian grid, seeded random, and FortOpt L-BFGS-B
+timings. The random stream is deterministic for seed `20260807` and records a
+bounded 128-evaluation budget:
 
 ```bash
 .venv/bin/python -B scripts/bench_hyperparameter_search.py \
@@ -580,7 +582,7 @@ quadratic oracle to gate Cartesian grid and FortOpt L-BFGS-B timings:
 
 See [`results/HYPERPARAMETER_SEARCH.md`](results/HYPERPARAMETER_SEARCH.md).
 The CUDA row is an explicit unavailable refusal until resident objective/search
-state is implemented.
+state is implemented; no host search timing is relabeled as device evidence.
 
 The scalable-model report <!-- slop-ok --> also contains the current corrected GRBCM,
 contiguous-versus-clustered expert, and multidimensional-SKI records. Older

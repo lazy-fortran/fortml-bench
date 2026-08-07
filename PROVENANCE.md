@@ -71,9 +71,10 @@ because FortML has no resident tree kernel; no CPU objective timing is reused
 as GPU evidence.
 
 The generic hyperparameter-search record independently enumerates the 5×5×5
-Cartesian grid for a three-parameter quadratic and checks FortOpt L-BFGS-B
-against its analytic minimum. The CUDA row is an explicit unavailable refusal
-because no resident objective/search state is linked.
+Cartesian grid, checks a deterministic 128-candidate stream seeded with
+`20260807`, and checks FortOpt L-BFGS-B for a three-parameter quadratic against
+its analytic minimum. The CUDA row is an explicit unavailable refusal because
+no resident objective/search state is linked.
 
 The KeOps and GPyTorch adapters follow their public PyTorch interfaces. The
 Fortran adapter invokes the pinned `fortml` benchmark entry point and records

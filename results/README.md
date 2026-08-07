@@ -35,6 +35,8 @@ Complete-call studies:
 - [Categorical Naive Bayes](CATEGORICAL_NB.md)
 - [Integer one-hot encoder](ONE_HOT_ENCODER.md)
 - [Stochastic, derivative, multi-output, and variational GP features](GP_FEATURES.md)
+- [Derivative-observation GP query products](DERIVATIVE_GP.md)
+- [Hyperparameter grid, seeded random, and L-BFGS-B search](HYPERPARAMETER_SEARCH.md)
 - [Large-GP review comparison](SCALABLE_GP.md)
 
 The current large-GP addenda are
