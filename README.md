@@ -178,6 +178,18 @@ confusion-matrix calculations cross-checked by `sklearn.metrics` before timing:
 The workload definition and validity boundary are in
 [`results/CLASSIFICATION.md`](results/CLASSIFICATION.md).
 
+The binary MLP lane checks one-logit Adam training, arbitrary integer class
+labels, probabilities, BCE gradients, and parameter HVPs against an independent
+NumPy oracle. The CUDA row remains an explicit typed refusal until a resident
+MLP classifier graph is linked:
+
+```bash
+python -B scripts/bench_mlp_binary_classifier.py \
+  --fortml ../fortml --output results/mlp_binary_classifier.csv
+```
+
+See [`results/MLP_BINARY_CLASSIFIER.md`](results/MLP_BINARY_CLASSIFIER.md).
+
 The extended classification lane checks fitted standard/min-max scalers and
 binary Laplace GP logistic/probit inference against independent NumPy solves:
 
