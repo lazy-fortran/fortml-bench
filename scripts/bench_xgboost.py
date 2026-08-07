@@ -88,12 +88,15 @@ def package_version(name: str) -> str:
 
 
 def metadata(root: Path, fortml: Path, output: Path) -> dict[str, str]:
+    ignored = tuple(root / "results" / name for name in (
+        "knn.csv", "rmsprop.csv", "xgboost_workloads.csv",
+        "gp_classification_training.csv"))
     return {
         "python_version": platform.python_version(),
         "numpy_version": np.__version__,
         "xgboost_version": package_version("xgboost"),
         "fortml_revision": revision(fortml),
-        "benchmark_revision": revision(root, ignored=(output,)),
+        "benchmark_revision": revision(root, ignored=ignored),
         "compiler": "gfortran",
         "flags": "-O3",
         "device": "cpu",
@@ -837,7 +840,7 @@ def main() -> None:
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     fortml = args.fortml.resolve()
-    metadata_values = metadata(root, fortml, args.output)
+    metadata_values = metadata(root, fortml, args.output.resolve())
     records = run_fortran(root, fortml, metadata_values)
     records.append(optional_xgboost_row(metadata_values))
     records.extend(unsupported_policy_rows(metadata_values))

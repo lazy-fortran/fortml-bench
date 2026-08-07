@@ -46,11 +46,14 @@ def revision(repository: Path, ignored: tuple[Path, ...] = ()) -> str:
 
 
 def metadata(root: Path, fortml: Path, output: Path) -> dict[str, str]:
+    ignored = tuple(root / "results" / name for name in (
+        "knn.csv", "rmsprop.csv", "xgboost_workloads.csv",
+        "gp_classification_training.csv"))
     return {
         "python_version": platform.python_version(),
         "numpy_version": np.__version__,
         "fortml_revision": revision(fortml),
-        "benchmark_revision": revision(root, (output,)),
+        "benchmark_revision": revision(root, ignored),
         "compiler": os.environ.get("FO_FC", "gfortran"),
         "flags": "-O3",
     }
