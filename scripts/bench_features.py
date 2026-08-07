@@ -1379,6 +1379,50 @@ def optional_refusal_rows(metadata: dict[str, str]) -> list[dict[str, Any]]:
     return records
 
 
+def fortml_device_boundary_rows(metadata: dict[str, str]) -> list[dict[str, Any]]:
+    """Record host-only FortML paths without attempting a false CUDA run.
+
+    The feature executable is intentionally a CPU release-app contract.  A
+    CUDA row here is therefore a capability refusal, not a timing result.  The
+    NumPy oracle checks run before these rows are emitted, so a refusal cannot
+    mask a behavioral mismatch in the host implementation.
+    """
+    boundary_metadata = dict(metadata)
+    boundary_metadata["device"] = "cuda"
+    records: list[dict[str, Any]] = []
+    for workload, phases, note in (
+        (
+            "gaussian_naive_bayes",
+            ("fit", "predict", "jvp"),
+            "FortML GaussianNB is host-only in this release; no CUDA/device-resident timing is claimed",
+        ),
+        (
+            "mlp_training",
+            ("fit",),
+            "FortML MLP trainer is host-only in this release; use the resident PyTorch CUDA row for device evidence",
+        ),
+        (
+            "logistic_objective",
+            ("value_gradient", "hvp"),
+            "the logistic objective has no CUDA release app; this explicit refusal is not an execution result",
+        ),
+    ):
+        for phase in phases:
+            records.append(
+                row(
+                    boundary_metadata,
+                    workload=workload,
+                    phase=phase,
+                    backend="fortml",
+                    device="cuda",
+                    status="unavailable",
+                    oracle="FortML source capability boundary; no CUDA execution",
+                    notes=note,
+                )
+            )
+    return records
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--fortml", type=Path, default=Path("../fortml"))
@@ -1391,6 +1435,7 @@ def main() -> None:
     records = run_fortran(root, args.fortml.resolve(), metadata)
     records.extend(run_sklearn(metadata))
     records.extend(optional_refusal_rows(metadata))
+    records.extend(fortml_device_boundary_rows(metadata))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS)

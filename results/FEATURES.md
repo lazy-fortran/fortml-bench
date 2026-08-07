@@ -70,6 +70,15 @@ The recorded FortML rows all pass. The current gfortran CPU timings are:
 | gradient boosting / fit | 7.07493125e-4 | MSE 6.647611998075403e-2 |
 | gradient boosting / predict | 3.125265625e-6 | prediction sum 43.62121219974761 |
 
+The raw CSV also carries explicit FortML CUDA capability-boundary rows for
+GaussianNB (fit, predict, and input JVP), the MLP trainer (fit), and the
+logistic objective (value/gradient and HVP). They are `unavailable` rows with
+no timing: the current release apps expose host memory only. The NumPy
+behavioral checks run before these refusals are emitted, so a refusal cannot
+hide a host-side oracle failure. Resident PyTorch CUDA evidence belongs to
+the separate model/classifier lanes; it must not be inferred for FortML from
+those rows.
+
 Timings are machine-specific and should only be compared after matching the
 compiler, flags, CPU affinity, precision, and repetition policy. The CSV
 records source revisions and package versions for that purpose.

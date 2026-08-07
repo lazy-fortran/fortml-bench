@@ -393,6 +393,28 @@ def unavailable_rows(
     return rows
 
 
+def fortml_device_boundary_rows(
+    details: dict[str, str],
+) -> list[dict[str, Any]]:
+    """Keep the FortML CPU/CUDA boundary explicit for every classifier.
+
+    The NumPy oracle still gates the CPU rows.  These CUDA rows only document
+    that the release FortML classifier app has no device-resident execution
+    path; they deliberately contain no timing or quality claim.
+    """
+    device_details = dict(details)
+    device_details["device"] = "cuda"
+    return [
+        record
+        for record in unavailable_rows(
+            device_details,
+            "fortml",
+            "unavailable",
+            "FortML classifier app is host-only; no CUDA/device-resident timing is claimed",
+        )
+    ]
+
+
 def run_numpy_reference(
     x: np.ndarray, labels: np.ndarray, details: dict[str, str]
 ) -> list[dict[str, Any]]:
@@ -848,6 +870,7 @@ def main() -> None:
     rows.extend(run_sklearn(x, labels, details))
     rows.extend(run_torch(x, labels, details))
     rows.extend(run_fortml(fortml, root, details, args.target))
+    rows.extend(fortml_device_boundary_rows(details))
     fields = [
         "workload",
         "phase",

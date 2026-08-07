@@ -27,7 +27,8 @@ Run the lane serially from this repository:
 ```
 
 The current CSV records four NumPy-oracle rows, four scikit-learn context rows,
-four FortML passes, and four resident PyTorch CPU/CUDA passes. The NumPy and
+four FortML CPU passes, four explicit FortML CUDA capability refusals, and
+four resident PyTorch CPU/CUDA passes. The NumPy and
 FortML references pass with softmax accuracy `0.53125` and MLP accuracy
 `0.640625`. The FortML maximum probability error is `2.46e-6` for softmax and
 `2.33e-15` for the MLP. PyTorch agrees with the independent MLP oracle to
@@ -65,3 +66,9 @@ NumPy oracle, and records compiler flags, Python/NumPy versions, FortML,
 FortNum, and benchmark revisions, plus explicit build/execution refusals.  A
 FortML pass is
 therefore a behavioral result, not merely a successful process exit.
+
+The FortML CUDA rows are intentionally `unavailable` and contain no timing.
+The classifier release app has no device-resident implementation, so the
+benchmark refuses a CUDA execution rather than relabeling a host measurement.
+PyTorch CUDA rows demonstrate the independent resident-device oracle only;
+they do not imply CUDA support for FortML's classifier or MLP trainer.
