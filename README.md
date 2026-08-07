@@ -90,6 +90,19 @@ python -B scripts/bench_kernel_catalog.py \
 
 See [`results/KERNEL_CATALOG.md`](results/KERNEL_CATALOG.md).
 
+The derivative-GP lane checks exact query-input JVP/VJP products for mixed
+value/first-derivative periodic and rational-quadratic GPs against an
+independent NumPy covariance and posterior oracle. CPU timings are retained
+only after the checks pass; CUDA is an explicit typed refusal until the
+resident derivative-GP graph is linked:
+
+```bash
+python -B scripts/bench_derivative_gp.py \
+  --fortml ../fortml --output results/derivative_gp.csv
+```
+
+See [`results/DERIVATIVE_GP.md`](results/DERIVATIVE_GP.md).
+
 The binary classification lane compares the FortML logistic estimator with
 scikit-learn on a deterministic two-label fixture. It checks full predicted
 labels and probabilities with independent NumPy accuracy, log-loss, and
@@ -153,6 +166,31 @@ outlier policy against a complete NumPy oracle:
 See [`results/RADIUS_NEIGHBORS.md`](results/RADIUS_NEIGHBORS.md). CUDA is an
 explicit unavailable capability row until a resident radius-search kernel is
 linked.
+
+The linear-margin lane checks weighted primal squared-hinge SVM fitting,
+arbitrary integer classes, labels, and signed decision margins against an
+independent NumPy/SciPy L-BFGS-B oracle:
+
+```bash
+python -B scripts/bench_linear_svm.py \
+    --fortml ../fortml --output results/linear_svm.csv
+```
+
+See [`results/LINEAR_SVM.md`](results/LINEAR_SVM.md). CUDA is an explicit
+unavailable capability row until a resident linear-SVM kernel is linked.
+
+The differentiable neural-loss lane checks BCE/logistic, softmax
+cross-entropy, weighted MSE, and Huber HVPs against independent NumPy
+curvature formulas, and checks the weighted-MSE path used by the MLP objective:
+
+```bash
+python -B scripts/bench_neural_losses.py \
+    --fortml ../fortml --output results/neural_losses.csv
+```
+
+See [`results/NEURAL_LOSSES.md`](results/NEURAL_LOSSES.md). CUDA is recorded
+as an explicit unavailable capability until resident loss and MLP objective
+kernels exist; no host fallback is timed.
 
 The ordered-label lane fits a weighted cumulative-logit classifier with
 strictly increasing cut points. It checks the complete probability matrix and
