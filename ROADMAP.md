@@ -296,6 +296,11 @@ a different workload, precision, device, or residency policy.
   coefficient/input JVP/VJP checks. The raw record is `results/elastic_net.csv`
   and the strict release-app protocol is documented in
   `results/ELASTIC_NET.md`.
+- [x] Add a composable sequential MLP module-tree lane with an independent
+  NumPy two-stage value/JVP/VJP oracle and differentiated-VJP HVP check. The
+  raw record is `results/mlp_chain.csv`, with separate predict/JVP/VJP/HVP
+  timings and an explicit CUDA refusal until a resident fused chain kernel is
+  available. The protocol is documented in `results/MLP_CHAIN.md`.
 - [ ] Add variational GP classification with GPyTorch likelihood references and
   independent dense small-data oracles. Binary and one-vs-rest Laplace lanes
   are complete. Variational inference and calibrated likelihood comparisons
