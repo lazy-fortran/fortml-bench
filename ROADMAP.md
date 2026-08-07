@@ -130,6 +130,15 @@ a different workload, precision, device, or residency policy.
 - [x] Add release-build momentum-SGD and Nesterov MLP-training workloads with
   independent NumPy recurrences, complete prediction/loss arrays, and strict
   fit timing records.
+- [x] Add a release-build AdamW MLP-training workload with an independent
+  NumPy first/second-moment and decoupled-weight-decay oracle.  The raw record
+  is `results/adamw_training.csv`; an absent FortML release app remains an
+  explicit `unavailable` target row.
+- [x] Add a fixed full-batch MLP SGD hypergradient workload over log learning
+  rate and log L2, including a central finite-difference value/gradient/JVP
+  oracle and explicit FortML release-target refusal rows.  The raw record is
+  `results/mlp_hypergradient.csv`; Adam/momentum/CUDA trajectory derivatives
+  are outside this contract.
 - [x] Add mean, median, and constant differentiable simple-imputer workloads
   with independent statistic, transform, JVP, and VJP checks. Host-only device
   boundaries are retained as explicit capability notes.

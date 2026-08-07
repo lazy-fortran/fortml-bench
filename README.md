@@ -174,6 +174,22 @@ See [`results/TRAINING_IMPUTER.md`](results/TRAINING_IMPUTER.md).  The lane is
 CPU-only until FortML exposes a device-resident trainer/imputer path; no CPU
 timing is relabeled as CUDA evidence.
 
+The AdamW and fixed-trajectory MLP hypergradient lanes use separate release
+contracts.  NumPy independently checks the AdamW moments/decoupled decay and
+the validation objective, log-hyperparameter finite-difference gradient, and
+directional JVP before any FortML timing is retained.  Missing release targets
+are explicit `unavailable` rows:
+
+```bash
+.venv/bin/python -B scripts/bench_neural_training.py \
+  --fortml ../fortml \
+  --adamw-output results/adamw_training.csv \
+  --hypergradient-output results/mlp_hypergradient.csv
+```
+
+See [`results/ADAMW_HYPERGRADIENT.md`](results/ADAMW_HYPERGRADIENT.md) for
+the fixture, recurrence, finite-difference oracle, and release-app protocol.
+
 The exact second-order XGBoost-style lane has its own workload and raw record.
 It checks squared, binary logistic, and one-vs-rest multiclass depth-two
 boosting against independent recursive NumPy gradient/Hessian oracles, then
