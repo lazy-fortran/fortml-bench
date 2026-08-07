@@ -61,7 +61,33 @@ def scores(labels: np.ndarray, predictions: np.ndarray) -> dict[str, np.ndarray]
                      0.0 if row_tp + row_fn == 0 else row_tp / (row_tp + row_fn),
                      0.0 if 2.0 * row_tp + row_fp + row_fn == 0 else 2.0 * row_tp / (2.0 * row_tp + row_fp + row_fn)])
     samples = np.mean(np.asarray(rows), axis=0)
-    return {"micro": micro, "macro": macro, "samples": samples}
+    jaccard = []
+    hamming = []
+    for average in ("micro", "macro", "samples"):
+        if average == "micro":
+            intersection = float(np.sum((labels == 1) & (predictions == 1)))
+            union = float(np.sum((labels == 1) | (predictions == 1)))
+            jaccard.append(0.0 if union == 0.0 else intersection / union)
+            hamming.append(float(np.mean(labels != predictions)))
+        elif average == "macro":
+            intersections = np.sum((labels == 1) & (predictions == 1), axis=0)
+            unions = np.sum((labels == 1) | (predictions == 1), axis=0)
+            jaccard.append(float(np.mean(np.divide(intersections, unions,
+                out=np.zeros_like(intersections, dtype=np.float64), where=unions > 0))))
+            hamming.append(float(np.mean(np.mean(labels != predictions, axis=0))))
+        else:
+            row_intersection = np.sum((labels == 1) & (predictions == 1), axis=1)
+            row_union = np.sum((labels == 1) | (predictions == 1), axis=1)
+            jaccard.append(float(np.mean(np.divide(row_intersection, row_union,
+                out=np.zeros_like(row_intersection, dtype=np.float64), where=row_union > 0))))
+            hamming.append(float(np.mean(np.mean(labels != predictions, axis=1))))
+    return {"micro": micro, "macro": macro, "samples": samples,
+            "jaccard_micro": np.asarray([jaccard[0]]),
+            "jaccard_macro": np.asarray([jaccard[1]]),
+            "jaccard_samples": np.asarray([jaccard[2]]),
+            "hamming_micro": np.asarray([hamming[0]]),
+            "hamming_macro": np.asarray([hamming[1]]),
+            "hamming_samples": np.asarray([hamming[2]])}
 
 
 def parse(output: str) -> dict[str, np.ndarray]:
@@ -108,10 +134,22 @@ def main() -> None:
                 "n_labels": labels.shape[1], "seconds_per_operation": "", "metric": metric,
                 "value": value, "max_abs_error": abs(float(metric_error)),
                 "oracle": "independent NumPy multilabel TP/FP/FN oracle", "notes": "explicit zero-division and >= threshold"})
+    for metric in ("jaccard_micro", "jaccard_macro", "jaccard_samples",
+                   "hamming_micro", "hamming_macro", "hamming_samples"):
+        actual = observed[f"multilabel_{metric}"]
+        error = float(np.max(np.abs(actual - expected[metric])))
+        if error > 2.0e-14:
+            raise RuntimeError(f"multilabel {metric} mismatch: {error:.3e}")
+        rows.append({**metadata, "workload": "multilabel_metrics", "phase": metric,
+            "backend": "fortml", "device": "cpu", "status": "pass", "n_samples": labels.shape[0],
+            "n_labels": labels.shape[1], "seconds_per_operation": "", "metric": metric.split("_", 1)[0],
+            "value": float(actual[0]), "max_abs_error": error,
+            "oracle": "independent NumPy multilabel intersection/union/error oracle",
+            "notes": "explicit empty-union and row-weight policy"})
     rows.append({**metadata, "workload": "multilabel_metrics", "phase": "all",
         "backend": "fortml", "device": "cuda", "status": "unavailable",
         "n_samples": labels.shape[0], "n_labels": labels.shape[1],
-        "seconds_per_operation": "", "metric": "precision/recall/f1",
+        "seconds_per_operation": "", "metric": "precision/recall/f1/Jaccard/Hamming",
         "value": "", "max_abs_error": "", "oracle": "typed_device_contract",
         "notes": "classification_multilabel_*_device is not implemented; no host fallback"})
     output.parent.mkdir(parents=True, exist_ok=True)

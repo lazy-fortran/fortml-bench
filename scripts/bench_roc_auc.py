@@ -53,6 +53,25 @@ def pair_auc(scores: np.ndarray, labels: np.ndarray, positive: int) -> float:
     return float(np.mean((comparison > 0.0) + 0.5 * (comparison == 0.0)))
 
 
+def average_precision(scores: np.ndarray, labels: np.ndarray, positive: int) -> float:
+    """Independent average-precision step oracle with threshold grouping."""
+    is_positive = labels == positive
+    positive_count = int(np.sum(is_positive))
+    if positive_count == 0 or positive_count == len(labels):
+        raise ValueError("degenerate support")
+    previous_recall = 0.0
+    area = 0.0
+    for threshold in np.unique(scores)[::-1]:
+        selected = scores >= threshold
+        true_seen = int(np.sum(is_positive & selected))
+        predicted_seen = int(np.sum(selected))
+        recall = true_seen / positive_count
+        precision = true_seen / predicted_seen
+        area += (recall - previous_recall) * precision
+        previous_recall = recall
+    return float(area)
+
+
 def fixture() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     binary_scores = np.array([0.9, 0.8, 0.8, 0.2], dtype=np.float64)
     binary_labels = np.array([42, 42, -7, -7], dtype=np.int64)
@@ -70,13 +89,15 @@ def parse(stdout: str) -> dict[str, float | str]:
     values: dict[str, float | str] = {}
     for line in stdout.splitlines():
         fields = [field.strip() for field in line.split(",")]
-        if len(fields) != 2 or not fields[0].startswith("roc_auc_"):
+        if len(fields) != 2 or not (fields[0].startswith("roc_auc_") or fields[0].startswith("pr_auc_")):
             continue
         key, raw = fields
         values[key] = raw if key.endswith("_cuda") else float(raw)
     required = {
         "roc_auc_binary", "roc_auc_binary_error", "roc_auc_binary_seconds",
         "roc_auc_ovr", "roc_auc_ovr_error", "roc_auc_ovr_seconds", "roc_auc_cuda",
+        "pr_auc_binary", "pr_auc_binary_error", "pr_auc_binary_seconds",
+        "pr_auc_ovr", "pr_auc_ovr_error", "pr_auc_ovr_seconds", "pr_auc_cuda",
     }
     missing = required.difference(values)
     if missing:
@@ -99,6 +120,10 @@ def main() -> None:
     binary_expected = pair_auc(binary_scores, binary_labels, 42)
     per_class = np.array([pair_auc(scores[:, i], labels, c) for i, c in enumerate((-2, 4, 9))])
     macro_expected = float(np.mean(per_class))
+    binary_pr_expected = average_precision(binary_scores, binary_labels, 42)
+    per_class_pr = np.array([average_precision(scores[:, i], labels, c)
+                             for i, c in enumerate((-2, 4, 9))])
+    macro_pr_expected = float(np.mean(per_class_pr))
     metadata = {
         "python_version": platform.python_version(), "numpy_version": np.__version__,
         "fortml_revision": revision(fortml), "benchmark_revision": revision(root, ignored),
@@ -119,6 +144,14 @@ def main() -> None:
         device="cpu", status="pass", n_samples=6, n_classes=3, value=macro_expected,
         max_abs_error=0.0, oracle="independent NumPy one-vs-rest pairwise oracle",
         notes="macro of per-class values %s" % per_class.tolist())
+    add(workload="pr_auc", metric="binary", phase="oracle", backend="numpy_oracle",
+        device="cpu", status="pass", n_samples=4, n_classes=2, value=binary_pr_expected,
+        max_abs_error=0.0, oracle="independent NumPy average-precision threshold-group oracle",
+        notes="step area; tied scores consumed together")
+    add(workload="pr_auc", metric="ovr_macro", phase="oracle", backend="numpy_oracle",
+        device="cpu", status="pass", n_samples=6, n_classes=3, value=macro_pr_expected,
+        max_abs_error=0.0, oracle="independent NumPy one-vs-rest average-precision oracle",
+        notes="macro of per-class values %s" % per_class_pr.tolist())
 
     subprocess.run(["fo", "build", "--flag", "-O3"], cwd=fortml, check=True)
     completed = subprocess.run(
@@ -128,10 +161,13 @@ def main() -> None:
     values = parse(completed.stdout)
     binary_error = float(values["roc_auc_binary_error"])
     macro_error = float(values["roc_auc_ovr_error"])
-    if binary_error > 1e-13 or macro_error > 1e-13:
+    pr_binary_error = float(values["pr_auc_binary_error"])
+    pr_macro_error = float(values["pr_auc_ovr_error"])
+    if (binary_error > 1e-13 or macro_error > 1e-13 or
+            pr_binary_error > 1e-13 or pr_macro_error > 1e-13):
         raise RuntimeError(f"ROC-AUC oracle mismatch: binary={binary_error:.3e}, macro={macro_error:.3e}")
-    if values["roc_auc_cuda"] != "unavailable":
-        raise RuntimeError("ROC-AUC CUDA refusal row changed unexpectedly")
+    if values["roc_auc_cuda"] != "unavailable" or values["pr_auc_cuda"] != "unavailable":
+        raise RuntimeError("ranking CUDA refusal row changed unexpectedly")
     add(workload="roc_auc", metric="binary", phase="predict", backend="fortml_cpu",
         device="cpu", status="pass", n_samples=4, n_classes=2,
         seconds_per_operation=values["roc_auc_binary_seconds"], value=float(values["roc_auc_binary"]),
@@ -142,6 +178,19 @@ def main() -> None:
         max_abs_error=macro_error, oracle="independent NumPy one-vs-rest pairwise oracle")
     add(workload="roc_auc", metric="binary+ovr", phase="predict", backend="fortml_cuda",
         device="cuda", status="unavailable", n_samples=6, n_classes=3,
+        oracle="typed_device_contract", notes="no resident CUDA ranking/reduction kernel")
+    add(workload="pr_auc", metric="binary", phase="predict", backend="fortml_cpu",
+        device="cpu", status="pass", n_samples=4, n_classes=2,
+        seconds_per_operation=values["pr_auc_binary_seconds"], value=float(values["pr_auc_binary"]),
+        max_abs_error=pr_binary_error,
+        oracle="independent NumPy average-precision threshold-group oracle")
+    add(workload="pr_auc", metric="ovr_macro", phase="predict", backend="fortml_cpu",
+        device="cpu", status="pass", n_samples=6, n_classes=3,
+        seconds_per_operation=values["pr_auc_ovr_seconds"], value=float(values["pr_auc_ovr"]),
+        max_abs_error=pr_macro_error,
+        oracle="independent NumPy one-vs-rest average-precision oracle")
+    add(workload="pr_auc", metric="binary", phase="predict", backend="fortml_cuda",
+        device="cuda", status="unavailable", n_samples=4, n_classes=2,
         oracle="typed_device_contract", notes="no resident CUDA ranking/reduction kernel")
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:

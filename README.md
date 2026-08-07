@@ -217,9 +217,10 @@ capability rows are explicit refusals until a resident multi-head kernel is
 linked; host timings are never relabeled as accelerator evidence.
 
 The multilabel metrics lane checks micro, macro, and samples precision, recall,
-and F1, together with `>=` probability thresholding, against an independent
-NumPy TP/FP/FN oracle. It records the typed CUDA refusal until resident
-multilabel reduction kernels are available:
+F1, Jaccard, and Hamming loss, together with `>=` probability thresholding,
+against independent NumPy TP/FP/FN and intersection/union/error oracles. It
+records the typed CUDA refusal until resident multilabel reduction kernels are
+available:
 
 ```bash
 python -B scripts/bench_multilabel_metrics.py \
@@ -228,10 +229,11 @@ python -B scripts/bench_multilabel_metrics.py \
 
 See [`results/MULTILABEL_METRICS.md`](results/MULTILABEL_METRICS.md).
 
-The ROC-AUC lane separately checks binary and one-vs-rest multiclass AUC with
-arbitrary integer labels and half-credit ties against an independent NumPy
-pairwise oracle. Its CUDA row remains an explicit refusal until resident
-ranking/reduction kernels are linked:
+The ROC-AUC lane separately checks binary and one-vs-rest multiclass ROC AUC
+with arbitrary integer labels and half-credit ties, and binary/OVR PR AUC with
+average-precision threshold-group semantics, against independent NumPy
+oracles. Its CUDA rows remain explicit refusals until resident ranking/reduction
+kernels are linked:
 
 ```bash
 python -B scripts/bench_roc_auc.py \
