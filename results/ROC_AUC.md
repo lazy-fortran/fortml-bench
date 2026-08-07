@@ -2,7 +2,7 @@
 
 `bench_roc_auc.py` gates binary and one-vs-rest multiclass ROC area against an
 independent NumPy pairwise oracle. Scores above a negative score receive one
-concordance point and exact ties receive one half; binary labels use arbitrary
+concordance point and exact ties receive one half. Binary labels use arbitrary
 integers and the multiclass lane reports the unweighted macro average. The
 fixture includes an intentional binary tie and records per-class OVR values.
 
@@ -15,8 +15,8 @@ The FortML CPU lane reports correctness and per-call timings for
 `classification_roc_auc`, `classification_roc_auc_ovr`, `classification_pr_auc`,
 and `classification_pr_auc_ovr`. Degenerate class
 support, nonfinite scores, malformed weights, and more-than-two binary labels
-are typed domain errors.  The CUDA row is explicitly `unavailable` until a
-resident ranking/reduction kernel is linked; no host fallback is hidden.
+are typed domain errors. The CUDA row is explicitly `unavailable` until a
+resident ranking/reduction kernel is linked. No host fallback is hidden.
 
 Run:
 
