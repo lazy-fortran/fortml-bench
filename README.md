@@ -729,6 +729,17 @@ CUDA refusals:
 
 See [`results/ADAGRAD_HYPERGRADIENT.md`](results/ADAGRAD_HYPERGRADIENT.md).
 
+The fixed seeded mini-batch SGD hypergradient lane checks the complete
+value/gradient/JVP array against an independent NumPy trajectory with the same
+Park–Miller shuffle cursor, then retains CPU timing and typed CUDA refusals:
+
+```bash
+.venv/bin/python -B scripts/bench_mlp_minibatch_hypergradient.py \
+    --fortml ../fortml --output results/mlp_minibatch_hypergradient.csv
+```
+
+See [`results/MLP_MINIBATCH_HYPERGRADIENT.md`](results/MLP_MINIBATCH_HYPERGRADIENT.md).
+
 The calibrated neural classifier lane checks sorted labels, finite calibrated
 probabilities, the probability simplex, and prediction-domain invariants on a
 64-row deterministic fixture before retaining CPU fit/predict timings:

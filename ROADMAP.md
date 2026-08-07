@@ -231,6 +231,11 @@ a different workload, precision, device, or residency policy.
   before retaining the FortML timing; the raw record is
   `results/sgd_momentum_hypergradient.csv`, with compiler/source provenance and
   typed CUDA refusals.
+- [x] Add a fixed seeded mini-batch SGD hypergradient workload over log
+  learning rate and log regularization. The independent NumPy lane reproduces
+  the Park–Miller shuffle cursor and checks value, both gradient components,
+  and a directional JVP before retaining FortML timing; CUDA remains an
+  explicit refusal until resident batch-cursor derivatives exist.
 - [x] Add a calibrated neural classifier lane with an independent fixture,
   sorted-class, probability-simplex, finite-bound, and prediction-domain
   oracle. The raw record is `results/mlp_calibrated_classifier.csv`; CPU fit
