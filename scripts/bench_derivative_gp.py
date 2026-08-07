@@ -2,7 +2,8 @@
 """Correctness-gated derivative-observation GP query-product benchmark.
 
 The NumPy path independently assembles value/first/mixed covariance blocks
-from scalar periodic, rational-quadratic, cosine, and polynomial formulas. It then finite-differences
+from scalar periodic, rational-quadratic, cosine, polynomial, and
+spectral-mixture formulas. It then finite-differences
 the complete posterior query to obtain an oracle for the exact FortML
 third-input products. CUDA is represented as an explicit typed refusal until a
 resident derivative-GP graph is available.
@@ -79,6 +80,50 @@ def scalar_kernel(a: np.ndarray, b: np.ndarray, name: str) -> float:
     return 1.3 * denominator ** (-1.7)
 
 
+def spectral_covariance(a: np.ndarray, ca: int, b: np.ndarray, cb: int,
+                        theta: np.ndarray | None = None) -> float:
+    """Independent value/gradient/mixed block for two spectral components."""
+    if theta is None:
+        theta = np.array([
+            np.log(1.15), np.log(0.31), np.log(0.22), 0.21, 0.48,
+            np.log(0.63), np.log(0.57), np.log(0.44), -0.37, 0.16,
+        ], dtype=np.float64)
+    tau = a - b
+    value = 0.0
+    for q in range(2):
+        base = 5 * q
+        weight = np.exp(theta[base])
+        scale = np.exp(theta[base + 1:base + 3])
+        mean = theta[base + 3:base + 5]
+        phase = 2.0 * np.pi * tau * mean
+        envelope = np.exp(-0.5 * (2.0 * np.pi * tau * scale) ** 2)
+        factor = envelope * np.cos(phase)
+        lag_first = envelope * (
+            -(2.0 * np.pi) ** 2 * tau * scale**2 * np.cos(phase)
+            - 2.0 * np.pi * mean * np.sin(phase)
+        )
+        lag_second = envelope * (
+            ((-(2.0 * np.pi) ** 2 * scale**2)
+             + (-(2.0 * np.pi) ** 2 * tau * scale**2) ** 2) * np.cos(phase)
+            + 2.0 * (-(2.0 * np.pi) ** 2 * tau * scale**2)
+            * (-2.0 * np.pi * mean * np.sin(phase))
+            - (2.0 * np.pi * mean) ** 2 * np.cos(phase)
+        )
+        if ca == 0 and cb == 0:
+            component = np.prod(factor)
+        elif ca > 0 and cb == 0:
+            component = lag_first[ca - 1] * np.prod(np.delete(factor, ca - 1))
+        elif ca == 0 and cb > 0:
+            component = -lag_first[cb - 1] * np.prod(np.delete(factor, cb - 1))
+        elif ca == cb:
+            component = -lag_second[ca - 1] * np.prod(np.delete(factor, ca - 1))
+        else:
+            keep = [i for i in range(D) if i not in (ca - 1, cb - 1)]
+            component = -lag_first[ca - 1] * lag_first[cb - 1] * np.prod(factor[keep])
+        value += weight * component
+    return float(value)
+
+
 def scalar_partials(a: np.ndarray, b: np.ndarray, name: str,
                     theta: np.ndarray | None = None) -> tuple[float, float, float]:
     """Return F(s), F'(s), F''(s), s=||a-b||², independently."""
@@ -131,6 +176,8 @@ def scalar_partials(a: np.ndarray, b: np.ndarray, name: str,
 def covariance(a: np.ndarray, ca: int, b: np.ndarray, cb: int, name: str,
                theta: np.ndarray | None = None) -> float:
     """Independent analytic value/gradient/mixed-Hessian covariance blocks."""
+    if name == "spectral_mixture":
+        return spectral_covariance(a, ca, b, cb, None if theta is None else theta[:10])
     if name == "polynomial":
         if theta is None:
             variance, scale, offset, degree = 1.3, 0.4, 1.5, 2.2
@@ -218,11 +265,19 @@ def oracle(name: str) -> tuple[float, float, float, float, float]:
                            float(np.sum(mean_bar * mean_minus) + np.sum(variance_bar * variance_minus))) / (2.0 * h)
     covariance = joint_covariance(x, components, y, query, query_components, name)
     kernel_parameter_count = {"periodic": 3, "rational_quadratic": 3,
-                              "cosine": 2, "polynomial": 4}[name]
-    theta = np.log({"periodic": [1.3, 0.8, 2.1],
-                    "rational_quadratic": [1.3, 0.8, 1.7],
-                    "cosine": [1.3, 0.8],
-                    "polynomial": [1.3, 0.4, 1.5, 2.2]}[name] + [NOISE])
+                              "cosine": 2, "polynomial": 4,
+                              "spectral_mixture": 10}[name]
+    if name == "spectral_mixture":
+        kernel_theta = np.array([
+            np.log(1.15), np.log(0.31), np.log(0.22), 0.21, 0.48,
+            np.log(0.63), np.log(0.57), np.log(0.44), -0.37, 0.16,
+        ], dtype=np.float64)
+        theta = np.concatenate([kernel_theta, [np.log(NOISE)]])
+    else:
+        theta = np.log(np.array({"periodic": [1.3, 0.8, 2.1],
+                                 "rational_quadratic": [1.3, 0.8, 1.7],
+                                 "cosine": [1.3, 0.8],
+                                 "polynomial": [1.3, 0.4, 1.5, 2.2]}[name] + [NOISE]))
     parameter_direction = 0.08 - 0.017 * np.arange(1, kernel_parameter_count + 2)
     covariance_plus = joint_covariance(x, components, y, query, query_components, name,
                                        theta + 1.0e-5 * parameter_direction)
@@ -267,7 +322,8 @@ def main() -> None:
         "fortml_revision": revision(fortml), "benchmark_revision": revision(root, (args.output,)),
         "compiler": os.environ.get("FO_FC", "gfortran"), "flags": "-O3",
     }
-    expected = {name: oracle(name) for name in ("periodic", "rational_quadratic", "cosine", "polynomial")}
+    expected = {name: oracle(name) for name in (
+        "periodic", "rational_quadratic", "cosine", "polynomial", "spectral_mixture")}
 
     def row(**values: object) -> dict[str, str]:
         result = {field: "" for field in FIELDS}

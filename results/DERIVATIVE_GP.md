@@ -1,7 +1,7 @@
 # Derivative-observation GP query products
 
-`bench_derivative_gp.py` checks periodic, rational-quadratic, cosine, and
-polynomial mixed value/first-derivative GPs. The independent NumPy oracle builds the value,
+`bench_derivative_gp.py` checks periodic, rational-quadratic, cosine, polynomial,
+and spectral-mixture mixed value/first-derivative GPs. The independent NumPy oracle builds the value,
 gradient, and mixed-Hessian covariance blocks from scalar formulas, then
 finite-differences complete posterior queries for input JVP and VJP checks and
 assembles a dense joint posterior covariance. It also finite-differences the
@@ -13,6 +13,13 @@ CSV has 60 correctness-gated CPU/CUDA-contract rows.
 CUDA rows are deliberately recorded as `unavailable`: the derivative-GP
 resident covariance/factorization graph is not linked and FortML returns
 `FORTNUM_NOT_IMPLEMENTED` rather than copying through the host.
+
+The spectral-mixture row uses the packed GPyTorch-compatible coordinates
+`[log_weight, log_scale(:), mean(:)]` and an independent dense two-feature
+oracle. It covers query JVP/VJP and posterior covariance parameter JVP/VJP;
+mixed parameter HVP remains a typed refusal because fourth input/parameter
+products are not yet generated. The current CSV contains 75 correctness-gated
+CPU/CUDA-contract rows.
 
 ```bash
 python -B scripts/bench_derivative_gp.py \
