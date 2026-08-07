@@ -144,6 +144,11 @@ a different workload, precision, device, or residency policy.
   FortML release app emits all 100 values before its resident scalar timing is
   retained in `results/mlp_schedules.csv`. This gate does not claim neural
   training, OpenACC, or CUDA performance.
+- [x] Add a dense MLP activation lane for linear, `tanh`, ReLU, GELU, SiLU,
+  ELU, softplus, and leaky ReLU. Eight independent NumPy checksum rows and
+  eight FortML CPU timings are retained alongside eight explicit CUDA refusal
+  rows in `results/mlp_activations.csv`; no host activation timing is relabeled
+  as device evidence.
 - [x] Add an independent Adagrad accumulated-square and checkpoint/resume
   recurrence lane. The raw record is `results/adagrad.csv`; the missing
   dedicated FortML release app remains an explicit `unavailable` row rather

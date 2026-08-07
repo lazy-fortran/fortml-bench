@@ -140,6 +140,19 @@ warm-up-plus-cosine, and exponential-decay values and analytic products:
 See [`results/MLP_SCHEDULES.md`](results/MLP_SCHEDULES.md). CUDA schedule rows
 are explicit `unavailable` capability records, not host timings.
 
+The dense MLP activation lane checks the packed `8-32-4` forward path for
+linear, `tanh`, ReLU, GELU, SiLU, ELU, softplus, and leaky ReLU against an
+independent NumPy checksum oracle:
+
+```bash
+.venv/bin/python -B scripts/bench_mlp_activations.py \
+    --fortml ../fortml --output results/mlp_activations.csv
+```
+
+See [`results/MLP_ACTIVATIONS.md`](results/MLP_ACTIVATIONS.md). Every CUDA
+row is an explicit `unavailable` capability record until resident MLP
+activation and dense-gradient kernels are linked.
+
 The scheduled trajectory hypergradient lane checks a complete `3-8-1` MLP
 training trajectory with exact reverse gradients and a directional JVP over
 base-rate, L2, minimum-fraction, and decay-logit hyperparameters:
