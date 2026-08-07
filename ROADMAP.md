@@ -405,6 +405,11 @@ a different workload, precision, device, or residency policy.
   Categorical JVP/VJP are explicit refusals because integer categories have no
   canonical tangent space.  The raw record is `results/one_hot_encoder.csv`
   and the protocol is documented in `results/ONE_HOT_ENCODER.md`.
+- [x] Add a grouped K-fold validation lane with an independent stable
+  largest-first packing oracle, complete test-index and group-isolation checks,
+  release-app split timing, and an explicit CUDA capability refusal. The raw
+  record is `results/group_kfold.csv`; the protocol is documented in
+  `results/GROUP_KFOLD.md`.
 - [x] Add a centered dense PCA lane with an independent NumPy thin-SVD oracle,
   scikit-learn full-SVD context, deterministic sign/rank checks, and the
   FortML release-app orthonormality/timing protocol. The raw record is

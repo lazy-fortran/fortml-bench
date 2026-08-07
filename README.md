@@ -383,6 +383,19 @@ See [`results/ORDINAL_LOGISTIC.md`](results/ORDINAL_LOGISTIC.md). CUDA rows
 are explicit `unavailable` capability records until a resident ordinal kernel
 is linked; no host fallback is timed.
 
+The grouped-validation lane checks deterministic largest-first group packing
+on an uneven six-group fixture. Every FortML test assignment is compared with
+an independent NumPy oracle and group isolation is checked before retaining
+the CPU split-generation timing:
+
+```bash
+python -B scripts/bench_group_kfold.py \
+    --fortml ../fortml --output results/group_kfold.csv
+```
+
+See [`results/GROUP_KFOLD.md`](results/GROUP_KFOLD.md). The CUDA row is an
+explicit capability refusal because splitters own host index metadata only.
+
 ### Weighted softmax-training lane
 
 The weighted softmax-training lane checks the packed FortOpt value, gradient,
