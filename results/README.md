@@ -37,6 +37,9 @@ Complete-call studies:
 - [Integer one-hot encoder](ONE_HOT_ENCODER.md)
 - [Stochastic, derivative, multi-output, and variational GP features](GP_FEATURES.md)
 - [Derivative-observation GP query products](DERIVATIVE_GP.md)
+- [Smooth kernel catalog](KERNEL_CATALOG.md)
+- [Weighted LDA and QDA](DISCRIMINANT_ANALYSIS.md)
+- [Robust Huber and quantile XGBoost](XGBOOST_ROBUST.md)
 - [Hyperparameter grid, seeded random, and L-BFGS-B search](HYPERPARAMETER_SEARCH.md)
 - [Large-GP review comparison](SCALABLE_GP.md)
 

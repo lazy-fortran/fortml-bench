@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Correctness-gated periodic and rational-quadratic kernel benchmark.
+"""Correctness-gated smooth kernel-catalog benchmark.
 
 NumPy supplies an independent covariance and central-product oracle.  The
 FortML release app is retained only when all checksums agree; CUDA remains an
-explicit refusal because the resident postfix ABI does not yet carry the
-third leaf parameter.
+explicit refusal until resident kernels are linked for the complete catalog.
 """
 
 from __future__ import annotations
@@ -26,8 +25,15 @@ REPETITIONS = 24
 PARAMETERS = {
     "periodic": np.array([np.log(1.3), np.log(0.7), np.log(1.1)]),
     "rational_quadratic": np.array([np.log(1.2), np.log(0.9), np.log(1.4)]),
+    "cosine": np.array([np.log(1.3), np.log(0.7)]),
+    "polynomial": np.array([np.log(1.1), np.log(0.1), np.log(5.0), np.log(2.3)]),
 }
-DIRECTION = np.array([0.11, -0.07, 0.03])
+DIRECTIONS = {
+    "periodic": np.array([0.11, -0.07, 0.03]),
+    "rational_quadratic": np.array([0.11, -0.07, 0.03]),
+    "cosine": np.array([0.11, -0.07]),
+    "polynomial": np.array([0.11, -0.07, 0.03, -0.02]),
+}
 OPERATIONS = ("matrix", "matrix_jvp", "parameter_vjp", "parameter_hvp", "input_derivatives")
 FIELDS = (
     "workload", "operation", "backend", "device", "status", "n_samples",
@@ -61,12 +67,21 @@ def fixture() -> tuple[np.ndarray, np.ndarray]:
 def kernel(points_a: np.ndarray, points_b: np.ndarray, name: str, parameters: np.ndarray) -> np.ndarray:
     delta = points_a[:, None, :] - points_b[None, :, :]
     squared_distance = np.sum(delta * delta, axis=2)
-    variance, lengthscale, third = np.exp(parameters)
+    positive = np.exp(parameters)
+    variance, lengthscale = positive[:2]
     if name == "periodic":
+        third = positive[2]
         argument = np.pi * np.sqrt(squared_distance) / third
         return variance * np.exp(-2.0 * np.sin(argument) ** 2 / lengthscale ** 2)
-    denominator = 1.0 + squared_distance / (2.0 * third * lengthscale ** 2)
-    return variance * denominator ** (-third)
+    if name == "rational_quadratic":
+        third = positive[2]
+        denominator = 1.0 + squared_distance / (2.0 * third * lengthscale ** 2)
+        return variance * denominator ** (-third)
+    if name == "cosine":
+        return variance * np.cos(np.sqrt(squared_distance) / lengthscale)
+    scale, offset, degree = positive[1:]
+    inner = np.sum(points_a[:, None, :] * points_b[None, :, :], axis=2)
+    return variance * (offset + scale * inner) ** degree
 
 
 def scalar_value(a: np.ndarray, b: np.ndarray, name: str, parameters: np.ndarray) -> float:
@@ -78,27 +93,40 @@ def parameter_derivatives(points_a: np.ndarray, points_b: np.ndarray, name: str,
     delta = points_a[:, None, :] - points_b[None, :, :]
     squared_distance = np.sum(delta * delta, axis=2)
     value = kernel(points_a, points_b, name, parameters)
-    _, lengthscale, third = np.exp(parameters)
+    positive = np.exp(parameters)
+    _, lengthscale = positive[:2]
     inverse_length_squared = 1.0 / lengthscale ** 2
     if name == "periodic":
+        third = positive[2]
         argument = np.pi * np.sqrt(squared_distance) / third
         sine = np.sin(argument)
         cosine = np.cos(argument)
         return (value, value * 4.0 * inverse_length_squared * sine ** 2,
                 value * 4.0 * inverse_length_squared * argument * sine * cosine)
-    tail = squared_distance / (2.0 * third * lengthscale ** 2)
-    denominator = 1.0 + tail
-    return (value, value * 2.0 * third * tail / denominator,
-            value * third * (tail / denominator - np.log(denominator)))
+    if name == "rational_quadratic":
+        third = positive[2]
+        tail = squared_distance / (2.0 * third * lengthscale ** 2)
+        denominator = 1.0 + tail
+        return (value, value * 2.0 * third * tail / denominator,
+                value * third * (tail / denominator - np.log(denominator)))
+    if name == "cosine":
+        argument = np.sqrt(squared_distance) / lengthscale
+        return (value, np.exp(parameters[0]) * argument * np.sin(argument))
+    scale, offset, degree = positive[1:]
+    inner = np.sum(points_a[:, None, :] * points_b[None, :, :], axis=2)
+    base = offset + scale * inner
+    return (value, value * degree * scale * inner / base,
+            value * degree * offset / base, value * degree * np.log(base))
 
 
 def oracle(name: str) -> dict[str, float]:
     points, cotangent = fixture()
     parameters = PARAMETERS[name]
+    direction = DIRECTIONS[name]
     matrix = kernel(points, points, name, parameters)
     h = 1.0e-5
-    matrix_plus = kernel(points, points, name, parameters + h * DIRECTION)
-    matrix_minus = kernel(points, points, name, parameters - h * DIRECTION)
+    matrix_plus = kernel(points, points, name, parameters + h * direction)
+    matrix_minus = kernel(points, points, name, parameters - h * direction)
     matrix_jvp = (matrix_plus - matrix_minus) / (2.0 * h)
 
     def weighted_gradient(theta: np.ndarray) -> np.ndarray:
@@ -106,7 +134,7 @@ def oracle(name: str) -> dict[str, float]:
                            for derivative in parameter_derivatives(points, points, name, theta)])
 
     parameter_vjp = weighted_gradient(parameters)
-    parameter_hvp = (weighted_gradient(parameters + h * DIRECTION) - weighted_gradient(parameters - h * DIRECTION)) / (2.0 * h)
+    parameter_hvp = (weighted_gradient(parameters + h * direction) - weighted_gradient(parameters - h * direction)) / (2.0 * h)
 
     a, b = points[0], points[1]
     value = scalar_value(a, b, name, parameters)
@@ -158,7 +186,8 @@ def main() -> None:
                             notes="reference checksum; not a timing"))
             rows.append(row(metadata, workload=f"kernel_catalog_{name}", operation=operation,
                             backend="fortml", device="cuda", status="unavailable", value="", max_abs_error="",
-                            seconds_per_operation="", oracle="", notes="typed refusal: resident CUDA ABI lacks third leaf parameter"))
+                            seconds_per_operation="", oracle="typed_device_contract",
+                            notes="typed refusal: resident CUDA kernel is not linked for this leaf"))
 
     target = args.fortml / "app" / "fortml_bench_kernel_catalog.f90"
     environment = os.environ.copy(); environment.update({"FO_FC": "gfortran", "OMP_NUM_THREADS": "1"})

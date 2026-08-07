@@ -77,11 +77,11 @@ boundaries, plots, and the recorded machine results are in
 [`results/MODEL_WORKLOADS.md`](results/MODEL_WORKLOADS.md) and
 [`results/GP_FEATURES.md`](results/GP_FEATURES.md).
 
-The kernel-catalog lane checks the periodic and rational-quadratic covariance
-leaves, their input derivatives, and logarithmic parameter JVP/VJP/HVP products
-against independent NumPy formulas. It records host timings and explicit CUDA
-capability refusals until the resident postfix ABI carries the third leaf
-parameter:
+The kernel-catalog lane checks periodic, rational-quadratic, cosine, and
+polynomial covariance leaves, their input derivatives, and logarithmic
+parameter JVP/VJP/HVP products against independent NumPy formulas. It records
+host timings and explicit CUDA capability refusals until resident kernels are
+linked:
 
 ```bash
 python -B scripts/bench_kernel_catalog.py \
@@ -89,6 +89,18 @@ python -B scripts/bench_kernel_catalog.py \
 ```
 
 See [`results/KERNEL_CATALOG.md`](results/KERNEL_CATALOG.md).
+
+The weighted discriminant-analysis lane checks arbitrary integer-label LDA and
+QDA fits, stabilized class probabilities, predictions, and fixed-state input
+JVPs against an independent NumPy Gaussian-discriminant oracle. It also records
+the fitted moments and explicit CUDA refusals:
+
+```bash
+python -B scripts/bench_discriminant_analysis.py \
+  --fortml ../fortml --output results/discriminant_analysis.csv
+```
+
+See [`results/DISCRIMINANT_ANALYSIS.md`](results/DISCRIMINANT_ANALYSIS.md).
 
 The derivative-GP lane checks exact query-input JVP/VJP products for mixed
 value/first-derivative periodic and rational-quadratic GPs against an
@@ -582,6 +594,17 @@ histogram timings on a larger deterministic count workload:
 
 See [`results/XGBOOST_POISSON.md`](results/XGBOOST_POISSON.md). Its CUDA row
 is an explicit unavailable refusal until a resident tree kernel is linked.
+
+The robust XGBoost lane independently reconstructs weighted one-tree Huber and
+pinball/quantile objectives, including base margins and leaf corrections:
+
+```bash
+python -B scripts/bench_xgboost_robust.py \
+  --fortml ../fortml --output results/xgboost_robust.csv
+```
+
+See [`results/XGBOOST_ROBUST.md`](results/XGBOOST_ROBUST.md). CUDA remains a
+typed unavailable row until a resident robust-tree kernel is linked.
 
 The generic hyperparameter-search lane uses an independent three-parameter
 quadratic oracle to gate Cartesian grid, seeded random, and FortOpt L-BFGS-B
