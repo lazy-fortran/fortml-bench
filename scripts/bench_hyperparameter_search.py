@@ -81,7 +81,7 @@ def main() -> None:
     if grid_count != 125 or not np.isfinite(grid_value):
         raise RuntimeError("independent grid oracle is invalid")
     rows: list[dict[str, str]] = []
-    fortml_rev = revision(fortml)
+    fortml_rev = revision(fortml, (fortml / "verification" / "fortml-gfortran.txt",))
     bench_rev = revision(root, tuple(root / "results" / name for name in (
         "xgboost_poisson.csv", "hyperparameter_search.csv")))
 

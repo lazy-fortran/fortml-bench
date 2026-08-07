@@ -78,7 +78,7 @@ def main() -> None:
     oracle = poisson_oracle()
     app_oracle_error = None
     rows: list[dict[str, str]] = []
-    fortml_rev = revision(fortml)
+    fortml_rev = revision(fortml, (fortml / "verification" / "fortml-gfortran.txt",))
     bench_rev = revision(root, tuple(root / "results" / name for name in (
         "xgboost_poisson.csv", "hyperparameter_search.csv")))
 
