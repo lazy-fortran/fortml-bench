@@ -56,7 +56,9 @@ def metadata(root: Path, fortml: Path, output: Path) -> dict[str, str]:
         "python_version": platform.python_version(),
         "numpy_version": np.__version__,
         "fortml_revision": revision(fortml),
-        "benchmark_revision": revision(root, (output,)),
+        "benchmark_revision": revision(
+            root, (output, root / "results" / "pca.csv", root / "results" / "adagrad.csv")
+        ),
         "compiler": os.environ.get("FO_FC", "gfortran"),
         "flags": "-O3",
     }
@@ -121,6 +123,11 @@ def run_oracle() -> list[dict[str, Any]]:
 def run_fortml(fortml: Path, target: str, details: dict[str, str]) -> dict[str, Any]:
     environment = os.environ.copy()
     environment.update({"FO_FC": environment.get("FO_FC", "gfortran"), "OMP_NUM_THREADS": "1"})
+    source = fortml / "app" / f"{target}.f90"
+    if not source.is_file():
+        return base_row(details, phase="train", backend="fortml", status="unavailable",
+                        oracle="FortML release-app protocol",
+                        notes=f"release target source is absent: {source.name}")
     build = subprocess.run(["fo", "build", "--flag", "-O3"], cwd=fortml,
                            env=environment, capture_output=True, text=True)
     if build.returncode != 0:

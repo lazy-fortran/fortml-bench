@@ -69,7 +69,9 @@ def metadata(root: Path, fortml: Path, output: Path) -> dict[str, str]:
         "numpy_version": np.__version__,
         "sklearn_version": package_version("sklearn"),
         "fortml_revision": revision(fortml),
-        "benchmark_revision": revision(root, (output,)),
+        "benchmark_revision": revision(
+            root, (output, root / "results" / "pca.csv", root / "results" / "adagrad.csv")
+        ),
         "compiler": os.environ.get("FO_FC", "gfortran"),
         "flags": "-O3",
     }
