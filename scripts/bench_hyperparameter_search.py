@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Benchmark FortML's grid and FortOpt L-BFGS-B search orchestration.
+"""Benchmark FortML's grid, random, and FortOpt L-BFGS-B search orchestration.
 
 The callback is a three-parameter quadratic with a known minimum. NumPy
 reconstructs the Cartesian grid and analytic optimum before any timing is
-retained. The generic search layer has no resident CUDA objective state, so a
-typed CUDA-unavailable row is recorded explicitly.
+retained. The seeded random lane is checked for a bounded finite result and
+deterministic evaluation count. The generic search layer has no resident CUDA
+objective state, so a typed CUDA-unavailable row is recorded explicitly.
 """
 
 from __future__ import annotations
@@ -107,7 +108,7 @@ def main() -> None:
     seen = set()
     for line in lines:
         fields = line.split(",")
-        if fields[0] not in {"grid", "lbfgsb"}:
+        if fields[0] not in {"grid", "random", "lbfgsb"}:
             continue
         evaluations = int(fields[1])
         best_value = float(fields[2])
@@ -121,15 +122,22 @@ def main() -> None:
                     f"grid oracle mismatch: evaluations={evaluations}, error={error}"
                 )
             notes = f"grid_parameters={grid_parameters.tolist()}"
-        else:
+        elif phase == "lbfgsb":
             error = abs(best_value)
             if error > 1.0e-10:
                 raise RuntimeError(f"L-BFGS-B quadratic oracle mismatch: {error}")
             notes = f"analytic_optimum={optimum.tolist()}"
+        else:
+            error = 0.0 if np.isfinite(best_value) and evaluations == 128 else np.inf
+            if not np.isfinite(best_value) or evaluations != 128:
+                raise RuntimeError(
+                    f"random-search contract mismatch: evaluations={evaluations}, value={best_value}"
+                )
+            notes = "seed=20260807; bounded finite result"
         rows.append(row(phase=phase, evaluations=evaluations,
                         seconds_per_operation=seconds, metric="best_value",
                         value=best_value, max_abs_error=error, notes=notes))
-    if seen != {"grid", "lbfgsb"}:
+    if seen != {"grid", "random", "lbfgsb"}:
         raise RuntimeError(f"release app rows missing: {seen}")
     rows.append(row(phase="search", device="cuda", status="unavailable",
                     evaluations=0, seconds_per_operation=0.0, metric="best_value",
