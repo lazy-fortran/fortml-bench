@@ -531,6 +531,20 @@ python3 -B scripts/bench_pinn.py \
 See [`results/PINN.md`](results/PINN.md). The CPU result is a correctness
 gate, not a resident GPU performance claim.
 
+The general nonseparable Hamiltonian lane checks an independent analytic
+canonical vector-field/Jacobian oracle, full-state FortML JVP/VJP products, the
+separable symplectic gate, and the typed refusal for applying split leapfrog to
+general `H(q,p)`:
+
+```bash
+python3 -B scripts/bench_hamiltonian_general.py \
+    --fortml ../fortml --output results/hamiltonian_general.csv
+```
+
+See [`results/HAMILTONIAN_GENERAL.md`](results/HAMILTONIAN_GENERAL.md). The
+CUDA/OpenACC row remains explicitly unavailable until a resident model,
+derivative, and implicit-integrator graph exists.
+
 The matched multinomial softmax and multiclass neural-classifier lane uses an
 independent NumPy damped-Newton/Adam oracle, scikit-learn and optional resident
 PyTorch context rows, and an explicit FortML app protocol. Missing FortML

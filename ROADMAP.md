@@ -312,6 +312,11 @@ a different workload, precision, device, or residency policy.
   manufactured four-slot fixture checks value/gradient/JVP/VJP, nonlinear HVP,
   FortOpt L-BFGS-B fitting, malformed shapes, and typed CUDA refusal in
   `results/pinn.csv`.
+- [x] Add the general nonseparable Hamiltonian lane. An independent analytic
+  canonical-field/Jacobian oracle is paired with the FortML full-state
+  derivative, adjoint, separable-symplectic, and typed split-integrator-refusal
+  gate in `results/hamiltonian_general.csv`; CUDA/OpenACC remains explicitly
+  unavailable until a resident implicit-integrator graph exists.
 - [ ] Add resident CUDA/OpenACC timing rows for kNN search, RMSprop
   optimizer/trainer state, AdamW trainer state, staged XGBoost diagnostics, and GP classification
   hyperparameter training. Native CUDA kNN and a direct RMSprop state-kernel

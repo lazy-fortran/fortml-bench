@@ -30,6 +30,7 @@ Complete-call studies:
 - [Resident CUDA correctness contracts](DEVICE_CONTRACTS.md)
 - [Grouped MLP value, HVP, and bounded L-BFGS-B](MLP_GROUPED_TRAINING.md)
 - [Physics-informed and Hamiltonian model evidence](PHYSICS_MODELS.md)
+- [General nonseparable Hamiltonian products](HAMILTONIAN_GENERAL.md)
 - [Composable physics-residual objective](PHYSICS_OBJECTIVE.md)
 - [Bounded PINN training adapter](PINN.md)
 - [Deterministic grouped K-fold validation](GROUP_KFOLD.md)
