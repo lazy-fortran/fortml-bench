@@ -5,7 +5,7 @@ deterministic, without-replacement row sampling (`subsample=0.5`) and feature
 sampling (`colsample_bytree=0.5`). The NumPy oracle independently advances the
 same Park--Miller stream, enumerates every retained-feature threshold, evaluates
 the regularized second-order gain, and predicts every input row. The release
-fixture and oracle agree to machine precision; seed `12345` selects feature 1.
+fixture and oracle agree to machine precision. Seed `12345` selects feature 1.
 
 | phase | device | status | max absolute error | timing |
 |---|---|---|---:|---:|
@@ -13,8 +13,8 @@ fixture and oracle agree to machine precision; seed `12345` selects feature 1.
 | prediction capability | CUDA | unavailable | — | — |
 
 The CUDA row is a typed `FORTNUM_NOT_IMPLEMENTED` refusal. Tree growth and
-prediction have no resident CUDA kernel in this release; the CPU result is not
-relabeled as accelerator evidence.
+prediction have no resident CUDA kernel in this release. The CPU result is
+reported separately from accelerator evidence.
 
 Run:
 
