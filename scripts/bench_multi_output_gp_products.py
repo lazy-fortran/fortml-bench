@@ -101,6 +101,8 @@ def main() -> None:
     parser.add_argument("--output", type=Path,
                         default=Path("results/multi_output_gp_products.csv"))
     parser.add_argument("--target", default="fortml_bench_multi_output_gp_products")
+    parser.add_argument("--no-build", action="store_true",
+                        help="reuse an already-built FortML release target")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     fortml = args.fortml.resolve()
@@ -113,7 +115,8 @@ def main() -> None:
         "compiler": os.environ.get("FO_FC", "gfortran"), "flags": "-O3",
     }
     expected_mean, expected_input = oracle()
-    subprocess.run(["fo", "build", "--flag", "-O3"], cwd=fortml, check=True)
+    if not args.no_build:
+        subprocess.run(["fo", "build", "--flag", "-O3"], cwd=fortml, check=True)
     completed = subprocess.run(
         ["fo", "exec", "--no-build", args.target], cwd=fortml,
         check=True, capture_output=True, text=True,
