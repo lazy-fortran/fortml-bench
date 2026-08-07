@@ -65,7 +65,7 @@ def fixture() -> tuple[np.ndarray, ...]:
 def oracle() -> dict[str, float]:
     logits, targets, direction, prediction, target, weights = fixture()
     probabilities = 1.0 / (1.0 + np.exp(-logits))
-    bce = probabilities * (1.0 - probabilities) * direction / logits.size
+    bce_hvp = probabilities * (1.0 - probabilities) * direction / logits.size
     exponent = np.exp(logits - logits.max(axis=1, keepdims=True))
     softmax = exponent / exponent.sum(axis=1, keepdims=True)
     softmax_hvp = softmax * (direction -
@@ -73,11 +73,22 @@ def oracle() -> dict[str, float]:
     weighted = weights[:, None] * direction[:, :1] / weights.sum()
     residual = prediction - target
     huber = np.where(np.abs(residual) < 0.75, direction[:, :1], 0.0) / N
+    mae = (weights[:, None] * np.sign(residual) * direction[:, :1]).sum() / weights.sum()
+    p = 1.0 / (1.0 + np.exp(-logits))
+    bce = np.logaddexp(0.0, logits) - targets * logits
+    pt = targets * p + (1.0 - targets) * (1.0 - p)
+    alpha_t = 0.25 * targets + 0.75 * (1.0 - targets)
+    focal_factor = (1.0 - pt) ** 2.0
+    focal_factor_dot = -2.0 * (1.0 - pt) * (2.0 * targets - 1.0) * p * (1.0 - p)
+    focal_derivative = alpha_t * (focal_factor_dot * bce + focal_factor * (p - targets))
+    focal_bce = (weights[:, None] * focal_derivative * direction).sum() / weights.sum()
     return {
-        "bce_hvp": float(bce.sum()),
+        "bce_hvp": float(bce_hvp.sum()),
         "softmax_cross_entropy_hvp": float(softmax_hvp.sum()),
         "weighted_mse_hvp": float(weighted.sum()),
         "huber_hvp": float(huber.sum()),
+        "mae_jvp": float(mae),
+        "focal_bce_jvp": float(focal_bce),
     }
 
 
@@ -122,7 +133,7 @@ def main() -> None:
         "workload": "neural_losses", "backend": "fortml", "device": "cpu",
         "status": "pass", "dimensions": "64x3; weighted MLP 64x1",
         "repetitions": str(REPETITIONS),
-        "oracle": "independent NumPy loss-curvature formulas",
+        "oracle": "independent NumPy loss value/derivative formulas",
         "python_version": platform.python_version(), "numpy_version": np.__version__,
         "fortml_revision": revision(fortml),
         "benchmark_revision": revision(root, (args.output.resolve(),)),
