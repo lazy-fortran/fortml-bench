@@ -10,8 +10,8 @@ The FortML release app exports every test index before timing. The benchmark
 requires exact agreement with the NumPy fold assignment and independently
 checks that each group occurs in only one test fold. The raw record is
 [`group_kfold.csv`](group_kfold.csv). On the recorded host, the NumPy oracle
-took `2.7642e-05 s` per complete three-fold generation and FortML took
-`1.6211e-07 s`; these are tiny index-workload timings, not end-to-end model
+took `3.1839e-05 s` per complete three-fold generation and FortML took
+`1.3281e-07 s`; these are tiny index-workload timings, not end-to-end model
 training measurements.
 
 Reproduce with:
