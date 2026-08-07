@@ -61,9 +61,7 @@ def scores(labels: np.ndarray, predictions: np.ndarray) -> dict[str, np.ndarray]
                      0.0 if row_tp + row_fn == 0 else row_tp / (row_tp + row_fn),
                      0.0 if 2.0 * row_tp + row_fp + row_fn == 0 else 2.0 * row_tp / (2.0 * row_tp + row_fp + row_fn)])
     samples = np.mean(np.asarray(rows), axis=0)
-    threshold_predictions = (fixture()[2] >= 0.5).astype(np.int64)
-    threshold = scores(labels, threshold_predictions)["micro"]
-    return {"micro": micro, "macro": macro, "samples": samples, "threshold": threshold}
+    return {"micro": micro, "macro": macro, "samples": samples}
 
 
 def parse(output: str) -> dict[str, np.ndarray]:
@@ -85,6 +83,8 @@ def main() -> None:
     output = args.output if args.output.is_absolute() else root / args.output
     labels, predictions, probabilities = fixture()
     expected = scores(labels, predictions)
+    threshold_predictions = (probabilities >= 0.5).astype(np.int64)
+    expected["threshold"] = scores(labels, threshold_predictions)["micro"]
     completed = subprocess.run(["fo", "exec", "--no-build", "fortml_bench_multilabel_metrics"], cwd=fortml, check=True, capture_output=True, text=True)
     observed = parse(completed.stdout)
     metadata = {
