@@ -133,6 +133,11 @@ a different workload, precision, device, or residency policy.
   scikit-learn. The fixture stores arbitrary integer labels, the NumPy-generated
   score labels, probability normalization, accuracy, fit time, and prediction
   time in `results/classification_workloads.csv`.
+- [x] Add positive binary temperature scaling beside Platt sigmoid and weighted
+  PAVA isotonic calibration. The independent NumPy inverse-temperature Newton
+  oracle checks all 256 labels, predictions, and probability columns before
+  retaining CPU timings in `results/probability_calibration.csv`; all three
+  CUDA capability rows remain explicit refusals until a resident kernel exists.
 - [x] Add a deterministic MLP-training lane with an independent NumPy Adam
   oracle, full loss/prediction checks, and release-build fit timings.
 - [x] Add release-build momentum-SGD and Nesterov MLP-training workloads with
