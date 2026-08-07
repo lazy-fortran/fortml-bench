@@ -102,8 +102,39 @@ def oracle() -> dict[str, float]:
                               0.5 * residual * residual * variance_direction) /
                              weights.sum())
     poisson_hvp = (weights[:, None] * np.exp(logits) * direction / weights.sum())
+    multilabel_bce_hvp = (weights[:, None] * probabilities * (1.0 - probabilities) *
+                          direction / weights.sum())
+    ordinal_logits = np.column_stack((0.4 * np.sin(0.05 * np.arange(1, N + 1)),
+                                       0.9 + 0.3 * np.cos(0.04 * np.arange(1, N + 1))))
+    ordinal_direction = np.column_stack((0.02 * np.cos(0.09 * np.arange(1, N + 1)),
+                                         -0.01 * np.sin(0.08 * np.arange(1, N + 1))))
+    ordinal_labels = (np.arange(N) % 3) + 1
+    ordinal_q = 1.0 / (1.0 + np.exp(-ordinal_logits))
+    ordinal_qp = ordinal_q * (1.0 - ordinal_q)
+    ordinal_qpp = ordinal_qp * (1.0 - 2.0 * ordinal_q)
+    ordinal_d = np.zeros_like(ordinal_logits)
+    ordinal_d2 = np.zeros_like(ordinal_logits)
+    ordinal_p = np.empty(N)
+    first, middle, last = ordinal_labels == 1, ordinal_labels == 2, ordinal_labels == 3
+    ordinal_p[first] = ordinal_q[first, 0]
+    ordinal_d[first, 0] = ordinal_qp[first, 0]
+    ordinal_d2[first, 0] = ordinal_qpp[first, 0]
+    ordinal_p[middle] = ordinal_q[middle, 1] - ordinal_q[middle, 0]
+    ordinal_d[middle, 0] = -ordinal_qp[middle, 0]
+    ordinal_d[middle, 1] = ordinal_qp[middle, 1]
+    ordinal_d2[middle, 0] = -ordinal_qpp[middle, 0]
+    ordinal_d2[middle, 1] = ordinal_qpp[middle, 1]
+    ordinal_p[last] = 1.0 - ordinal_q[last, 1]
+    ordinal_d[last, 1] = -ordinal_qp[last, 1]
+    ordinal_d2[last, 1] = -ordinal_qpp[last, 1]
+    ordinal_p_dot = (ordinal_d * ordinal_direction).sum(axis=1)
+    ordinal_hvp = -weights[:, None] / weights.sum() * (
+        ordinal_d2 * ordinal_direction / ordinal_p[:, None] -
+        ordinal_d * ordinal_p_dot[:, None] / ordinal_p[:, None] ** 2)
     return {
         "bce_hvp": float(bce_hvp.sum()),
+        "multilabel_bce_hvp": float(multilabel_bce_hvp.sum()),
+        "ordinal_cumulative_logit_hvp": float(ordinal_hvp.sum()),
         "softmax_cross_entropy_hvp": float(softmax_hvp.sum()),
         "weighted_mse_hvp": float(weighted.sum()),
         "huber_hvp": float(huber.sum()),
@@ -153,14 +184,14 @@ def main() -> None:
 
     details = {
         "workload": "neural_losses", "backend": "fortml", "device": "cpu",
-        "status": "pass", "dimensions": "64x3; weighted MLP 64x1",
+        "status": "pass", "dimensions": "64x3; ordinal 64x2; weighted MLP 64x1",
         "repetitions": str(REPETITIONS),
         "oracle": "independent NumPy loss value/derivative formulas",
         "python_version": platform.python_version(), "numpy_version": np.__version__,
         "fortml_revision": revision(fortml),
         "benchmark_revision": revision(root, (args.output.resolve(),)),
         "compiler": os.environ.get("FO_FC", "gfortran"), "flags": "-O3",
-        "notes": "shared value/JVP/VJP/HVP facade; MLP uses weighted-MSE products",
+        "notes": "weighted multilabel/ordinal plus shared value/JVP/VJP/HVP facade; MLP uses weighted-MSE products",
     }
     rows = []
     for phase, (seconds, checksum) in actual.items():
