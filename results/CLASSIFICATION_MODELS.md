@@ -27,10 +27,11 @@ Run the lane serially from this repository:
 ```
 
 The current CSV records four NumPy-oracle rows, four scikit-learn context rows,
-four FortML passes, and two unavailable PyTorch rows. The NumPy and FortML
-references pass with softmax accuracy `0.53125` and MLP accuracy `0.640625`.
-The FortML maximum probability error is `2.46e-6` for softmax and
-`2.45e-15` for the MLP. All probability normalization errors are at most
+four FortML passes, and four resident PyTorch CPU/CUDA passes. The NumPy and
+FortML references pass with softmax accuracy `0.53125` and MLP accuracy
+`0.640625`. The FortML maximum probability error is `2.46e-6` for softmax and
+`2.34e-15` for the MLP. PyTorch agrees with the independent MLP oracle to
+`4.44e-16` on both devices. All probability normalization errors are at most
 `2.22e-16`. Fit and prediction timing fields remain in the raw CSV. The
 scikit-learn rows use multinomial `lbfgs`
 and a tanh
@@ -38,9 +39,9 @@ and a tanh
 not a claim that optimizer stopping or regularization conventions are
 bit-for-bit identical.  The optional PyTorch MLP rows use resident float64
 tensors, the same initialized weights, explicit L2, and `foreach=False` Adam.
-CPU and CUDA are separate records.  The current environment has no PyTorch,
-so the CSV retains explicit `unavailable` rows instead of omitting that
-comparison.
+CPU and CUDA are separate records. If either device or the optional package is
+unavailable, the harness retains an explicit machine-readable `unavailable`
+row instead of omitting that comparison.
 
 FortML integration remains an explicit gate for every release run. The
 harness invokes the release target `fortml_bench_classifiers` and sets

@@ -28,10 +28,10 @@ CPU timings are machine-specific:
 
 | workload / phase | seconds per operation | checked metric |
 | --- | ---: | ---: |
-| standard scaler / transform | 1.3957e-5 | feature sum `1.47e-14` |
-| GP logistic / fit | 1.0173e-4 | accuracy `1.0` |
-| GP logistic / predict | 7.1902e-5 | positive-probability sum `16.0` |
-| GP multiclass / fit | 1.8415e-4 | accuracy `1.0`, simplex sum `32` |
+| standard scaler / transform | 1.3676e-5 | feature sum `1.47e-14` |
+| GP logistic / fit | 8.3223e-5 | accuracy `1.0` |
+| GP logistic / predict | 7.3531e-5 | positive-probability sum `16.0` |
+| GP multiclass / fit | 1.9173e-4 | accuracy `1.0`, simplex sum `32` |
 
 The GP lane covers binary and one-vs-rest multiclass Laplace inference. It is
 not a claim of variational GPyTorch parity. The source revision, compiler,
