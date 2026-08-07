@@ -1,4 +1,4 @@
-# Resident CUDA correctness contracts
+# CUDA correctness contracts
 
 This lane is a correctness gate for two small resident CUDA paths and one
 transfer-inclusive metric reduction that are not represented by the CPU
