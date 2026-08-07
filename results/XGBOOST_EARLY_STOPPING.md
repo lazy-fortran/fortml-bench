@@ -30,5 +30,5 @@ python -B scripts/bench_xgboost_early_stopping.py \
 ```
 
 FortML revision: `d9d09e52737defc4642b46a2ef3da1602361909b`
-Benchmark revision: `9e6f87af160c955c2ca7ceb4f8cebcce87879b48`
+Benchmark revision: `e7dc1e393c48b99281d20b273e07796e6b50e75a`
 Python 3.14.6, NumPy 2.5.1
