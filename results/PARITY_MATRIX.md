@@ -13,7 +13,7 @@ oracle, and a machine-readable CSV with source and toolchain provenance.
 | Dense neural | MLP, chain, grouped objectives, schedules, Adam/AdamW/Adagrad/RMSprop/SGD | MLP reports, trajectory and checkpoint oracles | Pass for declared paths | Resident optimizer micro-kernels; full network graph remains open | Value/JVP/VJP/HVP and selected trajectory hypergradients |
 | Exact GP | Kernel catalog, exact and derivative observations, multi-output and large-data fixtures | GP reports and dense covariance oracles | Pass for declared kernels | Resident covariance, factorization, and derivative-query kernels open | Kernel and query products are capability-specific |
 | Approximate GP | Sparse, SKI, local experts, variational feature slices | Large-GP and GP-features reports | Partial | Explicit refusal or separate native operator evidence | Variational optimization products remain open |
-| Physics models | Hamiltonian MLP prototype and PCA/linear-autoencoder initialization | Unit tests only for current prototype | Partial | No resident physics graph | PINN, symplectic-GP, HNN/LNN, and GP-limit initializers remain open |
+| Physics models | Hamiltonian MLP prototype and PCA/linear-autoencoder initialization | [`PHYSICS_MODELS.md`](PHYSICS_MODELS.md), `physics_models.csv` | Partial | Explicit unavailable row; no resident physics graph | PINN, symplectic-GP, HNN/LNN, and GP-limit initializers remain open |
 
 ## Required next benchmark lanes
 
