@@ -15,6 +15,7 @@ Complete-call studies:
 - [Dense MLP activation products](MLP_ACTIVATIONS.md)
 - [Scheduled MLP trajectory hypergradients](MLP_SCHEDULE_HYPERGRADIENT.md)
 - [Composable MLP module tree](MLP_CHAIN.md)
+- [Named MLP parameter layout](MLP_PARAMETER_LAYOUT.md)
 - [Differentiable neural losses and weighted MLP objective](NEURAL_LOSSES.md)
 - [Weighted ridge regression and derivative products](RIDGE.md)
 - [Weighted elastic-net regression and derivative products](ELASTIC_NET.md)
