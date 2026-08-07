@@ -1085,6 +1085,18 @@ python -B scripts/bench_xgboost_absolute.py \
 
 See [`results/XGBOOST_ABSOLUTE.md`](results/XGBOOST_ABSOLUTE.md).
 
+The XGBoost derivative lane checks query JVP and VJP products against an
+independent NumPy central-difference oracle away from learned split surfaces.
+It also checks the typed derivative-domain refusal on a split and the explicit
+CUDA capability refusal:
+
+```bash
+.venv/bin/python -B scripts/bench_xgboost_derivatives.py \
+  --fortml ../fortml --output results/xgboost_derivatives.csv
+```
+
+See [`results/XGBOOST_DERIVATIVES.md`](results/XGBOOST_DERIVATIVES.md).
+
 The generic hyperparameter-search lane uses an independent three-parameter
 quadratic oracle to gate Cartesian grid, seeded random, single-start FortOpt
 L-BFGS-B, and eight-start bounded L-BFGS-B timings. The random and multistart
