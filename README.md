@@ -270,6 +270,19 @@ seven FortML operations are explicit `unavailable` rows:
 See [`results/RIDGE.md`](results/RIDGE.md) for the weighted fixture, strict
 release protocol, and derivative boundary.
 
+The weighted elastic-net lane uses the same complete-call contract for a
+multi-output coordinate-descent fit with an L1/L2 penalty.  An independent
+NumPy solver checks every fitted coefficient, prediction, packed-parameter
+JVP, parameter VJP, and input VJP before retaining timings:
+
+```bash
+.venv/bin/python -B scripts/bench_elastic_net.py \
+  --fortml ../fortml --output results/elastic_net.csv
+```
+
+See [`results/ELASTIC_NET.md`](results/ELASTIC_NET.md) for the fixture,
+strict complete-array protocol, and fixed-fit derivative boundary.
+
 The Adagrad lane independently checks the accumulated-square recurrence and
 interrupted-versus-uninterrupted state resume. FortML's trainer target is
 recorded as `unavailable` until a release app exports the same state, with no

@@ -9,6 +9,7 @@ Complete-call studies:
 - [AdamW beta-logit hypergradients](ADAMW_BETA_HYPERGRADIENT.md)
 - [Typed MLP learning-rate schedules](MLP_SCHEDULES.md)
 - [Weighted ridge regression and derivative products](RIDGE.md)
+- [Weighted elastic-net regression and derivative products](ELASTIC_NET.md)
 - [RMSprop optimizer and MLP training](RMSPROP.md)
 - [RMSprop trajectory hypergradients](RMSPROP_HYPERGRADIENT.md)
 - [Resident CUDA correctness contracts](DEVICE_CONTRACTS.md)

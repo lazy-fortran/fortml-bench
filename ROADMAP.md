@@ -273,6 +273,11 @@ a different workload, precision, device, or residency policy.
   JVP/VJP checks. The raw record is `results/ridge.csv`; a complete-array
   FortML release app remains an explicit unavailable boundary until it is
   added.
+- [x] Add a weighted multi-output elastic-net lane with an independent NumPy
+  coordinate-descent oracle, complete coefficients/predictions, and packed
+  coefficient/input JVP/VJP checks. The raw record is `results/elastic_net.csv`
+  and the strict release-app protocol is documented in
+  `results/ELASTIC_NET.md`.
 - [ ] Add variational GP classification with GPyTorch likelihood references and
   independent dense small-data oracles. Binary and one-vs-rest Laplace lanes
   are complete. Variational inference and calibrated likelihood comparisons
