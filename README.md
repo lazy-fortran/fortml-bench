@@ -116,6 +116,17 @@ See [`results/RANDOM_FOREST.md`](results/RANDOM_FOREST.md). The CSV records
 CPU fit/predict timings and an explicit CUDA capability refusal until a
 resident tree-ensemble kernel is available.
 
+The shared feature workload now includes an independent central-difference
+of-VJP oracle and timing row for analytic basis-pipeline HVPs:
+
+```bash
+python -B scripts/bench_features.py \
+  --fortml ../fortml --output results/features_workloads.csv
+```
+
+See [`results/FEATURES.md`](results/FEATURES.md); the HVP row is CPU evidence
+for the polynomial/Fourier pipeline contract, not a GPU claim.
+
 The derivative-GP lane checks exact query-input JVP/VJP products for mixed
 value/first-derivative periodic and rational-quadratic GPs against an
 independent NumPy covariance and posterior oracle. CPU timings are retained
@@ -621,9 +632,10 @@ See [`results/XGBOOST_ROBUST.md`](results/XGBOOST_ROBUST.md). CUDA remains a
 typed unavailable row until a resident robust-tree kernel is linked.
 
 The generic hyperparameter-search lane uses an independent three-parameter
-quadratic oracle to gate Cartesian grid, seeded random, and FortOpt L-BFGS-B
-timings. The random stream is deterministic for seed `20260807` and records a
-bounded 128-evaluation budget:
+quadratic oracle to gate Cartesian grid, seeded random, single-start FortOpt
+L-BFGS-B, and eight-start bounded L-BFGS-B timings. The random and multistart
+streams are deterministic for seed `20260807` and record their evaluation
+budgets:
 
 ```bash
 .venv/bin/python -B scripts/bench_hyperparameter_search.py \
