@@ -197,16 +197,17 @@ def read_oracle(path: Path) -> dict[tuple[str, int], float]:
 
 
 def run_fortml(fortml: Path, target: str, details: dict[str, str],
-               expected: dict[str, Any]) -> list[dict[str, Any]]:
+               expected: dict[str, Any], no_build: bool = False) -> list[dict[str, Any]]:
     source = fortml / "app" / f"{target}.f90"
     if not source.is_file():
         return unavailable_rows(details, "fortml", "cpu", f"source absent: {source.name}")
     environment = os.environ.copy()
     environment.update({"FO_FC": environment.get("FO_FC", "gfortran"), "OMP_NUM_THREADS": "1"})
-    build = subprocess.run(["fo", "build", "--flag", "-O3"], cwd=fortml,
-                           env=environment, capture_output=True, text=True)
-    if build.returncode != 0:
-        return unavailable_rows(details, "fortml", "cpu", "fo build failed")
+    if not no_build:
+        build = subprocess.run(["fo", "build", "--flag", "-O3"], cwd=fortml,
+                               env=environment, capture_output=True, text=True)
+        if build.returncode != 0:
+            return unavailable_rows(details, "fortml", "cpu", "fo build failed")
     with tempfile.TemporaryDirectory(dir="/mnt/storage", prefix="fortml-adam-hypergradient-") as directory:
         oracle_path = Path(directory) / "oracle.csv"
         check_environment = dict(environment)
@@ -266,6 +267,8 @@ def main() -> None:
                         default=Path("results/adam_hypergradient.csv"))
     parser.add_argument("--target", default="fortml_bench_adam_hypergradient")
     parser.add_argument("--skip-fortml", action="store_true")
+    parser.add_argument("--no-build", action="store_true",
+                        help="reuse an already-built FortML release target")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     fortml = args.fortml.resolve()
@@ -276,7 +279,7 @@ def main() -> None:
     if args.skip_fortml:
         rows.extend(unavailable_rows(details, "fortml", "cpu", "--skip-fortml requested"))
     else:
-        rows.extend(run_fortml(fortml, args.target, details, expected))
+        rows.extend(run_fortml(fortml, args.target, details, expected, args.no_build))
     rows.extend(unavailable_rows(details, "fortml", "cuda", "typed CUDA refusal: resident Adam trajectory unavailable"))
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:
