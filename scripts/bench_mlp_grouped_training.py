@@ -118,7 +118,9 @@ def main() -> None:
     metadata = {
         "python_version": platform.python_version(), "numpy_version": np.__version__,
         "fortml_revision": revision(fortml),
-        "benchmark_revision": revision(root, (output.resolve(),)),
+        "benchmark_revision": revision(root, tuple(
+            (root / "results" / name).resolve() for name in (
+                "extra_trees.csv", "mlp_grouped_training.csv"))),
         "compiler": os.environ.get("FO_FC", "gfortran"), "flags": "-O3",
     }
 
