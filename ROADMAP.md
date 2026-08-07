@@ -220,6 +220,10 @@ a different workload, precision, device, or residency policy.
 - [x] Add the joint basis-pipeline training correctness lane. The raw record is
   `results/basis_pipeline_training.csv`, with independent value/JVP/HVP and
   CUDA-refusal checks documented in `results/BASIS_PIPELINE_TRAINING.md`.
+- [x] Add correctness-gated records for the model-agnostic objective trainer
+  and XGBoost additive tree contributions. The raw record is
+  `results/training_core.csv`; the rows are correctness wall times, not
+  throughput claims, and the independent NumPy/Fortran oracles remain explicit.
 - [ ] Add resident CUDA/OpenACC timing rows for kNN search, RMSprop
   optimizer/trainer state, AdamW trainer state, staged XGBoost diagnostics, and GP classification
   hyperparameter training. Native CUDA kNN and a direct RMSprop state-kernel

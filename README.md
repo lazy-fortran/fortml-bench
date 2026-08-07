@@ -687,6 +687,18 @@ python -B scripts/bench_basis_pipeline_training.py \
 
 See [`results/BASIS_PIPELINE_TRAINING.md`](results/BASIS_PIPELINE_TRAINING.md).
 
+The shared objective-trainer and XGBoost additive-contribution correctness
+lane runs independent Fortran behavioral gates and an independent NumPy
+quadratic update oracle. Its wall times are correctness-gate timings, not
+throughput measurements:
+
+```bash
+python -B scripts/bench_training_core.py \
+  --fortml ../fortml --output results/training_core.csv
+```
+
+See [`results/TRAINING_CORE.md`](results/TRAINING_CORE.md).
+
 The resident CUDA AdamW state lane wraps
 `../fortml/test/run_cuda_adamw_state.sh` and independently reconstructs its
 seven-step bias-corrected recurrence and decoupled weight decay in NumPy. A
