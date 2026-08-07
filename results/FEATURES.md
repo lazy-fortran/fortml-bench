@@ -35,16 +35,16 @@ The recorded FortML rows all pass. The current gfortran CPU timings are:
 
 | workload / phase | seconds per operation | checked metric |
 |---|---:|---:|
-| MLP training / fit | 1.37587025e-3 | final MSE 1.5205011458254373e-3 |
-| basis pipeline / transform | 1.13705e-5 | feature sum 2753.0921746559225 |
-| basis pipeline / JVP | 2.346484375e-5 | JVP sum 1231.6432747014742 |
-| basis pipeline / VJP | 1.224746875e-5 | parameter cotangent sum -5.287453498417015 |
-| CART regression / fit | 1.17512625e-4 | MSE 4.564795134272737e-4 |
-| CART regression / predict | 7.21515625e-7 | prediction sum 43.62121219974771 |
-| decision stump / fit | 4.7289125e-5 | MSE 1.254599131397361e-2 |
-| decision stump / predict | 1.04578125e-7 | prediction sum 43.62121219974757 |
-| gradient boosting / fit | 7.56505625e-4 | MSE 6.647611998075403e-2 |
-| gradient boosting / predict | 1.9615e-6 | prediction sum 43.62121219974761 |
+| MLP training / fit | 1.33132775e-3 | final MSE 1.5205011458254412e-3 |
+| basis pipeline / transform | 1.120015625e-5 | feature sum 2753.0921746559225 |
+| basis pipeline / JVP | 2.300553125e-5 | JVP sum 1231.6432747014742 |
+| basis pipeline / VJP | 1.236171875e-5 | parameter cotangent sum -5.287453498417015 |
+| CART regression / fit | 1.1614625e-4 | MSE 4.564795134272737e-4 |
+| CART regression / predict | 7.1009375e-7 | prediction sum 43.62121219974771 |
+| decision stump / fit | 4.6362375e-5 | MSE 1.254599131397361e-2 |
+| decision stump / predict | 2.19640625e-7 | prediction sum 43.62121219974757 |
+| gradient boosting / fit | 7.98161e-4 | MSE 6.647611998075403e-2 |
+| gradient boosting / predict | 3.87903125e-6 | prediction sum 43.62121219974761 |
 
 Timings are machine-specific and should only be compared after matching the
 compiler, flags, CPU affinity, precision, and repetition policy. The CSV
