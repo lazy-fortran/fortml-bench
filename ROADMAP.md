@@ -139,11 +139,12 @@ a different workload, precision, device, or residency policy.
   JVP. The raw record is `results/adamw_beta_hypergradient.csv`; its strict
   complete-array release app now passes the NumPy oracle.
 - [x] Add a strict typed MLP schedule lane covering constant, linear warm-up,
-  cosine, warm-up-plus-cosine, and exponential decay. The independent NumPy
-  formulas central-difference every used continuous schedule product; the
-  FortML release app emits all 100 values before its resident scalar timing is
-  retained in `results/mlp_schedules.csv`. This gate does not claim neural
-  training, OpenACC, or CUDA performance.
+  cosine, warm-up-plus-cosine, exponential decay, and one-cycle schedules. The
+  independent NumPy formulas central-difference every used continuous schedule
+  product, including one-cycle peak/final-rate tangents; the FortML release app
+  emits all 180 values before its resident scalar timing is retained in
+  `results/mlp_schedules.csv`. This gate does not claim neural training,
+  OpenACC, or CUDA performance.
 - [x] Add a dense MLP activation lane for linear, `tanh`, ReLU, GELU, SiLU,
   ELU, softplus, and leaky ReLU. Eight independent NumPy checksum rows and
   eight FortML CPU timings are retained alongside eight explicit CUDA refusal

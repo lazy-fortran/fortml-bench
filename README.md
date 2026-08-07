@@ -143,7 +143,8 @@ NumPy oracle; missing compiler/app output is explicit `unavailable`. These
 host likelihood timings do not imply end-to-end GPU GP performance.
 
 The typed MLP schedule lane independently checks constant, warm-up, cosine,
-warm-up-plus-cosine, and exponential-decay values and analytic products:
+warm-up-plus-cosine, exponential-decay, and one-cycle values and analytic
+products (including one-cycle peak/final-rate tangents):
 
 ```bash
 .venv/bin/python -B scripts/bench_mlp_schedules.py \

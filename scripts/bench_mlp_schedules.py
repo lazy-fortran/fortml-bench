@@ -28,7 +28,8 @@ UPDATES = (1, 2, 5, 10, 12)
 REPETITIONS = 4096
 FINITE_DIFFERENCE_STEP = 1.0e-6
 ORACLE_TOLERANCE = 2.0e-12
-QUANTITIES = ("rate", "d_base_rate", "d_min_rate_fraction", "d_decay_factor")
+QUANTITIES = ("rate", "d_base_rate", "d_min_rate_fraction", "d_decay_factor",
+              "d_peak_rate_fraction", "d_final_rate_fraction")
 SCHEDULES = (
     ("constant", {}),
     ("linear_warmup", {"warmup_updates": 4}),
@@ -36,6 +37,8 @@ SCHEDULES = (
     ("warmup_cosine", {"warmup_updates": 2, "total_updates": 10,
                         "min_rate_fraction": 0.2}),
     ("exponential_decay", {"warmup_updates": 2, "decay_factor": 0.8}),
+    ("one_cycle", {"warmup_updates": 2, "total_updates": 10,
+                   "peak_rate_fraction": 4.0, "final_rate_fraction": 0.1}),
 )
 FIELDS = (
     "workload", "schedule", "phase", "backend", "device", "status",
@@ -64,11 +67,15 @@ def schedule_value(name: str, update: int, base_rate: float = BASE_RATE,
                    warmup_updates: int | None = None,
                    total_updates: int | None = None,
                    min_rate_fraction: float | None = None,
-                   decay_factor: float | None = None) -> tuple[float, float, float, float]:
-    """Return rate and products with respect to base/min-fraction/decay."""
+                   decay_factor: float | None = None,
+                   peak_rate_fraction: float | None = None,
+                   final_rate_fraction: float | None = None) -> tuple[float, float, float, float, float, float]:
+    """Return rate and products with respect to all continuous parameters."""
     factor = 1.0
     d_min_factor = 0.0
     d_decay_factor = 0.0
+    d_peak_factor = 0.0
+    d_final_factor = 0.0
     if name == "linear_warmup":
         warmup = 4 if warmup_updates is None else warmup_updates
         factor = min(1.0, update / float(warmup))
@@ -97,10 +104,26 @@ def schedule_value(name: str, update: int, base_rate: float = BASE_RATE,
         factor = decay ** elapsed
         if elapsed > 0:
             d_decay_factor = elapsed * decay ** (elapsed - 1)
+    elif name == "one_cycle":
+        warmup = 2 if warmup_updates is None else warmup_updates
+        total = 10 if total_updates is None else total_updates
+        peak = 4.0 if peak_rate_fraction is None else peak_rate_fraction
+        final = 0.1 if final_rate_fraction is None else final_rate_fraction
+        if update <= warmup:
+            progress = update / float(warmup)
+            factor = 1.0 + (peak - 1.0) * progress
+            d_peak_factor = progress
+        else:
+            progress = min(1.0, (update - warmup) / float(total - warmup))
+            cosine = 0.5 * (1.0 + math.cos(math.pi * progress))
+            factor = final + (peak - final) * cosine
+            d_peak_factor = cosine
+            d_final_factor = 1.0 - cosine
     elif name != "constant":
         raise ValueError(f"unknown schedule {name}")
     rate = base_rate * factor
-    return rate, factor, base_rate * d_min_factor, base_rate * d_decay_factor
+    return (rate, factor, base_rate * d_min_factor, base_rate * d_decay_factor,
+            base_rate * d_peak_factor, base_rate * d_final_factor)
 
 
 def independent_oracle() -> dict[tuple[str, int, str], float]:
@@ -114,7 +137,7 @@ def independent_oracle() -> dict[tuple[str, int, str], float]:
             # Check the continuous products independently with central
             # differences.  This is an oracle check, not an implementation
             # self-consistency check against FortML.
-            value, d_base, d_min, d_decay = values
+            value, d_base, d_min, d_decay, d_peak, d_final = values
             plus = schedule_value(name, update, BASE_RATE + FINITE_DIFFERENCE_STEP,
                                   **parameters)[0]
             minus = schedule_value(name, update, BASE_RATE - FINITE_DIFFERENCE_STEP,
@@ -139,6 +162,24 @@ def independent_oracle() -> dict[tuple[str, int, str], float]:
                                        FINITE_DIFFERENCE_STEP)[0]
                 if abs(d_decay - (plus - minus) / (2.0 * FINITE_DIFFERENCE_STEP)) > 2.0e-9:
                     raise RuntimeError(f"decay-factor oracle failed for {name} update {update}")
+            if "peak_rate_fraction" in parameters:
+                plus = schedule_value(name, update,
+                                      peak_rate_fraction=parameters["peak_rate_fraction"] +
+                                      FINITE_DIFFERENCE_STEP)[0]
+                minus = schedule_value(name, update,
+                                       peak_rate_fraction=parameters["peak_rate_fraction"] -
+                                       FINITE_DIFFERENCE_STEP)[0]
+                if abs(d_peak - (plus - minus) / (2.0 * FINITE_DIFFERENCE_STEP)) > 2.0e-10:
+                    raise RuntimeError(f"peak-rate oracle failed for {name} update {update}")
+            if "final_rate_fraction" in parameters:
+                plus = schedule_value(name, update,
+                                      final_rate_fraction=parameters["final_rate_fraction"] +
+                                      FINITE_DIFFERENCE_STEP)[0]
+                minus = schedule_value(name, update,
+                                       final_rate_fraction=parameters["final_rate_fraction"] -
+                                       FINITE_DIFFERENCE_STEP)[0]
+                if abs(d_final - (plus - minus) / (2.0 * FINITE_DIFFERENCE_STEP)) > 2.0e-10:
+                    raise RuntimeError(f"final-rate oracle failed for {name} update {update}")
     return expected
 
 
