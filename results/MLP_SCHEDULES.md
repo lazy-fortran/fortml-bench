@@ -21,5 +21,7 @@ python3 scripts/bench_mlp_schedules.py \
 ```
 
 The app reports a resident CPU scalar recurrence time after its complete-array
-oracle pass. This is a schedule-product gate, not an end-to-end neural-network
-training benchmark and does not imply resident CUDA or OpenACC execution.
+oracle pass. The current CSV has 120 passing CPU rows and five explicit CUDA
+`unavailable` capability rows. This is a schedule-product gate, not an
+end-to-end neural-network training benchmark and does not imply resident CUDA
+or OpenACC execution.

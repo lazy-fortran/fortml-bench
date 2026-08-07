@@ -209,6 +209,13 @@ a different workload, precision, device, or residency policy.
   complete scalar FortML release-app output is retained only after the same
   oracle check; absent compiler/app output is explicit `unavailable`, and no
   host timing is presented as GPU evidence.
+- [x] Record explicit CUDA capability-refusal rows for the weighted
+  elastic-net, OVO logistic, typed schedule, and GP likelihood lanes. Each
+  row is `unavailable` with no timing and names the corresponding
+  `device_supported(CUDA)=false` boundary; CPU results are never relabeled as
+  accelerator evidence. The raw records are `results/elastic_net.csv`,
+  `results/ovo_logistic.csv`, `results/mlp_schedules.csv`, and
+  `results/gp_likelihood.csv`.
 - [x] Add an exact depth-limited recursive second-order boosting lane with independent NumPy
   gradient/Hessian, regularized leaf-weight, split-gain, squared-objective, and
   logistic-objective checks. Record a dedicated FortML workload and an explicit

@@ -102,6 +102,19 @@ See [`results/CLASSIFICATION_EXTENSIONS.md`](results/CLASSIFICATION_EXTENSIONS.m
 The lane now includes one-vs-rest multiclass Laplace GP probabilities. Variational
 GP classification remains a separate benchmark contract.
 
+The one-vs-one logistic lane fits six deterministic pair estimators on four
+arbitrary integer classes. Its independent NumPy/Newton oracle checks the
+complete pair-vote probabilities, labels, and normalization before timing:
+
+```bash
+.venv/bin/python -B scripts/bench_ovo_logistic.py \
+  --fortml ../fortml --output results/ovo_logistic.csv
+```
+
+See [`results/OVO_LOGISTIC.md`](results/OVO_LOGISTIC.md). The CSV includes
+explicit CUDA capability-refusal rows; scikit-learn is contextual because its
+pairwise probability coupling policy differs from FortML's declared vote map.
+
 The shared binary GP likelihood lane separately checks signed-margin logistic
 and probit value/JVP/VJP products, including a stable negative-probit tail and
 an independent adjoint oracle:
@@ -115,6 +128,17 @@ See [`results/GP_LIKELIHOOD.md`](results/GP_LIKELIHOOD.md). The CSV retains
 FortML rows only when the complete scalar release protocol agrees with the
 NumPy oracle; missing compiler/app output is explicit `unavailable`. These
 host likelihood timings do not imply end-to-end GPU GP performance.
+
+The typed MLP schedule lane independently checks constant, warm-up, cosine,
+warm-up-plus-cosine, and exponential-decay values and analytic products:
+
+```bash
+.venv/bin/python -B scripts/bench_mlp_schedules.py \
+  --fortml ../fortml --output results/mlp_schedules.csv
+```
+
+See [`results/MLP_SCHEDULES.md`](results/MLP_SCHEDULES.md). CUDA schedule rows
+are explicit `unavailable` capability records, not host timings.
 
 The matched multinomial softmax and multiclass neural-classifier lane uses an
 independent NumPy damped-Newton/Adam oracle, scikit-learn and optional resident

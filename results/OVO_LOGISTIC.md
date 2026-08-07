@@ -15,14 +15,15 @@ Run it from `fortml-bench` with:
 
 The NumPy lane independently solves each regularized binary logistic problem
 with Newton updates, checks the complete FortML output arrays, and verifies
-probability normalization and labels. The current run has six passing rows:
+probability normalization and labels. The current run has six passing CPU rows
+plus six explicit CUDA `unavailable` refusal rows:
 
 | Backend | Fit seconds | Predict seconds | Accuracy | Maximum oracle error |
 | --- | ---: | ---: | ---: | ---: |
-| NumPy oracle | 2.749297e-3 | 2.596082e-3 | 0.43359375 | 0 |
-| FortML | 5.600550e-4 | 1.092997e-5 | 0.43359375 | 7.573e-8 |
-| scikit-learn context | 4.472010e-2 | 1.372005e-3 | 0.4375 | not reported |
+| NumPy oracle | 2.885669e-3 | 2.756152e-3 | 0.43359375 | 0 |
+| FortML | 6.820250e-4 | 1.570930e-5 | 0.43359375 | 7.573e-8 |
+| scikit-learn context | 3.197886e-2 | 1.408835e-3 | 0.4375 | not reported |
 
 The CSV records compiler, package, repository, and benchmark revisions. The
-current FortML rows use revision `263b6b4`; the benchmark revision is recorded
-per run in the CSV.
+current FortML rows use revision `877a27b`; the benchmark revision is recorded
+per run in the CSV. CUDA rows are capability refusals, not timings.

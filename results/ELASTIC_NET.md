@@ -17,14 +17,14 @@ Run it from `fortml-bench` with:
 ```
 
 The protocol rejects checksum-only output and requires every element in all
-seven arrays.  The current run has 14 passing rows (seven NumPy oracle and
-seven FortML):
+seven arrays. The current run has 14 passing CPU rows (seven NumPy oracle and
+seven FortML) plus seven explicit CUDA `unavailable` refusal rows:
 
 | Backend | Fit matrix s | Fit vector s | Predict matrix s | Predict vector s | JVP s | VJP parameter s | VJP input s | Maximum oracle error |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| NumPy oracle | 1.452070e-3 | 3.413210e-4 | 2.591543e-6 | 1.337125e-6 | 4.430874e-6 | 3.620541e-6 | 2.365707e-6 | 0 |
-| FortML | 3.296338e-5 | 9.701167e-6 | 9.104583e-7 | 4.654583e-7 | 1.960375e-6 | 1.785833e-6 | 1.785833e-6 | 7.105e-15 |
+| NumPy oracle | 1.501329e-3 | 3.392496e-4 | 2.640375e-6 | 1.345417e-6 | 4.488458e-6 | 3.650207e-6 | 2.745207e-6 | 0 |
+| FortML | 2.966258e-5 | 7.775917e-6 | 8.190417e-7 | 5.618750e-7 | 2.078500e-6 | 1.830125e-6 | 1.830125e-6 | 7.105e-15 |
 
 The CSV records compiler flags and both repository revisions. The current
-FortML rows use revision `263b6b4`; the benchmark revision is recorded per run
-in the CSV.
+FortML rows use revision `877a27b`; the benchmark revision is recorded per run
+in the CSV. CUDA rows are capability refusals, not timings.
