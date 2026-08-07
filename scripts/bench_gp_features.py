@@ -943,7 +943,7 @@ def plot(rows: list[dict[str, object]], output: Path) -> None:
     figure.text(
         0.5,
         0.01,
-        "FortML CUDA rows are unsupported; missing bars are explicit in the CSV.",
+        "FortML CUDA rows are typed capability refusals; missing bars are explicit in the CSV.",
         ha="center",
         fontsize=8.5,
         color="#444444",
@@ -1105,7 +1105,10 @@ def main() -> None:
                     "peak_memory_bytes": "",
                     "executable_bytes": executable_size(fortml),
                     "oracle": "not_applicable",
-                    "notes": "FortML workload has no device-resident public path",
+                    "notes": (
+                        "no device-resident implementation; typed refusal before "
+                        "timing (no hidden host fallback)"
+                    ),
                     **metadata,
                 }
             )
