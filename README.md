@@ -77,6 +77,18 @@ boundaries, plots, and the recorded machine results are in
 [`results/MODEL_WORKLOADS.md`](results/MODEL_WORKLOADS.md) and
 [`results/GP_FEATURES.md`](results/GP_FEATURES.md).
 
+The dedicated multi-output product lane adds an independent dense
+intrinsic-coregionalization oracle for output-major posterior means, query
+input JVPs, packed kernel/noise/coregionalization parameter JVP/VJPs, and the
+explicit CUDA refusal:
+
+```bash
+python -B scripts/bench_multi_output_gp_products.py \
+  --fortml ../fortml --output results/multi_output_gp_products.csv
+```
+
+See [`results/MULTI_OUTPUT_GP_PRODUCTS.md`](results/MULTI_OUTPUT_GP_PRODUCTS.md).
+
 The exact-GP mean lane checks trainable constant and intercept-plus-linear
 means, packed coefficients, posterior predictions, log marginal likelihood,
 and analytic mean hypergradients/HVPs against an independent NumPy covariance
