@@ -139,6 +139,7 @@ def parse_rows(stdout: str) -> dict[str, tuple[float, float]]:
 def run(args: argparse.Namespace) -> list[dict[str, Any]]:
     root = Path(__file__).resolve().parents[1]
     fortml = Path(args.fortml).resolve()
+    output = Path(args.output).resolve()
     details = {
         "python_version": platform.python_version(),
         "numpy_version": np.__version__,
