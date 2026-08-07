@@ -48,6 +48,13 @@ within `3e-13`. Because that test does not expose a resident kernel timer, the
 benchmark records correctness only and never treats compile-inclusive wall
 time as GPU performance.
 
+The five-parameter AdamW beta-logit record uses a separate eight-point,
+one-weight/one-bias fixture and independently evaluates the full fixed
+trajectory, all five central-difference hypergradient components, and a
+directional JVP. The current FortML source has no complete-array release app
+for this objective, so the raw CSV records explicit `unavailable` rows. No
+CPU objective timing is relabeled as CUDA evidence.
+
 The KeOps and GPyTorch adapters follow their public PyTorch interfaces. The
 Fortran adapter invokes the pinned `fortml` benchmark entry point and records
 the source revision it used. No competitor source is linked into the MIT

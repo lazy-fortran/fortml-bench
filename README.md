@@ -215,6 +215,18 @@ are explicit `unavailable` rows:
 See [`results/ADAMW_HYPERGRADIENT.md`](results/ADAMW_HYPERGRADIENT.md) for
 the fixture, recurrence, finite-difference oracle, and release-app protocol.
 
+The five-parameter AdamW beta-logit lane independently checks the full
+trajectory value, all five hypergradient components, and a directional JVP.
+FortML has no complete-array release app for this new objective yet, so its
+rows remain explicit `unavailable` records rather than inferred timings:
+
+```bash
+.venv/bin/python -B scripts/bench_adamw_beta_hypergradient.py \
+  --fortml ../fortml --output results/adamw_beta_hypergradient.csv
+```
+
+See [`results/ADAMW_BETA_HYPERGRADIENT.md`](results/ADAMW_BETA_HYPERGRADIENT.md).
+
 The centered dense PCA lane compares the NumPy thin-SVD oracle with a
 scikit-learn full-SVD context and the FortML release app. It checks centering,
 deterministic sign alignment, rank ordering, and component orthonormality

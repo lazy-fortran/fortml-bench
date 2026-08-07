@@ -134,6 +134,10 @@ a different workload, precision, device, or residency policy.
   NumPy first/second-moment and decoupled-weight-decay oracle.  The raw record
   is `results/adamw_training.csv`; an absent FortML release app remains an
   explicit `unavailable` target row.
+- [x] Add an independent five-parameter AdamW beta-logit hypergradient lane
+  covering the validation value, all five packed components, and a directional
+  JVP. The raw record is `results/adamw_beta_hypergradient.csv`; its strict
+  complete-array release app now passes the NumPy oracle.
 - [x] Add an independent Adagrad accumulated-square and checkpoint/resume
   recurrence lane. The raw record is `results/adagrad.csv`; the missing
   dedicated FortML release app remains an explicit `unavailable` row rather
