@@ -216,9 +216,9 @@ python -B scripts/bench_mlp_binary_classifier.py \
 See [`results/MLP_BINARY_CLASSIFIER.md`](results/MLP_BINARY_CLASSIFIER.md).
 
 The multilabel MLP lane checks two independent sigmoid heads, concatenated
-parameters, multilabel probabilities and indicators, BCE gradients, and
-parameter HVPs against an independent NumPy oracle. CUDA remains an explicit
-typed refusal until a resident multilabel MLP graph is linked:
+parameters, multilabel probabilities and indicators, BCE gradients, parameter
+HVPs, and probability JVPs against an independent NumPy oracle. CUDA remains
+an explicit typed refusal until a resident multilabel MLP graph is linked:
 
 ```bash
 python -B scripts/bench_mlp_multilabel_classifier.py \

@@ -3,9 +3,9 @@
 This release-fixture lane exercises two independent sigmoid heads over a
 deterministic two-feature fixture. Each head performs one full-batch Adam
 update. The independent NumPy oracle checks the concatenated parameters,
-probabilities, binary indicators, mean BCE objective, gradient, and exact
-parameter Hessian-vector product. Recorded CPU rows are accepted only when all
-outputs agree to within `3e-11`.
+probabilities, binary indicators, mean BCE objective, gradient, exact parameter
+Hessian-vector product, and probability JVP. Recorded CPU rows are accepted
+only when all outputs agree to within `3e-11`.
 
 | phase | device | status | max absolute error | timing |
 |---|---|---|---:|---:|
