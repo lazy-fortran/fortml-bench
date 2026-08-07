@@ -138,6 +138,12 @@ a different workload, precision, device, or residency policy.
   covering the validation value, all five packed components, and a directional
   JVP. The raw record is `results/adamw_beta_hypergradient.csv`; its strict
   complete-array release app now passes the NumPy oracle.
+- [x] Add a strict typed MLP schedule lane covering constant, linear warm-up,
+  cosine, warm-up-plus-cosine, and exponential decay. The independent NumPy
+  formulas central-difference every used continuous schedule product; the
+  FortML release app emits all 100 values before its resident scalar timing is
+  retained in `results/mlp_schedules.csv`. This gate does not claim neural
+  training, OpenACC, or CUDA performance.
 - [x] Add an independent Adagrad accumulated-square and checkpoint/resume
   recurrence lane. The raw record is `results/adagrad.csv`; the missing
   dedicated FortML release app remains an explicit `unavailable` row rather

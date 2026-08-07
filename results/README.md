@@ -7,6 +7,7 @@ Complete-call studies:
 - [SGD/Nesterov training and differentiable imputation](TRAINING_IMPUTER.md)
 - [AdamW training and MLP hypergradients](ADAMW_HYPERGRADIENT.md)
 - [AdamW beta-logit hypergradients](ADAMW_BETA_HYPERGRADIENT.md)
+- [Typed MLP learning-rate schedules](MLP_SCHEDULES.md)
 - [Weighted ridge regression and derivative products](RIDGE.md)
 - [RMSprop optimizer and MLP training](RMSPROP.md)
 - [RMSprop trajectory hypergradients](RMSPROP_HYPERGRADIENT.md)
