@@ -320,6 +320,10 @@ a different workload, precision, device, or residency policy.
 - [x] Add the `rank:pairwise` XGBoost lane. An independent pairwise logistic
   loss/gradient/Hessian oracle is paired with FortML fit ordering, query
   isolation, and singleton-query refusal in `results/xgboost_ranking.csv`.
+- [x] Add an absolute-deviation XGBoost lane. The independent one-tree NumPy
+  oracle checks the weighted-median identity-link base margin, sign
+  subgradient, positive Hessian-floor leaf corrections, CPU fit/predict
+  timings, and the explicit CUDA refusal in `results/xgboost_absolute.csv`.
 - [x] Add matched multinomial softmax regression and multiclass neural
   classifier lanes. `scripts/bench_classification_models.py` uses independent
   NumPy damped-Newton and full-batch Adam oracles, records scikit-learn and

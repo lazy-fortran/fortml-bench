@@ -60,6 +60,7 @@ Complete-call studies:
 - [Smooth kernel catalog](KERNEL_CATALOG.md)
 - [Weighted LDA and QDA](DISCRIMINANT_ANALYSIS.md)
 - [Robust Huber and quantile XGBoost](XGBOOST_ROBUST.md)
+- [Absolute-deviation XGBoost](XGBOOST_ABSOLUTE.md)
 - [XGBoost validation and early stopping](XGBOOST_EARLY_STOPPING.md)
 - [XGBoost row and feature sampling](XGBOOST_SAMPLING.md)
 - [XGBoost text persistence](XGBOOST_SERIALIZATION.md)

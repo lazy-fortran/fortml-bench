@@ -854,6 +854,17 @@ python -B scripts/bench_xgboost_robust.py \
 See [`results/XGBOOST_ROBUST.md`](results/XGBOOST_ROBUST.md). CUDA remains a
 typed unavailable row until a resident robust-tree kernel is linked.
 
+The absolute-deviation XGBoost lane checks the weighted-median identity-link
+base margin and one-tree L1 Newton corrections against an independent NumPy
+oracle. CPU fit/predict timings and the typed CUDA refusal are recorded:
+
+```bash
+python -B scripts/bench_xgboost_absolute.py \
+  --fortml ../fortml --output results/xgboost_absolute.csv
+```
+
+See [`results/XGBOOST_ABSOLUTE.md`](results/XGBOOST_ABSOLUTE.md).
+
 The generic hyperparameter-search lane uses an independent three-parameter
 quadratic oracle to gate Cartesian grid, seeded random, single-start FortOpt
 L-BFGS-B, and eight-start bounded L-BFGS-B timings. The random and multistart
