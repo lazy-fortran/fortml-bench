@@ -458,6 +458,18 @@ See [`results/PCA.md`](results/PCA.md). The current FortML release app exports
 an orthonormality guard and fit timing; complete fitted-array export remains an
 explicit follow-up boundary in the report.
 
+The PCA-initialized tied linear-autoencoder lane uses the same centered
+`512 x 16` fixture and rank eight. An independent NumPy thin-SVD reconstruction
+RMSE is compared with `fortml_bench_linear_autoencoder`; CUDA is recorded as an
+explicit refusal until a resident matrix-product lowering exists:
+
+```bash
+.venv/bin/python -B scripts/bench_linear_autoencoder.py \
+  --fortml ../fortml --output results/linear_autoencoder.csv
+```
+
+See [`results/LINEAR_AUTOENCODER.md`](results/LINEAR_AUTOENCODER.md).
+
 The weighted ridge lane checks the closed-form multi-output fit, vector and
 matrix prediction, and packed coefficient/input JVP and VJP products against
 an independent NumPy implementation. It times complete NumPy operations only
