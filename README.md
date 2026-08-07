@@ -111,10 +111,10 @@ an independent adjoint oracle:
   --fortml ../fortml --output results/gp_likelihood.csv
 ```
 
-See [`results/GP_LIKELIHOOD.md`](results/GP_LIKELIHOOD.md). The CSV keeps the
-NumPy timing complete while recording missing FortML release-app output as
-explicit `unavailable`; it does not infer GPU performance from a host
-likelihood call.
+See [`results/GP_LIKELIHOOD.md`](results/GP_LIKELIHOOD.md). The CSV retains
+FortML rows only when the complete scalar release protocol agrees with the
+NumPy oracle; missing compiler/app output is explicit `unavailable`. These
+host likelihood timings do not imply end-to-end GPU GP performance.
 
 The matched multinomial softmax and multiclass neural-classifier lane uses an
 independent NumPy damped-Newton/Adam oracle, scikit-learn and optional resident

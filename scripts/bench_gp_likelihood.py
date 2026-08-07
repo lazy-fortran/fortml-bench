@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import csv
 import math
+import os
 import platform
 import subprocess
 import time
@@ -153,17 +154,84 @@ def row(metadata: dict[str, str], workload: str, phase: str, status: str,
     return result
 
 
+def run_fortml(fortml: Path, target: str, metadata: dict[str, str],
+               expected: dict[str, dict[str, float]]) -> list[dict[str, Any]]:
+    """Run the strict scalar release protocol when the app is available."""
+    source = fortml / "app" / f"{target}.f90"
+    if not source.is_file():
+        return [row(
+            metadata, f"gp_likelihood_{name}", operation, "unavailable", "", "", "",
+            f"release target source is absent: {source.name}",
+            backend="fortml", device="cpu",
+        ) for name in expected for operation in expected[name]]
+    environment = os.environ.copy()
+    environment.update({"FO_FC": environment.get("FO_FC", "gfortran"),
+                        "OMP_NUM_THREADS": "1"})
+    build = subprocess.run(["fo", "build", "--flag", "-O3"], cwd=fortml,
+                           env=environment, capture_output=True, text=True)
+    if build.returncode != 0:
+        return [row(
+            metadata, f"gp_likelihood_{name}", operation, "unavailable", "", "", "",
+            "FortML release target did not build; no timing retained",
+            backend="fortml", device="cpu",
+        ) for name in expected for operation in expected[name]]
+    run = subprocess.run(["fo", "exec", "--no-build", target], cwd=fortml,
+                         env=environment, capture_output=True, text=True)
+    if run.returncode != 0:
+        return [row(
+            metadata, f"gp_likelihood_{name}", operation, "unavailable", "", "", "",
+            "FortML release target failed; no timing retained",
+            backend="fortml", device="cpu",
+        ) for name in expected for operation in expected[name]]
+    records: dict[tuple[str, str], tuple[float, float]] = {}
+    for line in run.stdout.splitlines():
+        fields = [part.strip() for part in line.split(",")]
+        if len(fields) != 5 or fields[0] != "gp_likelihood":
+            continue
+        name, operation = fields[1], fields[2]
+        if name not in expected or operation not in expected[name]:
+            continue
+        try:
+            seconds, value = float(fields[3]), float(fields[4])
+        except ValueError as error:
+            raise RuntimeError(f"invalid FortML GP likelihood row: {line!r}") from error
+        records[(name, operation)] = (seconds, value)
+    rows: list[dict[str, Any]] = []
+    for name, operations in expected.items():
+        for operation, target_value in operations.items():
+            if (name, operation) not in records:
+                raise RuntimeError(
+                    f"FortML GP likelihood protocol omitted {name}/{operation}"
+                )
+            seconds, actual = records[(name, operation)]
+            error = abs(actual - target_value)
+            if error > 2.0e-9:
+                raise RuntimeError(
+                    f"FortML GP likelihood oracle mismatch for {name}/{operation}: "
+                    f"{error:.3e}"
+                )
+            rows.append(row(
+                metadata, f"gp_likelihood_{name}", operation, "pass", actual,
+                seconds, error,
+                "strict scalar FortML release-app protocol; host execution",
+                backend="fortml", device="cpu",
+            ))
+    return rows
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--fortml", type=Path, default=Path("../fortml"))
     parser.add_argument("--output", type=Path,
                         default=Path("results/gp_likelihood.csv"))
+    parser.add_argument("--target", default="fortml_bench_gp_classification_likelihood")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     output = args.output.resolve()
     metadata = details(root, args.fortml.resolve(), output)
     eta, tangent = fixture()
     rows: list[dict[str, Any]] = []
+    expected_fortran: dict[str, dict[str, float]] = {}
     for name, probit in (("logistic", False), ("probit", True)):
         values = evaluate(eta, tangent, probit)
         operations = {
@@ -175,6 +243,7 @@ def main() -> None:
             "value": values["value"], "jvp": values["jvp"],
             "vjp": values["vjp_norm"],
         }
+        expected_fortran[name] = expected
         for operation, function in operations.items():
             actual, seconds = timed(function)
             value = float(actual) if operation != "vjp" else float(np.linalg.norm(actual))
@@ -187,13 +256,8 @@ def main() -> None:
                 f"fd_error={values['finite_difference_error']:.3e}; "
                 f"adjoint_error={values['adjoint_error']:.3e}",
             ))
-        # Keep the missing release app explicit.  A checksum-only or CPU
-        # oracle path must never be called a FortML/GPU measurement.
-        rows.append(row(
-            metadata, f"gp_likelihood_{name}", "fortml_release", "unavailable", "", "", "",
-            "no complete-array FortML release app; host primitive only",
-            backend="fortml", device="cpu",
-        ))
+    rows.extend(run_fortml(args.fortml.resolve(), args.target, metadata,
+                           expected_fortran))
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")

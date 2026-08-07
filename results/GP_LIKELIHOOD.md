@@ -15,8 +15,8 @@ python3 scripts/bench_gp_likelihood.py \
   --fortml ../fortml --output results/gp_likelihood.csv
 ```
 
-The current release has no complete-array FortML release app for this scalar
-primitive. The CSV therefore records NumPy oracle timings and explicit
-`unavailable` FortML rows. Those rows are not GPU evidence: end-to-end GPU GP
-classification still requires resident covariance, Laplace mode solve, and
-derivative buffers.
+The FortML release app emits the strict scalar protocol and is retained only
+after the same independent NumPy checks pass. A checkout without the app or a
+working compiler receives explicit `unavailable` rows. These host rows are not
+GPU evidence: end-to-end GPU GP classification still requires resident
+covariance, Laplace mode solve, and derivative buffers.
