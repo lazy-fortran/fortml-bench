@@ -72,7 +72,7 @@ def kernel(a: np.ndarray, b: np.ndarray, theta: np.ndarray = PARAMETERS) -> np.n
         component = np.ones_like(value) * weight
         for d in range(D):
             tau = delta[:, :, d]
-            component *= np.exp(-0.5 * two_pi**2 * tau**2 * scales[d]) * np.cos(two_pi * tau * means[d])
+            component *= np.exp(-0.5 * two_pi**2 * tau**2 * scales[d]**2) * np.cos(two_pi * tau * means[d])
         value += component
     return value
 

@@ -1,7 +1,8 @@
 # Spectral-mixture kernel
 
 `bench_spectral_mixture.py` compares the GPyTorch-compatible FortML spectral
-mixture leaf with an independent NumPy oracle.  The fixture has 256 points,
+mixture leaf (the exponential uses the squared positive frequency standard
+deviations) with an independent NumPy oracle.  The fixture has 256 points,
 three features, and two mixtures.  The packed block is
 `[log_weight, log_scale(1:3), mean(1:3)]` per component.  The oracle checks
 dense values, parameter JVP/VJP/HVP products, and input derivatives before
