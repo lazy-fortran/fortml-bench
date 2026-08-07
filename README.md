@@ -255,8 +255,8 @@ Adagrad timing:
 See [`results/RMSPROP.md`](results/RMSPROP.md).
 
 The fixed full-batch RMSprop hypergradient lane independently finite-differences
-the value, all five packed hyperparameters, and a directional JVP for centered
-and uncentered trajectories. The FortML release app is retained only after its
+the value, all five packed hyperparameters, and a directional JVP for separate
+centered and uncentered trajectories. The FortML release app is retained only after its
 value, gradient, and JVP products pass the NumPy oracle; CUDA remains an
 explicit refusal until the state is resident:
 

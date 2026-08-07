@@ -133,21 +133,21 @@ def base(details: dict[str, str], **values: Any) -> dict[str, Any]:
     return row
 
 
-def numpy_rows(details: dict[str, str], expected: dict[str, Any]) -> list[dict[str, Any]]:
+def numpy_rows(details: dict[str, str], expected: dict[str, Any], variant: str) -> list[dict[str, Any]]:
     rows = [base(details, workload="rmsprop_hypergradient", phase="value_gradient",
-                 variant="centered_fixed", backend="numpy_oracle", status="pass",
+                 variant=variant, backend="numpy_oracle", status="pass",
                  seconds_per_operation=expected["seconds"], metric="validation_mse",
                  value=expected["value"], max_abs_error=0.0,
                  oracle="independent NumPy RMSprop trajectory with central FD products",
                  notes="packed=[log_lr,log_l2,decay,log_epsilon,momentum]; h=2e-6")]
     for index, value in enumerate(expected["gradient"], start=1):
         rows.append(base(details, workload="rmsprop_hypergradient", phase="gradient_component",
-                         variant="centered_fixed", backend="numpy_oracle", status="pass",
+                         variant=variant, backend="numpy_oracle", status="pass",
                          metric=f"gradient_{index}", value=float(value), max_abs_error=0.0,
                          oracle="independent central finite-difference outer objective",
                          notes="all five packed components checked"))
     rows.append(base(details, workload="rmsprop_hypergradient", phase="jvp",
-                     variant="centered_fixed", backend="numpy_oracle", status="pass",
+                     variant=variant, backend="numpy_oracle", status="pass",
                      metric="directional_validation_mse_derivative", value=expected["tangent"],
                      max_abs_error=0.0,
                      oracle="independent central finite-difference directional product",
@@ -155,9 +155,10 @@ def numpy_rows(details: dict[str, str], expected: dict[str, Any]) -> list[dict[s
     return rows
 
 
-def unavailable_rows(details: dict[str, str], device: str, status: str, notes: str) -> list[dict[str, Any]]:
+def unavailable_rows(details: dict[str, str], device: str, status: str, notes: str,
+                     variant: str = "centered_fixed") -> list[dict[str, Any]]:
     return [base(details, workload="rmsprop_hypergradient", phase=phase,
-                 variant="centered_fixed", backend="fortml", device=device, status=status,
+                 variant=variant, backend="fortml", device=device, status=status,
                  oracle="FortML release-app protocol", notes=notes)
             for phase in ("value_gradient", "jvp")]
 
@@ -232,14 +233,20 @@ def main() -> None:
     uncentered = finite_difference_oracle(centered=False)
     if not np.all(np.isfinite(uncentered["gradient"])):
         raise RuntimeError("uncentered RMSprop oracle is not finite")
-    rows = numpy_rows(details, centered)
-    rows[0]["notes"] += "; uncentered branch independently finite-difference checked"
+    rows = numpy_rows(details, centered, "centered_fixed")
+    rows.extend(numpy_rows(details, uncentered, "uncentered_fixed"))
     if args.skip_fortml:
         rows.extend(unavailable_rows(details, "cpu", "skipped", "--skip-fortml"))
     else:
         rows.extend(run_fortml(fortml, args.target, details, centered))
-    rows.extend(unavailable_rows(details, "cuda", "unavailable",
-                                 "RMSprop hypergradient release app is CPU-only until resident CUDA state exists"))
+    rows.extend(unavailable_rows(
+        details, "cpu", "unavailable",
+        "release app currently exports the centered fixture only", "uncentered_fixed"))
+    for variant in ("centered_fixed", "uncentered_fixed"):
+        rows.extend(unavailable_rows(
+            details, "cuda", "unavailable",
+            "RMSprop hypergradient release app is CPU-only until resident CUDA state exists",
+            variant))
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")
