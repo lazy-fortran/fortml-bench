@@ -98,10 +98,14 @@ def fit_oracle(train: np.ndarray) -> tuple[list[np.ndarray], np.ndarray, np.ndar
     categories = [np.unique(train[:, feature]) for feature in range(N_FEATURES)]
     category_offsets = np.zeros(N_FEATURES + 1, dtype=np.int64)
     output_offsets = np.zeros(N_FEATURES + 1, dtype=np.int64)
+    # Match the public Fortran accessors: packed offsets are one-based and the
+    # final entry is the one-past-the-end offset.
+    category_offsets[0] = 1
+    output_offsets[0] = 1
     for feature, values in enumerate(categories):
         category_offsets[feature + 1] = category_offsets[feature] + values.size
         output_offsets[feature + 1] = output_offsets[feature] + max(0, values.size - 1)
-    return categories, category_offsets, output_offsets, int(output_offsets[-1])
+    return categories, category_offsets, output_offsets, int(output_offsets[-1] - 1)
 
 
 def transform_oracle(query: np.ndarray, categories: list[np.ndarray],
@@ -115,7 +119,7 @@ def transform_oracle(query: np.ndarray, categories: list[np.ndarray],
             index = int(matches[0])
             # drop_first removes the first sorted category from every block.
             if index > 0:
-                result[row, output_offsets[feature] + index - 1] = 1.0
+                result[row, output_offsets[feature] - 1 + index - 1] = 1.0
     return result
 
 

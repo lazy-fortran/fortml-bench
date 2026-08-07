@@ -31,6 +31,6 @@ The intended FortML release target is `fortml_bench_one_hot_encoder`.  It
 should read `FORTML_BENCH_ONE_HOT_ORACLE` and write one-based CSV quantities
 `category`, `category_offset`, `output_offset`, and `transformed`, while
 emitting `one_hot_fit` and `one_hot_transform` timing records.  The harness
-checks every category, offset, and output element.  An absent target or
+checks every category, every one-based packed offset, and every output element.  An absent target or
 incomplete output remains an explicit `unavailable` record.  This lane is
 CPU-only and does not imply device-resident categorical support.
