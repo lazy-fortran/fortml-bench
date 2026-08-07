@@ -198,6 +198,7 @@ def oracle_rows(details: dict[str, str]) -> tuple[list[dict[str, Any]], dict[str
         rows.append(base(
             details, workload=workload,
             phase="fit" if workload.startswith("fit") else "predict",
+            n_outputs=1 if workload in ("fit_vector", "predict_vector") else N_OUTPUTS,
             repetitions=REPETITIONS, seconds_per_operation=seconds,
             metric="l2_norm", value=float(np.linalg.norm(actual_array)),
             max_abs_error=error,
