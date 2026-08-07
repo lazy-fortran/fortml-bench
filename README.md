@@ -78,8 +78,9 @@ boundaries, plots, and the recorded machine results are in
 [`results/GP_FEATURES.md`](results/GP_FEATURES.md).
 
 The binary classification lane compares the FortML logistic estimator with
-scikit-learn on a deterministic two-label fixture and checks the generated
-labels and probability normalization before timing:
+scikit-learn on a deterministic two-label fixture. It checks full predicted
+labels and probabilities with independent NumPy accuracy, log-loss, and
+confusion-matrix calculations cross-checked by `sklearn.metrics` before timing:
 
 ```bash
 .venv/bin/python -B scripts/bench_classification.py \
