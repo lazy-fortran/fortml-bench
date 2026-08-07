@@ -1,6 +1,6 @@
 # CUDA correctness contracts
 
-This lane is a correctness gate for six small resident CUDA paths and one
+This lane is a correctness gate for seven small resident CUDA paths and one
 transfer-inclusive metric reduction that are not represented by the CPU
 release-app benchmarks. It deliberately records no device timing: a
 correctness-only gate must not be read as a performance claim for the full
@@ -64,7 +64,7 @@ support.
 
 The recorded run used an NVIDIA GeForce RTX 5060 Ti (driver 610.43.03,
 16,311 MiB), CUDA 13.3, nvfortran 26.5, and gfortran as the host compiler.
-All seven rows passed; the RMSprop, AdamW, and dense native maximum errors were
+All eight rows passed; the RMSprop, AdamW, and dense native maximum errors were
 `1.11e-16`, the kNN label checksum matched exactly, and the CUDA MSE scalar
 and the five resident-plan executions matched the independent value above. The CSV keeps the FortML and benchmark revisions,
 compiler flags, device, and oracle boundary. Empty timing fields are
