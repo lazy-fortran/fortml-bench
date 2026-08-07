@@ -1,5 +1,9 @@
 # Benchmark results
 
+The maintained family-level status index is
+[PARITY_MATRIX.md](PARITY_MATRIX.md). It separates CPU correctness, resident
+CUDA correctness, transfer-inclusive measurements, and typed refusals.
+
 Complete-call studies:
 
 - [Exact GP and MLP workloads](MODEL_WORKLOADS.md)
