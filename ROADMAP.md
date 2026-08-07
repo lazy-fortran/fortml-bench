@@ -213,6 +213,13 @@ a different workload, precision, device, or residency policy.
   value/gradient/JVP timing. The raw record is
   `results/rmsprop_hypergradient.csv`; CUDA remains an explicit refusal until
   optimizer state and MLP HVPs are resident.
+- [x] Add a fixed full-batch Adagrad hypergradient workload over log learning
+  rate, log L2, and log epsilon. The independent NumPy lane central-differences
+  every packed component and a directional JVP for the accumulated-square
+  trajectory; the FortML release app emits a checked complete-array CPU timing.
+  The raw record is `results/adagrad_hypergradient.csv`, with compiler and
+  revision provenance plus typed CUDA refusals until resident state derivatives
+  are linked.
 - [x] Add mean, median, and constant differentiable simple-imputer workloads
   with independent statistic, transform, JVP, and VJP checks. Host-only device
   boundaries are retained as explicit capability notes.
