@@ -92,7 +92,9 @@ def main() -> None:
     root = Path(__file__).resolve().parents[1]
     fortml = args.fortml.resolve()
     output = args.output if args.output.is_absolute() else root / args.output
-    ignored = (root / "results" / "roc_auc.csv").resolve()
+    ignored = tuple((root / "results" / name).resolve()
+                    for name in ("multilabel_metrics.csv", "roc_auc.csv",
+                                 "device_contracts.csv"))
     binary_scores, binary_labels, scores, labels = fixture()
     binary_expected = pair_auc(binary_scores, binary_labels, 42)
     per_class = np.array([pair_auc(scores[:, i], labels, c) for i, c in enumerate((-2, 4, 9))])

@@ -89,7 +89,11 @@ def main() -> None:
     observed = parse(completed.stdout)
     metadata = {
         "python_version": platform.python_version(), "numpy_version": np.__version__,
-        "fortml_revision": revision(fortml), "benchmark_revision": revision(root, (output.resolve(),)),
+        "fortml_revision": revision(fortml),
+        "benchmark_revision": revision(root, tuple((root / "results" / name).resolve()
+                                                    for name in ("multilabel_metrics.csv",
+                                                                 "roc_auc.csv",
+                                                                 "device_contracts.csv"))),
         "compiler": os.environ.get("FO_FC", "gfortran"), "flags": "-O3",
     }
     rows = []
