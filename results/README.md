@@ -37,6 +37,7 @@ Complete-call studies:
 - [GP classification hyperparameter training](GP_CLASSIFICATION_TRAINING.md)
 - [Exact-GP seeded hyperparameter multistart](GP_HYPERPARAMETER_TRAINING.md)
 - [Trainable exact-GP constant and linear means](GP_MEAN.md)
+- [ARD RBF kernel and exact-GP products](GP_ARD.md)
 - [GP classification and fitted preprocessing](CLASSIFICATION_EXTENSIONS.md)
 - [Binary GP likelihood value/JVP/VJP primitive](GP_LIKELIHOOD.md)
 - [Probability calibration](PROBABILITY_CALIBRATION.md)
