@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Benchmark FortML's exact depth-one second-order boosting lane.
+"""Benchmark FortML's exact depth-limited second-order boosting lane.
 
 The Fortran workload is checked against an independent NumPy implementation of
 the XGBoost leaf-weight and split-gain formulas before its timings are written.
@@ -16,6 +16,7 @@ import os
 import platform
 import subprocess
 from pathlib import Path
+from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
@@ -24,6 +25,7 @@ import numpy as np
 N_SAMPLES = 192
 N_FEATURES = 3
 N_ESTIMATORS = 12
+MAX_DEPTH = 2
 MIN_SAMPLES_LEAF = 2
 LEARNING_RATE = 0.25
 L1_REG = 0.15
@@ -148,7 +150,19 @@ def leaf_score(gradient: float, hessian: float, l1: float, l2: float) -> float:
     return thresholded**2 / (hessian + l2)
 
 
-def build_stump(
+@dataclass
+class TreeNode:
+    """One independently reconstructed exact-split tree node."""
+
+    weight: float
+    gain: float = 0.0
+    feature: int = -1
+    threshold: float = 0.0
+    left: "TreeNode | None" = None
+    right: "TreeNode | None" = None
+
+
+def build_tree(
     x: np.ndarray,
     gradient: np.ndarray,
     hessian: np.ndarray,
@@ -157,23 +171,42 @@ def build_stump(
     l2: float,
     gamma: float,
     min_child_weight: float,
-) -> tuple[int, float, float, float, float]:
-    total_gradient = float(np.sum(gradient))
-    total_hessian = float(np.sum(hessian))
+    max_depth: int,
+    min_samples_leaf: int,
+    indices: np.ndarray | None = None,
+    depth: int = 0,
+) -> TreeNode:
+    """Reconstruct FortML's recursive exact-split tree independently.
+
+    Samples retain their incoming order when a node is partitioned, matching
+    the Fortran recursion while making the feature/threshold tie policy
+    explicit in this behavioral oracle.
+    """
+
+    if indices is None:
+        indices = np.arange(x.shape[0], dtype=np.int64)
+    total_gradient = float(np.sum(gradient[indices]))
+    total_hessian = float(np.sum(hessian[indices]))
     root_weight = leaf_weight(total_gradient, total_hessian, l1, l2)
+    node = TreeNode(weight=root_weight)
+    n_local = indices.size
+    if depth >= max_depth or n_local < 2 * min_samples_leaf:
+        return node
+
     best_gain = 0.0
-    best: tuple[int, float, float, float, float] | None = None
+    best: tuple[int, float] | None = None
     for feature in range(x.shape[1]):
-        order = np.argsort(x[:, feature], kind="stable")
+        order = np.argsort(x[indices, feature], kind="stable")
+        sorted_indices = indices[order]
         left_gradient = 0.0
         left_hessian = 0.0
-        for k in range(1, x.shape[0]):
-            index = order[k - 1]
+        for k in range(1, n_local):
+            index = sorted_indices[k - 1]
             left_gradient += float(gradient[index])
             left_hessian += float(hessian[index])
-            if k < MIN_SAMPLES_LEAF or x.shape[0] - k < MIN_SAMPLES_LEAF:
+            if k < min_samples_leaf or n_local - k < min_samples_leaf:
                 continue
-            if x[order[k - 1], feature] >= x[order[k], feature]:
+            if x[sorted_indices[k - 1], feature] >= x[sorted_indices[k], feature]:
                 continue
             right_gradient = total_gradient - left_gradient
             right_hessian = total_hessian - left_hessian
@@ -189,36 +222,68 @@ def build_stump(
                 - gamma
             )
             if gain > best_gain:
-                threshold = 0.5 * (x[order[k - 1], feature] + x[order[k], feature])
-                best_gain = gain
-                best = (
-                    feature,
-                    threshold,
-                    leaf_weight(left_gradient, left_hessian, l1, l2),
-                    leaf_weight(right_gradient, right_hessian, l1, l2),
-                    gain,
+                threshold = 0.5 * (
+                    x[sorted_indices[k - 1], feature] + x[sorted_indices[k], feature]
                 )
+                best_gain = gain
+                best = (feature, threshold)
     if best is None:
-        return 0, 0.0, root_weight, root_weight, 0.0
-    return best
+        return node
+    feature, threshold = best
+    left_indices = indices[x[indices, feature] < threshold]
+    right_indices = indices[x[indices, feature] >= threshold]
+    if left_indices.size < min_samples_leaf or right_indices.size < min_samples_leaf:
+        raise RuntimeError("exact-split oracle violated minimum leaf size")
+    node.feature = feature
+    node.threshold = threshold
+    node.gain = best_gain
+    node.left = build_tree(
+        x,
+        gradient,
+        hessian,
+        l1=l1,
+        l2=l2,
+        gamma=gamma,
+        min_child_weight=min_child_weight,
+        max_depth=max_depth,
+        min_samples_leaf=min_samples_leaf,
+        indices=left_indices,
+        depth=depth + 1,
+    )
+    node.right = build_tree(
+        x,
+        gradient,
+        hessian,
+        l1=l1,
+        l2=l2,
+        gamma=gamma,
+        min_child_weight=min_child_weight,
+        max_depth=max_depth,
+        min_samples_leaf=min_samples_leaf,
+        indices=right_indices,
+        depth=depth + 1,
+    )
+    return node
 
 
-def stump_predict(
-    x: np.ndarray, feature: int, threshold: float, left: float, right: float
-) -> np.ndarray:
-    if threshold == 0.0 and left == right:
-        return np.full(x.shape[0], left)
-    return np.where(x[:, feature] < threshold, left, right)
+def tree_predict(x: np.ndarray, tree: TreeNode) -> np.ndarray:
+    prediction = np.empty(x.shape[0], dtype=np.float64)
+    for i in range(x.shape[0]):
+        node = tree
+        while node.left is not None:
+            node = node.left if x[i, node.feature] < node.threshold else node.right
+        prediction[i] = node.weight
+    return prediction
 
 
 def fit_boosting(
     x: np.ndarray, target: np.ndarray, *, logistic: bool
-) -> tuple[np.ndarray, list[tuple[int, float, float, float, float]]]:
+) -> tuple[np.ndarray, list[TreeNode]]:
     if logistic:
         prediction = np.full(x.shape[0], logit(float(np.mean(target))))
     else:
         prediction = np.full(x.shape[0], float(np.mean(target)))
-    trees: list[tuple[int, float, float, float, float]] = []
+    trees: list[TreeNode] = []
     for _ in range(N_ESTIMATORS):
         if logistic:
             probability = sigmoid(prediction)
@@ -227,7 +292,7 @@ def fit_boosting(
         else:
             gradient = prediction - target
             hessian = np.ones_like(target)
-        tree = build_stump(
+        tree = build_tree(
             x,
             gradient,
             hessian,
@@ -235,10 +300,25 @@ def fit_boosting(
             l2=1.0 if logistic else L2_REG,
             gamma=GAMMA,
             min_child_weight=MIN_CHILD_WEIGHT,
+            max_depth=MAX_DEPTH,
+            min_samples_leaf=MIN_SAMPLES_LEAF,
         )
         trees.append(tree)
-        prediction += LEARNING_RATE * stump_predict(x, *tree[:4])
+        prediction += LEARNING_RATE * tree_predict(x, tree)
     return prediction, trees
+
+
+def root_diagnostics(tree: TreeNode) -> tuple[float, float, float, float, float]:
+    """Return the public first-tree diagnostics reported by the Fortran app."""
+    if tree.left is None or tree.right is None:
+        return 0.0, 0.0, tree.weight, tree.weight, tree.gain
+    return (
+        float(tree.feature),
+        tree.threshold,
+        tree.left.weight,
+        tree.right.weight,
+        tree.gain,
+    )
 
 
 def multiclass_oracle(x: np.ndarray) -> tuple[float, float]:
@@ -305,6 +385,8 @@ def run_fortran(
     )
     logistic_prediction, logistic_trees = fit_boosting(x, labels, logistic=True)
     multiclass_accuracy, multiclass_probability_sum = multiclass_oracle(x)
+    regression_root = root_diagnostics(regression_trees[0])
+    logistic_root = root_diagnostics(logistic_trees[0])
     regression_mse = float(np.mean((regression_prediction - regression) ** 2))
     logistic_probability = sigmoid(logistic_prediction)
     logistic_logloss = float(
@@ -316,18 +398,18 @@ def run_fortran(
     logistic_accuracy = float(np.mean((logistic_probability >= 0.5) == (labels >= 0.5)))
     regression_error = max(
         abs(float(parsed["xgb_regression_fit"][4]) - regression_mse),
-        abs(float(parsed["xgb_regression_fit"][5]) - regression_trees[0][4]),
+        abs(float(parsed["xgb_regression_fit"][5]) - regression_root[4]),
         abs(
             float(parsed["xgb_regression_fit"][6])
-            - regression_trees[0][2]
-            - regression_trees[0][3]
+            - regression_root[2]
+            - regression_root[3]
         ),
         abs(float(parsed["xgb_regression_predict"][4]) - regression_mse),
         abs(float(parsed["xgb_regression_predict"][5]) - np.sum(regression_prediction)),
     )
     logistic_error = max(
         abs(float(parsed["xgb_logistic_fit"][4]) - logistic_logloss),
-        abs(float(parsed["xgb_logistic_fit"][5]) - logistic_trees[0][4]),
+        abs(float(parsed["xgb_logistic_fit"][5]) - logistic_root[4]),
         abs(float(parsed["xgb_logistic_fit"][6]) - np.sum(logistic_probability)),
         abs(float(parsed["xgb_logistic_predict"][4]) - logistic_logloss),
         abs(float(parsed["xgb_logistic_predict"][5]) - logistic_accuracy),
@@ -364,8 +446,11 @@ def run_fortran(
             metric="mse",
             value=regression_mse,
             max_abs_error=regression_error,
-            oracle="independent NumPy exact second-order stump search",
-            notes="depth=1; L1/L2/gamma/min-child-Hessian/shrinkage matched",
+            oracle="independent NumPy exact recursive second-order tree search",
+            notes=(
+                "depth=2; L1/L2/gamma/min-child-Hessian/shrinkage matched; "
+                "recursive exact split"
+            ),
         ),
         row(
             metadata_values,
@@ -380,8 +465,8 @@ def run_fortran(
             metric="mse",
             value=regression_mse,
             max_abs_error=regression_error,
-            oracle="independent NumPy exact second-order stump search",
-            notes="piecewise-constant input JVP is available away from splits",
+            oracle="independent NumPy exact recursive second-order tree search",
+            notes="depth=2 recursive tree; piecewise-constant input JVP away from splits",
         ),
         row(
             metadata_values,
@@ -396,8 +481,10 @@ def run_fortran(
             metric="logloss",
             value=logistic_logloss,
             max_abs_error=logistic_error,
-            oracle="independent NumPy logistic Newton stump search",
-            notes="stable sigmoid, clipped base logit, exact Hessian aggregation",
+            oracle="independent NumPy recursive logistic Newton tree search",
+            notes=(
+                "depth=2; stable sigmoid, clipped base logit, exact Hessian aggregation"
+            ),
         ),
         row(
             metadata_values,
@@ -412,7 +499,7 @@ def run_fortran(
             metric="accuracy",
             value=logistic_accuracy,
             max_abs_error=logistic_error,
-            oracle="independent NumPy logistic Newton stump search",
+            oracle="independent NumPy recursive logistic Newton tree search",
             notes="probability output and two-column probability product checked",
         ),
         row(
@@ -428,7 +515,7 @@ def run_fortran(
             metric="accuracy",
             value=multiclass_accuracy,
             max_abs_error=multiclass_error,
-            oracle="independent NumPy one-vs-rest exact second-order stump search",
+            oracle="independent NumPy one-vs-rest recursive second-order tree search",
             notes="sorted labels=-1,4,9; normalized positive OVR probabilities",
         ),
         row(
@@ -444,7 +531,7 @@ def run_fortran(
             metric="accuracy",
             value=multiclass_accuracy,
             max_abs_error=multiclass_error,
-            oracle="independent NumPy one-vs-rest exact second-order stump search",
+            oracle="independent NumPy one-vs-rest recursive second-order tree search",
             notes="simplex sum checked at the independent row-normalization oracle",
         ),
     ]

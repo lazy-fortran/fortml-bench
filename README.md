@@ -132,9 +132,9 @@ records explicit availability/refusal rows for optional PyTorch, JAX, and
 XGBoost comparisons.
 
 The exact second-order XGBoost-style lane has its own workload and raw record.
-It checks squared, binary logistic, and one-vs-rest multiclass depth-one
-boosting against independent NumPy gradient/Hessian oracles, then records an
-explicit optional-XGBoost contextual row:
+It checks squared, binary logistic, and one-vs-rest multiclass depth-two
+boosting against independent recursive NumPy gradient/Hessian oracles, then
+records an explicit optional-XGBoost contextual row:
 
 ```bash
 .venv/bin/python -B scripts/bench_xgboost.py \
