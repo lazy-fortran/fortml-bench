@@ -210,7 +210,7 @@ a different workload, precision, device, or residency policy.
   FortML device path is never replaced with a relabeled CPU timing. Resident
   PyTorch CUDA rows remain independent evidence.
 - [x] Add resident CUDA correctness gates for kNN prediction, the direct
-  no-autodiff RMSprop state kernel, and dense-affine value/JVP across all eight
+  no-autodiff RMSprop state kernel, and dense-affine value/JVP/VJP across all eight
   MLP activations. The independent NumPy fixtures and native gate results are
   recorded in `results/device_contracts.csv`; this lane has no timing claim.
 - [x] Add a resident CUDA AdamW state correctness gate with an independent
