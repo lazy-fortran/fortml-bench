@@ -226,6 +226,33 @@ def basis_inputs() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     return x, x_dot, frequencies
 
 
+def basis_vjp_oracle(
+    x: np.ndarray, frequencies: np.ndarray, u: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
+    """Independent reverse product for the fixed polynomial/Fourier fixture."""
+    theta_bar = np.zeros(frequencies.size)
+    x_bar = np.zeros_like(x)
+    column = 8  # zero-based output column 9 follows Fourier's intercept
+    theta_index = 0
+    for j in range(BASIS_D):
+        for h in range(frequencies.shape[0]):
+            frequency = frequencies[h, j]
+            argument = frequency * x[:, j]
+            z_bar = u[:, column] * np.cos(argument) - u[:, column + 1] * np.sin(
+                argument
+            )
+            x_bar[:, j] += frequency * z_bar
+            theta_bar[theta_index] = np.sum(frequency * x[:, j] * z_bar)
+            column += 2
+            theta_index += 1
+    column = 1
+    for j in range(BASIS_D):
+        for p in range(1, 4):
+            x_bar[:, j] += u[:, column] * p * x[:, j] ** (p - 1)
+            column += 1
+    return theta_bar, x_bar
+
+
 def basis_oracle() -> dict[str, float]:
     x, x_dot, frequencies = basis_inputs()
     polynomial = [np.ones(BASIS_N)]
@@ -256,31 +283,22 @@ def basis_oracle() -> dict[str, float]:
     for j in range(phi.shape[1]):
         for i in range(phi.shape[0]):
             u[i, j] = 0.13 * np.sin(0.013 * ((i + 1) + (j + 1)))
-    theta_bar = np.zeros(frequencies.size)
-    x_bar = np.zeros_like(x)
-    column = 8  # zero-based output column 9 follows Fourier's intercept
-    theta_index = 0
-    for j in range(BASIS_D):
-        for h in range(frequencies.shape[0]):
-            frequency = frequencies[h, j]
-            argument = frequency * x[:, j]
-            z_bar = u[:, column] * np.cos(argument) - u[:, column + 1] * np.sin(
-                argument
-            )
-            x_bar[:, j] += frequency * z_bar
-            theta_bar[theta_index] = np.sum(frequency * x[:, j] * z_bar)
-            column += 2
-            theta_index += 1
-    column = 1
-    for j in range(BASIS_D):
-        for p in range(1, 4):
-            x_bar[:, j] += u[:, column] * p * x[:, j] ** (p - 1)
-            column += 1
+    theta_bar, x_bar = basis_vjp_oracle(x, frequencies, u)
+    step = 1.0e-5
+    theta_direction = theta_dot.reshape(frequencies.shape, order="F")
+    theta_bar_plus, x_bar_plus = basis_vjp_oracle(
+        x + step * x_dot, frequencies * np.exp(step * theta_direction), u
+    )
+    theta_bar_minus, x_bar_minus = basis_vjp_oracle(
+        x - step * x_dot, frequencies * np.exp(-step * theta_direction), u
+    )
     return {
         "transform_sum": float(np.sum(phi)),
         "jvp_sum": float(np.sum(phi_dot)),
         "theta_bar_sum": float(np.sum(theta_bar)),
         "x_bar_sum": float(np.sum(x_bar)),
+        "theta_hvp_sum": float(np.sum((theta_bar_plus - theta_bar_minus) / (2.0 * step))),
+        "x_hvp_sum": float(np.sum((x_bar_plus - x_bar_minus) / (2.0 * step))),
     }
 
 
@@ -613,6 +631,7 @@ def parse_fortran(stdout: str) -> dict[str, list[list[str]]]:
             "basis_transform",
             "basis_jvp",
             "basis_vjp",
+            "basis_hvp",
             "basis_linear",
             "gaussian_nb",
             "stump",
@@ -628,6 +647,7 @@ def parse_fortran(stdout: str) -> dict[str, list[list[str]]]:
         "basis_transform",
         "basis_jvp",
         "basis_vjp",
+        "basis_hvp",
         "basis_linear",
         "gaussian_nb",
         "stump",
@@ -687,6 +707,7 @@ def run_fortran(
         "basis_transform": ("transform", basis["transform_sum"], 4),
         "basis_jvp": ("jvp", basis["jvp_sum"], 4),
         "basis_vjp": ("vjp", basis["theta_bar_sum"], 4),
+        "basis_hvp": ("hvp", basis["theta_hvp_sum"], 4),
     }
     for key, (_, expected, index) in basis_rows.items():
         actual = float(parsed[key][0][-1 if key != "basis_vjp" else 1])
@@ -695,6 +716,12 @@ def run_fortran(
             actual_x = float(parsed[key][0][5])
             error = max(
                 abs(actual_theta - expected), abs(actual_x - basis["x_bar_sum"])
+            )
+        elif key == "basis_hvp":
+            actual_theta = float(parsed[key][0][4])
+            actual_x = float(parsed[key][0][5])
+            error = max(
+                abs(actual_theta - expected), abs(actual_x - basis["x_hvp_sum"])
             )
         else:
             error = abs(actual - expected)
@@ -992,6 +1019,24 @@ def run_fortran(
             max_abs_error=0.0,
             oracle="independent NumPy reverse products",
             notes=f"theta_bar_sum={parsed['basis_vjp'][0][4]}; x_bar_sum={parsed['basis_vjp'][0][5]}",
+        )
+    )
+    records.append(
+        row(
+            metadata,
+            workload="basis_pipeline",
+            phase="hvp",
+            backend="fortml",
+            status="pass",
+            n_samples=BASIS_N,
+            n_features=BASIS_D,
+            repetitions=32,
+            seconds_per_operation=float(parsed["basis_hvp"][0][3]),
+            metric="hvp_sums",
+            value=float(parsed["basis_hvp"][0][4]),
+            max_abs_error=0.0,
+            oracle="independent NumPy central-difference-of-VJP oracle",
+            notes=f"theta_hvp_sum={parsed['basis_hvp'][0][4]}; x_hvp_sum={parsed['basis_hvp'][0][5]}",
         )
     )
     records.extend(
