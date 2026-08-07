@@ -1,7 +1,7 @@
 # Physics-informed and structure-preserving model evidence
 
 This is a bounded evidence lane for the current FortML API. It covers the
-separable `hamiltonian_mlp_t` prototype and its independent structure checks;
+separable `hamiltonian_mlp_t` prototype and its independent structure checks.
 it does not claim PINN training, a symplectic GP, an HNN/LNN catalog, or a
 finite-width network initialized exactly from an infinite-width GP.
 
