@@ -25,7 +25,7 @@ import numpy as np
 STEPS = 4
 N_TRAIN = 5
 N_VALIDATION = 3
-N_PARAMETERS = 2
+N_PARAMETERS = 5
 H = 2.0e-6
 REPETITIONS = 16
 PARAMETERS = np.array([np.log(0.12), np.log(0.07), 0.78, np.log(0.03), 0.21])
