@@ -100,7 +100,8 @@ def parse_app(stdout: str) -> dict[str, str]:
     required = {
         "random_forest_fit_seconds", "random_forest_predict_seconds",
         "random_forest_probability_sum_error", "random_forest_query_correct",
-        "random_forest_cuda",
+        "random_forest_cuda", "random_forest_cuda_plan_abi",
+        "random_forest_cuda_plan",
     }
     missing = required.difference(values)
     if missing:
@@ -167,6 +168,8 @@ def main() -> None:
     probability_error = float(values["random_forest_probability_sum_error"])
     query_correct = int(values["random_forest_query_correct"])
     cuda_status = values["random_forest_cuda"]
+    cuda_plan_status = values["random_forest_cuda_plan"]
+    cuda_plan_abi = int(values["random_forest_cuda_plan_abi"])
     if not np.isfinite(fit_seconds) or not np.isfinite(predict_seconds):
         raise RuntimeError("FortML emitted non-finite timing")
     if fit_seconds < 0.0 or predict_seconds < 0.0:
@@ -177,6 +180,10 @@ def main() -> None:
         raise RuntimeError(f"FortML query oracle mismatch: {query_correct}/{N_QUERY}")
     if cuda_status != "unavailable":
         raise RuntimeError(f"unexpected random-forest CUDA status: {cuda_status}")
+    if cuda_plan_abi != 1 or cuda_plan_status != "unavailable":
+        raise RuntimeError(
+            f"unexpected random-forest CUDA plan contract: ABI={cuda_plan_abi}, "
+            f"status={cuda_plan_status}")
     notes = (f"{query_correct}/{N_QUERY} independent direct-rule query labels; "
              f"{N_TREES} trees, depth={MAX_DEPTH}, seed={SEED}")
     rows.extend([
@@ -194,6 +201,10 @@ def main() -> None:
             status="unavailable", accuracy="", max_abs_error="",
             oracle="typed_device_contract",
             notes="no resident CUDA tree-ensemble kernel; FORTNUM_NOT_IMPLEMENTED"),
+        row(phase="plan_create", backend="fortml_cuda", device="cuda",
+            status="unavailable", accuracy="", max_abs_error="",
+            oracle="typed_device_plan_contract",
+            notes="ABI=1; shape-only plan records model metadata then refuses until a resident ensemble kernel is linked"),
     ])
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
