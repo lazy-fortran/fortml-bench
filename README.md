@@ -113,8 +113,33 @@ python -B scripts/bench_random_forest.py \
 ```
 
 See [`results/RANDOM_FOREST.md`](results/RANDOM_FOREST.md). The CSV records
-CPU fit/predict timings and an explicit CUDA capability refusal until a
-resident tree-ensemble kernel is available.
+CPU fit/predict timings and explicit CUDA capability and plan-creation
+refusals until a resident tree-ensemble kernel is available. The plan ABI
+version and fitted shape are checked without allocating or copying host trees.
+
+The Extra-Trees lane exercises the seeded randomized-threshold classifier on
+the same separated fixture. A direct NumPy class-rule oracle checks all query
+labels and probability normalization; the CUDA row is a typed refusal until a
+resident no-autodiff tree kernel is linked:
+
+```bash
+python -B scripts/bench_extra_trees.py \
+  --fortml ../fortml --output results/extra_trees.csv
+```
+
+See [`results/EXTRA_TREES.md`](results/EXTRA_TREES.md).
+
+The grouped MLP lane checks named per-parameter log-L2 regularization,
+including value, JVP, gradient norm, and mixed HVP norm, against a closed-form
+NumPy linear-ridge oracle. Its CUDA row is explicit `unavailable` because a
+resident MLP derivative graph is not yet linked:
+
+```bash
+python -B scripts/bench_mlp_grouped_training.py \
+  --fortml ../fortml --output results/mlp_grouped_training.csv
+```
+
+See [`results/MLP_GROUPED_TRAINING.md`](results/MLP_GROUPED_TRAINING.md).
 
 The shared feature workload now includes an independent central-difference
 of-VJP oracle and timing row for analytic basis-pipeline HVPs:
