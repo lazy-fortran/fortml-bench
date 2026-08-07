@@ -23,6 +23,7 @@ Complete-call studies:
 - [Multilabel logistic classification](MULTILABEL_LOGISTIC.md)
 - [Radius-neighbor classification](RADIUS_NEIGHBORS.md)
 - [Weighted linear SVM classification](LINEAR_SVM.md)
+- [Weighted linear SVR regression](LINEAR_SVR.md)
 - [Weighted ordinal logistic classification](ORDINAL_LOGISTIC.md)
 - [GP classification hyperparameter training](GP_CLASSIFICATION_TRAINING.md)
 - [GP classification and fitted preprocessing](CLASSIFICATION_EXTENSIONS.md)

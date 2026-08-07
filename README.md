@@ -179,6 +179,18 @@ python -B scripts/bench_linear_svm.py \
 See [`results/LINEAR_SVM.md`](results/LINEAR_SVM.md). CUDA is an explicit
 unavailable capability row until a resident linear-SVM kernel is linked.
 
+The linear-regression margin lane checks weighted dense primal SVR fitting for
+arbitrary real targets, epsilon-insensitive prediction, packed affine
+parameters, and an independent NumPy/SciPy L-BFGS-B oracle:
+
+```bash
+python -B scripts/bench_linear_svr.py \
+    --fortml ../fortml --output results/linear_svr.csv
+```
+
+See [`results/LINEAR_SVR.md`](results/LINEAR_SVR.md). CUDA is an explicit
+unavailable capability row until a resident linear-SVR kernel is linked.
+
 The differentiable neural-loss lane checks BCE/logistic, softmax
 cross-entropy, weighted MSE, Huber, MAE, and focal BCE-with-logits products
 against independent NumPy value/derivative formulas, and checks the
