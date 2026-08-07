@@ -5,7 +5,9 @@ four-row, one-tree fixture is solved independently in NumPy in the
 `log1p(target)` coordinate: it checks the geometric base margin, analytic
 gradient and positive-clipped Hessian, both leaf corrections, and the guarded
 `expm1` inverse link. The release app must pass this gate before its exact
-depth-two CPU timings and weighted-histogram parity row are retained.
+depth-two CPU timings and weighted-histogram diagnostic row are retained.
+Bounded histogram cuts approximate the exact splitter on continuous data, so
+their deviation is reported rather than treated as an exact-equality failure.
 
 The CUDA row is explicitly `unavailable`. FortML has no resident squared-log
 tree kernel, so `FORTNUM_NOT_IMPLEMENTED` is recorded and CPU work is never

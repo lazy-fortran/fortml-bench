@@ -687,8 +687,8 @@ is an explicit unavailable refusal until a resident tree kernel is linked.
 
 The squared-log (RMSLE) objective lane independently reconstructs a one-tree
 Newton update in the `log1p(target)` coordinate, then records exact CPU
-fit/predict and weighted-histogram parity on a deterministic nonnegative
-workload:
+fit/predict and a weighted-histogram diagnostic on a deterministic
+nonnegative workload:
 
 ```bash
 python -B scripts/bench_xgboost_squared_log.py \
