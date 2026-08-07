@@ -10,6 +10,7 @@ Complete-call studies:
 - [Typed MLP learning-rate schedules](MLP_SCHEDULES.md)
 - [Dense MLP activation products](MLP_ACTIVATIONS.md)
 - [Scheduled MLP trajectory hypergradients](MLP_SCHEDULE_HYPERGRADIENT.md)
+- [Composable MLP module tree](MLP_CHAIN.md)
 - [Weighted ridge regression and derivative products](RIDGE.md)
 - [Weighted elastic-net regression and derivative products](ELASTIC_NET.md)
 - [RMSprop optimizer and MLP training](RMSPROP.md)

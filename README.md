@@ -653,6 +653,23 @@ and [`results/composite_mvm_scaling.md`](results/composite_mvm_scaling.md).
 The high-N dense GPU failures remain in the CSV as `oom`. They are capacity
 evidence, not timing points.
 
+## Composable MLP module tree
+
+The `mlp_chain` lane measures a named `2 -> 4 -> 1` sequential MLP chain. An
+independent NumPy fixture checks the value, packed parameter/input JVP and VJP,
+and a central-difference differentiated-VJP HVP before retaining any Fortran
+timing. The release app reports separate predict, JVP, VJP, and HVP costs.
+
+Run it with:
+
+    python -B scripts/bench_mlp_chain.py \
+      --fortml ../fortml --output results/mlp_chain.csv
+
+The CUDA capability row is explicitly `unavailable`: no resident fused chain
+kernel exists yet, so a CUDA request returns `FORTNUM_NOT_IMPLEMENTED` and is
+never timed through a host fallback. Details are in
+[`results/MLP_CHAIN.md`](results/MLP_CHAIN.md).
+
 ## Validity boundary
 
 The first comparison is a kernel-product comparison. It does not claim that a
