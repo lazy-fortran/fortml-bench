@@ -100,7 +100,7 @@ def main() -> None:
             "numpy_version": np.__version__,
             "fortml_revision": fortml_rev,
             "benchmark_revision": bench_rev,
-            "oracle": "numpy_quadratic_grid_and_optimum",
+            "oracle": "numpy_quadratic_grid_random_and_optimum",
         })
         output.update({key: str(value) for key, value in kwargs.items()})
         return output
