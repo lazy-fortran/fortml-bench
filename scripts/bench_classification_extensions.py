@@ -20,13 +20,19 @@ from pathlib import Path
 import numpy as np
 
 
-def revision(repository: Path) -> str:
+def revision(repository: Path, ignored_paths: tuple[Path, ...] = ()) -> str:
     value = subprocess.check_output(
         ["git", "-C", str(repository), "rev-parse", "HEAD"], text=True
     ).strip()
-    dirty = subprocess.check_output(
+    status = subprocess.check_output(
         ["git", "-C", str(repository), "status", "--porcelain"], text=True
-    ).strip()
+    ).splitlines()
+    ignored = {path.resolve() for path in ignored_paths}
+    dirty = []
+    for line in status:
+        path_text = line[3:].split(" -> ")[-1].strip()
+        if (repository / path_text).resolve() not in ignored:
+            dirty.append(line)
     return value + ("+dirty" if dirty else "")
 
 
@@ -211,12 +217,14 @@ def parse(stdout: str) -> dict[str, list[str]]:
     return records
 
 
-def metadata(root: Path, fortml: Path) -> dict[str, str]:
+def metadata(
+    root: Path, fortml: Path, ignored_paths: tuple[Path, ...] = ()
+) -> dict[str, str]:
     return {
         "python_version": platform.python_version(),
         "numpy_version": np.__version__,
         "fortml_revision": revision(fortml),
-        "benchmark_revision": revision(root),
+        "benchmark_revision": revision(root, ignored_paths),
         "compiler": "gfortran",
         "flags": "-O3",
     }
@@ -375,7 +383,12 @@ def main() -> None:
     )
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
-    details = metadata(root, args.fortml.resolve())
+    ignored_outputs = (
+        args.output.resolve(),
+        (root / "results/classification_models.csv").resolve(),
+        (root / "results/classification_extensions.csv").resolve(),
+    )
+    details = metadata(root, args.fortml.resolve(), ignored_outputs)
     rows = run(args.fortml.resolve(), root)
     fields = [
         "workload",

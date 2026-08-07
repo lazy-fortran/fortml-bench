@@ -46,13 +46,19 @@ MLP_L2 = 1.0e-3
 MLP_INITIALIZATION_SEED = 23
 
 
-def git_revision(repository: Path) -> str:
+def git_revision(repository: Path, ignored_paths: tuple[Path, ...] = ()) -> str:
     revision = subprocess.check_output(
         ["git", "-C", str(repository), "rev-parse", "HEAD"], text=True
     ).strip()
-    dirty = subprocess.check_output(
+    status = subprocess.check_output(
         ["git", "-C", str(repository), "status", "--porcelain"], text=True
-    ).strip()
+    ).splitlines()
+    ignored = {path.resolve() for path in ignored_paths}
+    dirty = []
+    for line in status:
+        path_text = line[3:].split(" -> ")[-1].strip()
+        if (repository / path_text).resolve() not in ignored:
+            dirty.append(line)
     return revision + ("+dirty" if dirty else "")
 
 
@@ -346,13 +352,15 @@ def read_fortran_oracle(path: Path) -> dict[str, np.ndarray]:
     return arrays
 
 
-def metadata(root: Path, fortml: Path) -> dict[str, str]:
+def metadata(
+    root: Path, fortml: Path, ignored_paths: tuple[Path, ...] = ()
+) -> dict[str, str]:
     return {
         "python_version": platform.python_version(),
         "numpy_version": np.__version__,
         "fortml_revision": git_revision(fortml),
         "fortnum_revision": git_revision(fortml.parent / "fortnum"),
-        "benchmark_revision": git_revision(root),
+        "benchmark_revision": git_revision(root, ignored_paths),
         "compiler": os.environ.get("FO_FC", "gfortran"),
         "flags": "-O3",
     }
@@ -584,7 +592,12 @@ def run_torch(
                 if row["workload"] == "mlp_classifier"
             )
             continue
-        target = torch.as_tensor(labels, dtype=torch.long, device=device_name)
+        # PyTorch's cross-entropy target is a zero-based class index.  The
+        # fixture deliberately uses FortML's arbitrary integer labels, so
+        # encode them while retaining the original labels for the metrics.
+        target = torch.as_tensor(
+            np.searchsorted(CLASS_LABELS, labels), dtype=torch.long, device=device_name
+        )
         features = torch.as_tensor(x, dtype=torch.float64, device=device_name)
         model = torch.nn.Sequential(
             torch.nn.Linear(N_FEATURES, N_HIDDEN, dtype=torch.float64),
@@ -824,7 +837,12 @@ def main() -> None:
     root = Path(__file__).resolve().parents[1]
     fortml = args.fortml.resolve()
     x, labels = fixture()
-    details = metadata(root, fortml)
+    ignored_outputs = (
+        args.output.resolve(),
+        (root / "results/classification_models.csv").resolve(),
+        (root / "results/classification_extensions.csv").resolve(),
+    )
+    details = metadata(root, fortml, ignored_outputs)
     rows = run_numpy_reference(x, labels, details)
     rows.extend(run_sklearn(x, labels, details))
     rows.extend(run_torch(x, labels, details))
