@@ -25,12 +25,12 @@ timings are:
 
 | workload / phase | seconds per operation | checked metric |
 |---|---:|---:|
-| squared objective / fit | 3.26498e-4 | MSE 2.3896623698615184e-3 |
-| squared objective / predict | 8.37296875e-6 | MSE 2.3896623698615184e-3 |
-| logistic objective / fit | 3.0470675e-4 | log loss 3.1036146708733506e-2 |
-| logistic objective / predict | 6.51665625e-6 | accuracy 1.0 |
-| multiclass OVR / fit | 1.16073e-3 | accuracy 1.0, simplex sum 192 |
-| multiclass OVR / predict | 2.285965625e-5 | accuracy 1.0, simplex sum 192 |
+| squared objective / fit | 3.2616475e-4 | MSE 2.3896623698615184e-3 |
+| squared objective / predict | 1.05768125e-5 | MSE 2.3896623698615184e-3 |
+| logistic objective / fit | 3.3445e-4 | log loss 3.1036146708733506e-2 |
+| logistic objective / predict | 5.925875e-6 | accuracy 1.0 |
+| multiclass OVR / fit | 9.4026675e-4 | accuracy 1.0, simplex sum 192 |
+| multiclass OVR / predict | 2.25236875e-5 | accuracy 1.0, simplex sum 192 |
 
 Timings are machine-specific. The CSV records compiler flags, source commits,
 Python/NumPy versions, and the optional XGBoost package version.
