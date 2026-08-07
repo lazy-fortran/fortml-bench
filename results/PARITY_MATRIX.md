@@ -6,7 +6,7 @@ oracle, and a machine-readable CSV with source and toolchain provenance.
 
 | Family | FortML lane | Independent evidence | CPU state | CUDA state | Derivatives |
 | --- | --- | --- | --- | --- | --- |
-| Linear and preprocessing | Ridge, elastic-net, SVR, GLM, imputer, one-hot, PCA, basis/pipeline | Reports and analytic or finite-difference oracles | Pass | Typed refusals for model paths | Fixed-fit JVP/VJP/HVP where documented |
+| Linear and preprocessing | Ridge, elastic-net, SVR, GLM, imputer, one-hot, PCA, basis/pipeline, joint basis-pipeline training | Reports and analytic or finite-difference oracles | Pass | Typed refusals for model paths | Fixed-fit and joint-objective JVP/VJP/HVP where documented |
 | Classification | OVR/OVO logistic, Naive Bayes, ordinal, kNN/radius, LDA/QDA, forests, Extra-Trees, calibration | Classification reports and seeded fixtures | Pass | kNN and forest resident prediction gates, other paths explicit refusals | Continuous models expose products; discrete split/neighbor paths refuse boundaries |
 | Classification metrics | Multilabel precision/recall/F1/F-beta, Jaccard, Hamming, ROC-AUC, PR-AUC, plus existing scalar metrics | `multilabel_metrics.csv`, `roc_auc.csv` | Pass | Explicit unavailable rows until ranking/reduction kernels are linked | Metrics are hard, nondifferentiable contracts |
 | Boosting | Exact and histogram XGBoost-style squared/logistic/Poisson/squared-log/Huber/quantile, monotonic constraints | XGBoost reports and independent tree fixtures | Pass for declared objectives | Typed refusals for resident tree execution | Fixed-tree products and split-boundary refusals |
