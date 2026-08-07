@@ -135,7 +135,7 @@ a different workload, precision, device, or residency policy.
   exhaustive NumPy split oracle and matched scikit-learn depth-1 reference.
 - [x] Record explicit host-only/CUDA refusal rows for GaussianNB, the MLP
   trainer, the logistic objective, and the classifier release app. A missing
-  FortML device path is never replaced with a relabeled CPU timing; resident
+  FortML device path is never replaced with a relabeled CPU timing. Resident
   PyTorch CUDA rows remain independent evidence.
 - [x] Add fitted standard/min-max scaler, binary Laplace GP logistic/probit,
   and one-vs-rest multiclass Laplace-GP lanes with independent NumPy transform

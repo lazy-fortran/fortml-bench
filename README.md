@@ -130,7 +130,7 @@ The harness checks complete values against independent NumPy implementations
 before timing. It adds a matched scikit-learn reference where applicable and
 records explicit availability/refusal rows for optional PyTorch, JAX, and
 XGBoost comparisons. It also records explicit FortML CUDA capability refusals
-for host-only GaussianNB, MLP-training, and logistic-objective paths; these
+for host-only GaussianNB, MLP-training, and logistic-objective paths. These
 rows contain no timing and never relabel a CPU run as device evidence.
 
 The exact second-order XGBoost-style lane has its own workload and raw record.
