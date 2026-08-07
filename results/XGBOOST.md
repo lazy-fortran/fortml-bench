@@ -19,18 +19,18 @@ order, and all staged predictions. It also checks the public first-tree root
 diagnostics reported by the release app.
 
 The recorded Fortran rows pass with maximum absolute oracle errors of
-`9.24e-14` for squared loss, `3.69e-13` for binary logistic loss, and
-`3.13e-13` for one-vs-rest multiclass probabilities. The current gfortran CPU
+`7.11e-14` for squared loss, `3.70e-13` for binary logistic loss, and
+`4.27e-13` for one-vs-rest multiclass probabilities. The current gfortran CPU
 timings are:
 
 | workload / phase | seconds per operation | checked metric |
 |---|---:|---:|
-| squared objective / fit | 3.21373e-4 | MSE 2.3896623698615184e-3 |
-| squared objective / predict | 8.18165625e-6 | MSE 2.3896623698615184e-3 |
-| logistic objective / fit | 3.0223475e-4 | log loss 3.1036146708733506e-2 |
-| logistic objective / predict | 6.69353125e-6 | accuracy 1.0 |
-| multiclass OVR / fit | 1.10780775e-3 | accuracy 1.0, simplex sum 192 |
-| multiclass OVR / predict | 2.28486875e-5 | accuracy 1.0, simplex sum 192 |
+| squared objective / fit | 3.8615025e-4 | MSE 2.3896623698615184e-3 |
+| squared objective / predict | 8.8616875e-6 | MSE 2.3896623698615184e-3 |
+| logistic objective / fit | 3.2973875e-4 | log loss 3.1036146708733506e-2 |
+| logistic objective / predict | 7.02825e-6 | accuracy 1.0 |
+| multiclass OVR / fit | 1.13092125e-3 | accuracy 1.0, simplex sum 192 |
+| multiclass OVR / predict | 2.40459375e-5 | accuracy 1.0, simplex sum 192 |
 
 Timings are machine-specific. The CSV records compiler flags, source commits,
 Python/NumPy versions, and the optional XGBoost package version.
