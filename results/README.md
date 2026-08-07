@@ -15,6 +15,7 @@ Complete-call studies:
 - [Resident CUDA correctness contracts](DEVICE_CONTRACTS.md)
 - [Resident CUDA AdamW state gate](CUDA_ADAMW.md)
 - [Deterministic k-nearest-neighbor classification](KNN.md)
+- [One-vs-one logistic classification](OVO_LOGISTIC.md)
 - [GP classification hyperparameter training](GP_CLASSIFICATION_TRAINING.md)
 - [GP classification and fitted preprocessing](CLASSIFICATION_EXTENSIONS.md)
 - [Binary GP likelihood value/JVP/VJP primitive](GP_LIKELIHOOD.md)
