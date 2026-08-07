@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Correctness-gated sigmoid and isotonic calibration benchmark.
+"""Correctness-gated temperature, sigmoid, and isotonic calibration benchmark.
 
 The NumPy implementations below are independent behavioral oracles.  The
-FortML release app must emit every calibrated probability and label for both
+FortML release app must emit every calibrated probability and label for all
 methods before a timing row is retained.  CUDA is represented by an explicit
 capability boundary; no host fallback is timed as GPU execution.
 """
@@ -28,7 +28,7 @@ N_SAMPLES = 256
 PREDICT_REPETITIONS = 128
 FIT_REPETITIONS = 8
 L2 = 0.1
-METHODS = ("sigmoid", "isotonic")
+METHODS = ("temperature", "sigmoid", "isotonic")
 FIELDS = (
     "workload", "method", "phase", "backend", "device", "status",
     "n_samples", "repetitions", "seconds_per_operation", "accuracy",
@@ -110,6 +110,43 @@ def sigmoid_oracle(scores: np.ndarray, labels: np.ndarray) -> np.ndarray:
         if step_norm <= 1.0e-10 or np.max(np.abs(gradient)) <= 1.0e-10:
             break
     positive = sigmoid(theta[0] * scores + theta[1])
+    return np.column_stack((1.0 - positive, positive))
+
+
+def temperature_objective(alpha: float, scores: np.ndarray, target: np.ndarray) -> float:
+    eta = alpha * scores
+    value = np.where(
+        eta >= 0.0,
+        np.log1p(np.exp(-eta)) + (1.0 - target) * eta,
+        np.log1p(np.exp(eta)) - target * eta,
+    ).sum()
+    return float(value + 0.5 * L2 * alpha * alpha)
+
+
+def temperature_oracle(scores: np.ndarray, labels: np.ndarray) -> np.ndarray:
+    """Fit inverse temperature with the same convex Newton contract as FortML."""
+    target = (labels == 42).astype(np.float64)
+    alpha = 1.0
+    objective = temperature_objective(alpha, scores, target)
+    for _ in range(500):
+        probability = sigmoid(alpha * scores)
+        residual = probability - target
+        curvature = np.maximum(probability * (1.0 - probability), 1.0e-14)
+        gradient = float(np.dot(residual, scores) + L2 * alpha)
+        hessian = float(np.dot(curvature, scores * scores) + L2)
+        step = gradient / hessian
+        scale = 1.0
+        candidate = max(np.sqrt(np.finfo(np.float64).tiny), alpha - scale * step)
+        candidate_objective = temperature_objective(candidate, scores, target)
+        while candidate_objective > objective and scale > 1.0e-8:
+            scale *= 0.5
+            candidate = max(np.sqrt(np.finfo(np.float64).tiny), alpha - scale * step)
+            candidate_objective = temperature_objective(candidate, scores, target)
+        step_norm = abs(candidate - alpha) / max(1.0, abs(alpha))
+        alpha, objective = candidate, candidate_objective
+        if step_norm <= 1.0e-10 or abs(gradient) <= 1.0e-10:
+            break
+    positive = sigmoid(alpha * scores)
     return np.column_stack((1.0 - positive, positive))
 
 
@@ -208,7 +245,7 @@ def read_fortran_oracle(path: Path) -> dict[tuple[str, str, int, int], float]:
             if key in values:
                 raise RuntimeError(f"duplicate FortML calibration oracle key {key}")
             values[key] = float(record["value"])
-    expected = 2 * N_SAMPLES * 4
+    expected = 3 * N_SAMPLES * 4
     if len(values) != expected:
         raise RuntimeError(f"FortML calibration oracle has {len(values)} rows, expected {expected}")
     return values
@@ -219,7 +256,11 @@ def run_fortml(fortml: Path, details: dict[str, str]) -> list[dict[str, Any]]:
     environment.update({"FO_FC": environment.get("FO_FC", "gfortran"), "OMP_NUM_THREADS": "1"})
     subprocess.run(["fo", "build", "--flag", "-O3"], cwd=fortml, env=environment, check=True)
     scores, labels = fixture()
-    expected = {"sigmoid": sigmoid_oracle(scores, labels), "isotonic": isotonic_oracle(scores, labels)}
+    expected = {
+        "temperature": temperature_oracle(scores, labels),
+        "sigmoid": sigmoid_oracle(scores, labels),
+        "isotonic": isotonic_oracle(scores, labels),
+    }
     with tempfile.TemporaryDirectory(dir="/mnt/storage/code/lazy-fortran/fortml/build") as directory:
         oracle_path = Path(directory) / "calibration_oracle.csv"
         environment["FORTML_BENCH_CALIBRATION_ORACLE"] = str(oracle_path)
@@ -253,7 +294,7 @@ def run_fortml(fortml: Path, details: dict[str, str]) -> list[dict[str, Any]]:
                 device="cpu", repetitions=1 if phase == "fit" else PREDICT_REPETITIONS,
                 seconds_per_operation=timings.get((phase, method), float("nan")),
                 **metrics, max_abs_error=error,
-                oracle="independent NumPy sigmoid/PAVA calibration oracle",
+                oracle="independent NumPy temperature/sigmoid/PAVA calibration oracle",
                 notes="complete-array release app; no GPU fallback",
             ))
     return rows
@@ -262,7 +303,11 @@ def run_fortml(fortml: Path, details: dict[str, str]) -> list[dict[str, Any]]:
 def run_numpy(details: dict[str, str]) -> list[dict[str, Any]]:
     scores, labels = fixture()
     rows: list[dict[str, Any]] = []
-    for method, oracle in (("sigmoid", sigmoid_oracle), ("isotonic", isotonic_oracle)):
+    for method, oracle in (
+        ("temperature", temperature_oracle),
+        ("sigmoid", sigmoid_oracle),
+        ("isotonic", isotonic_oracle),
+    ):
         probabilities = oracle(scores, labels)
         metrics = checked_metrics(labels, probabilities)
         started = time.perf_counter()
@@ -278,7 +323,7 @@ def run_numpy(details: dict[str, str]) -> list[dict[str, Any]]:
                 details, method, phase, "numpy_oracle", "pass",
                 repetitions=FIT_REPETITIONS if phase == "fit" else PREDICT_REPETITIONS,
                 seconds_per_operation=seconds, **metrics, max_abs_error=0.0,
-                oracle="independent NumPy sigmoid/PAVA calibration oracle",
+                oracle="independent NumPy temperature/sigmoid/PAVA calibration oracle",
                 notes="behavioral reference; no FortML calls",
             ))
     return rows
