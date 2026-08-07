@@ -397,6 +397,92 @@ def cart_oracle(x: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, int]:
     return prediction, len(nodes)
 
 
+def cart_classifier_inputs() -> tuple[np.ndarray, np.ndarray]:
+    """Return the deterministic two-class fixture used by the Fortran app."""
+
+    x, _ = tree_inputs()
+    labels = np.where(x[:, 0] >= 0.1, 7, -3).astype(np.int64)
+    return x, labels
+
+
+def cart_classifier_oracle(
+    x: np.ndarray, labels: np.ndarray
+) -> tuple[np.ndarray, np.ndarray, int]:
+    """Return deterministic exhaustive-Gini CART predictions and probabilities."""
+
+    classes = np.unique(labels)
+    nodes: list[dict[str, Any]] = []
+
+    def impurity(indices: np.ndarray) -> float:
+        counts = np.array(
+            [np.sum(labels[indices] == class_label) for class_label in classes],
+            dtype=np.float64,
+        )
+        total = float(np.sum(counts))
+        if total == 0.0:
+            return 0.0
+        probabilities = counts / total
+        return float(total * (1.0 - np.sum(probabilities**2)))
+
+    def leaf_probability(indices: np.ndarray) -> np.ndarray:
+        counts = np.array(
+            [np.sum(labels[indices] == class_label) for class_label in classes],
+            dtype=np.float64,
+        )
+        return counts / float(indices.size)
+
+    def build(indices: np.ndarray, depth: int) -> int:
+        node = len(nodes)
+        nodes.append({"leaf": True, "probability": leaf_probability(indices)})
+        if depth >= CART_DEPTH or indices.size < 2 * TREE_LEAF:
+            return node
+        parent_impurity = impurity(indices)
+        best_impurity = float("inf")
+        best: tuple[int, float, np.ndarray, np.ndarray] | None = None
+        for feature in range(x.shape[1]):
+            order = np.argsort(x[indices, feature], kind="stable")
+            for k in range(TREE_LEAF, indices.size - TREE_LEAF + 1):
+                left_values = x[indices[order[:k]], feature]
+                right_values = x[indices[order[k:]], feature]
+                if left_values[-1] >= right_values[0]:
+                    continue
+                threshold = 0.5 * (left_values[-1] + right_values[0])
+                left = indices[order[:k]]
+                right = indices[order[k:]]
+                candidate_impurity = impurity(left) + impurity(right)
+                if best is None or candidate_impurity < best_impurity:
+                    best_impurity = candidate_impurity
+                    best = (feature, threshold, left, right)
+        if best is None or best_impurity >= parent_impurity:
+            return node
+        feature, threshold, left, right = best
+        nodes[node].update(
+            {
+                "leaf": False,
+                "feature": feature,
+                "threshold": threshold,
+                "left": build(left, depth + 1),
+                "right": build(right, depth + 1),
+            }
+        )
+        return node
+
+    build(np.arange(x.shape[0]), 0)
+    prediction = np.empty(labels.size, dtype=labels.dtype)
+    probabilities = np.empty((labels.size, classes.size), dtype=np.float64)
+    for i in range(labels.size):
+        node = 0
+        while not nodes[node]["leaf"]:
+            if x[i, nodes[node]["feature"]] < nodes[node]["threshold"]:
+                node = nodes[node]["left"]
+            else:
+                node = nodes[node]["right"]
+        probability = nodes[node]["probability"]
+        probabilities[i] = probability
+        prediction[i] = classes[int(np.argmax(probability))]
+    return prediction, probabilities, len(nodes)
+
+
 def regression_metric_oracle() -> dict[str, float]:
     index = np.arange(1, METRIC_N + 1, dtype=np.float64)
     target = np.column_stack((np.sin(0.03 * index), np.cos(0.05 * index)))
@@ -430,6 +516,7 @@ def parse_fortran(stdout: str) -> dict[str, list[list[str]]]:
             "basis_vjp",
             "stump",
             "cart",
+            "cart_classifier",
             "boosting",
             "regression_metrics",
         }:
@@ -442,6 +529,7 @@ def parse_fortran(stdout: str) -> dict[str, list[list[str]]]:
         "basis_vjp",
         "stump",
         "cart",
+        "cart_classifier",
         "boosting",
         "regression_metrics",
     }
@@ -550,6 +638,35 @@ def run_fortran(
             f"FortML CART oracle mismatch: nodes={cart_values['node_count']} "
             f"expected={cart_nodes}; error={cart_error:.3e}"
         )
+
+    classifier_row = parsed["cart_classifier"][0]
+    classifier_x, classifier_labels = cart_classifier_inputs()
+    classifier_prediction, classifier_probability, classifier_nodes = (
+        cart_classifier_oracle(classifier_x, classifier_labels)
+    )
+    classifier_values = {
+        "accuracy": float(classifier_row[5]),
+        "probability_sum": float(classifier_row[6]),
+        "node_count": int(classifier_row[7]),
+    }
+    classifier_expected = {
+        "accuracy": float(np.mean(classifier_prediction == classifier_labels)),
+        "probability_sum": float(np.sum(classifier_probability)),
+    }
+    classifier_error = max(
+        abs(classifier_values[key] - classifier_expected[key])
+        for key in classifier_expected
+    )
+    if (
+        classifier_values["node_count"] != classifier_nodes
+        or classifier_error > 5.0e-12
+    ):
+        raise RuntimeError(
+            "FortML CART classifier oracle mismatch: "
+            f"nodes={classifier_values['node_count']} expected={classifier_nodes}; "
+            f"error={classifier_error:.3e}"
+        )
+
     metric_row = parsed["regression_metrics"][0]
     metric_expected = regression_metric_oracle()
     metric_values = {
@@ -698,6 +815,45 @@ def run_fortran(
             ),
             row(
                 metadata,
+                workload="cart_classifier",
+                phase="fit",
+                backend="fortml",
+                status="pass",
+                n_samples=classifier_x.shape[0],
+                n_features=classifier_x.shape[1],
+                repetitions=8,
+                seconds_per_operation=float(classifier_row[3]),
+                metric="accuracy",
+                value=classifier_values["accuracy"],
+                max_abs_error=classifier_error,
+                oracle="independent NumPy exhaustive recursive Gini CART",
+                notes=(
+                    f"max_depth={CART_DEPTH}; min_samples_leaf={TREE_LEAF}; "
+                    f"classes={np.unique(classifier_labels).tolist()}; "
+                    f"nodes={classifier_nodes}"
+                ),
+            ),
+            row(
+                metadata,
+                workload="cart_classifier",
+                phase="predict",
+                backend="fortml",
+                status="pass",
+                n_samples=classifier_x.shape[0],
+                n_features=classifier_x.shape[1],
+                repetitions=64,
+                seconds_per_operation=float(classifier_row[4]),
+                metric="probability_sum",
+                value=classifier_values["probability_sum"],
+                max_abs_error=classifier_error,
+                oracle="independent NumPy exhaustive recursive Gini CART",
+                notes=(
+                    "piecewise-constant class probabilities; input derivatives "
+                    "are intentionally outside the classifier contract"
+                ),
+            ),
+            row(
+                metadata,
                 workload="decision_stump",
                 phase="fit",
                 backend="fortml",
@@ -772,7 +928,7 @@ def run_fortran(
 def run_sklearn(metadata: dict[str, str]) -> list[dict[str, Any]]:
     try:
         from sklearn.ensemble import GradientBoostingRegressor
-        from sklearn.tree import DecisionTreeRegressor
+        from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
         from sklearn.neural_network import MLPRegressor
     except ImportError as exc:
         return [
@@ -806,6 +962,7 @@ def run_sklearn(metadata: dict[str, str]) -> list[dict[str, Any]]:
     prediction = model.predict(x_mlp)
     mlp_mse = float(np.mean((prediction - target[:, 0]) ** 2))
     x_tree, y_tree = tree_inputs()
+    x_classifier, labels_classifier = cart_classifier_inputs()
     started = time.perf_counter()
     cart = DecisionTreeRegressor(
         max_depth=CART_DEPTH,
@@ -818,6 +975,19 @@ def run_sklearn(metadata: dict[str, str]) -> list[dict[str, Any]]:
     started = time.perf_counter()
     cart_prediction = cart.predict(x_tree)
     cart_predict_seconds = time.perf_counter() - started
+    started = time.perf_counter()
+    classifier = DecisionTreeClassifier(
+        max_depth=CART_DEPTH,
+        min_samples_leaf=TREE_LEAF,
+        random_state=0,
+        criterion="gini",
+    )
+    classifier.fit(x_classifier, labels_classifier)
+    classifier_fit_seconds = time.perf_counter() - started
+    started = time.perf_counter()
+    classifier_prediction = classifier.predict(x_classifier)
+    classifier_predict_seconds = time.perf_counter() - started
+    classifier_probability = classifier.predict_proba(x_classifier)
     started = time.perf_counter()
     booster = GradientBoostingRegressor(
         n_estimators=TREE_ESTIMATORS,
@@ -849,6 +1019,36 @@ def run_sklearn(metadata: dict[str, str]) -> list[dict[str, Any]]:
             mse=mlp_mse,
             oracle="NumPy fixture; sklearn Adam implementation",
             notes="estimator initialization differs; quality is contextual, not bitwise",
+        ),
+        row(
+            metadata,
+            workload="cart_classifier",
+            phase="fit",
+            backend="sklearn",
+            status="pass",
+            n_samples=TREE_N,
+            n_features=TREE_D,
+            repetitions=1,
+            seconds_per_operation=classifier_fit_seconds,
+            metric="accuracy",
+            value=float(np.mean(classifier_prediction == labels_classifier)),
+            oracle="NumPy fixture; sklearn DecisionTreeClassifier",
+            notes=f"max_depth={CART_DEPTH}; min_samples_leaf={TREE_LEAF}; criterion=gini",
+        ),
+        row(
+            metadata,
+            workload="cart_classifier",
+            phase="predict",
+            backend="sklearn",
+            status="pass",
+            n_samples=TREE_N,
+            n_features=TREE_D,
+            repetitions=1,
+            seconds_per_operation=classifier_predict_seconds,
+            metric="probability_sum",
+            value=float(np.sum(classifier_probability)),
+            oracle="NumPy fixture; sklearn DecisionTreeClassifier",
+            notes="classifier split/probability policy is contextual",
         ),
         row(
             metadata,
