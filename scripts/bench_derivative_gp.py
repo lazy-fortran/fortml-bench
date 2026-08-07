@@ -136,7 +136,26 @@ def predict(x: np.ndarray, components: np.ndarray, y: np.ndarray,
     return mean, variance
 
 
-def oracle(name: str) -> tuple[float, float]:
+def joint_covariance(x: np.ndarray, components: np.ndarray, y: np.ndarray,
+                     query: np.ndarray, query_components: np.ndarray, name: str) -> np.ndarray:
+    """Independent dense latent posterior covariance oracle."""
+    k_train = np.empty((len(x), len(x)))
+    cross = np.empty((len(x), len(query)))
+    prior = np.empty((len(query), len(query)))
+    for i in range(len(x)):
+        for j in range(len(x)):
+            k_train[i, j] = covariance(x[i], int(components[i]), x[j], int(components[j]), name)
+        for j in range(len(query)):
+            cross[i, j] = covariance(x[i], int(components[i]), query[j], int(query_components[j]), name)
+    for i in range(len(query)):
+        for j in range(len(query)):
+            prior[i, j] = covariance(query[i], int(query_components[i]), query[j], int(query_components[j]), name)
+    k_train.flat[:: len(x) + 1] += NOISE + JITTER
+    work = np.linalg.solve(k_train, cross)
+    return 0.5 * (prior - cross.T @ work + (prior - cross.T @ work).T)
+
+
+def oracle(name: str) -> tuple[float, float, float]:
     x, y, components, query, direction, query_components, mean_bar, variance_bar = fixture()
     h = 1.0e-5
     mean_plus, variance_plus = predict(x, components, y, query + h * direction, query_components, name)
@@ -151,7 +170,8 @@ def oracle(name: str) -> tuple[float, float]:
             mean_minus, variance_minus = predict(x, components, y, query - delta, query_components, name)
             x_bar[i, j] = (float(np.sum(mean_bar * mean_plus) + np.sum(variance_bar * variance_plus)) -
                            float(np.sum(mean_bar * mean_minus) + np.sum(variance_bar * variance_minus))) / (2.0 * h)
-    return input_jvp, float(np.sum(x_bar))
+    covariance = joint_covariance(x, components, y, query, query_components, name)
+    return input_jvp, float(np.sum(x_bar)), float(np.sum(covariance))
 
 
 def read_app(output: str) -> dict[tuple[str, str], tuple[float, float]]:
@@ -192,6 +212,8 @@ def main() -> None:
                         seconds_per_operation="", value=values[0], max_abs_error="0.0"))
         rows.append(row(kernel=name, operation="input_vjp", backend="numpy_oracle",
                         seconds_per_operation="", value=values[1], max_abs_error="0.0"))
+        rows.append(row(kernel=name, operation="joint_covariance", backend="numpy_oracle",
+                        seconds_per_operation="", value=values[2], max_abs_error="0.0"))
 
     subprocess.run(["fo", "build", "--flag", "-O3"], cwd=fortml, check=True)
     environment = os.environ.copy()
@@ -200,7 +222,7 @@ def main() -> None:
                                    cwd=fortml, env=environment, capture_output=True, text=True, check=True)
     records = read_app(completed.stdout)
     for name, values in expected.items():
-        for operation, expected_value in zip(("input_jvp", "input_vjp"), values):
+        for operation, expected_value in zip(("input_jvp", "input_vjp", "joint_covariance"), values):
             if (name, operation) not in records:
                 raise RuntimeError(f"release app omitted {name}/{operation}")
             seconds, actual = records[(name, operation)]
