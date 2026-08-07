@@ -135,6 +135,56 @@ def laplace_oracle(query: np.ndarray, probit: bool = False) -> dict[str, float]:
     }
 
 
+def laplace_ovr_oracle(query: np.ndarray) -> dict[str, float]:
+    """Independent three-class one-vs-rest Laplace probability oracle."""
+    x = np.linspace(-1.5, 1.5, 32)[:, None]
+    labels = np.where(x[:, 0] < -0.5, -7, np.where(x[:, 0] < 0.5, 3, 11))
+    variance = 1.2
+    lengthscale = 0.7
+    covariance = variance * np.exp(
+        -0.5 * (x - x.T) ** 2 / lengthscale**2
+    ) + 1.0e-7 * np.eye(x.shape[0])
+    cross = variance * np.exp(-0.5 * (x - query.T) ** 2 / lengthscale**2)
+    positive = []
+    for class_label in (-7, 3, 11):
+        signs = np.where(labels == class_label, 1.0, -1.0)
+        mode = np.zeros(x.shape[0])
+        for _iteration in range(80):
+            probability = sigmoid(signs * mode)
+            curvature = np.maximum(probability * (1.0 - probability), 1.0e-12)
+            sqrt_w = np.sqrt(curvature)
+            b = curvature * mode + signs * (1.0 - probability)
+            posterior = (
+                np.eye(x.shape[0]) + sqrt_w[:, None] * covariance * sqrt_w[None, :]
+            )
+            rhs = np.linalg.solve(posterior, sqrt_w * (covariance @ b))
+            mode_new = covariance @ (b - sqrt_w * rhs)
+            if (
+                np.max(np.abs(mode_new - mode)) / max(1.0, np.max(np.abs(mode)))
+                <= 1.0e-8
+            ):
+                mode = mode_new
+                break
+            mode = mode_new
+        probability = sigmoid(signs * mode)
+        curvature = np.maximum(probability * (1.0 - probability), 1.0e-12)
+        sqrt_w = np.sqrt(curvature)
+        posterior = np.eye(x.shape[0]) + sqrt_w[:, None] * covariance * sqrt_w[None, :]
+        alpha = np.linalg.solve(covariance, mode)
+        work = np.linalg.solve(posterior, sqrt_w[:, None] * cross)
+        mean = cross.T @ alpha
+        latent_variance = variance - np.sum(work * work, axis=0)
+        positive.append(sigmoid(mean / np.sqrt(1.0 + np.pi * latent_variance / 8.0)))
+    positive_matrix = np.column_stack(positive)
+    probabilities = positive_matrix / positive_matrix.sum(axis=1, keepdims=True)
+    predicted = np.array((-7, 3, 11))[np.argmax(probabilities, axis=1)]
+    target = np.where(query[:, 0] < -0.5, -7, np.where(query[:, 0] < 0.5, 3, 11))
+    return {
+        "accuracy": float(np.mean(predicted == target)),
+        "probability_sum": float(np.sum(probabilities)),
+    }
+
+
 def parse(stdout: str) -> dict[str, list[str]]:
     records: dict[str, list[str]] = {}
     for line in stdout.splitlines():
@@ -144,6 +194,7 @@ def parse(stdout: str) -> dict[str, list[str]]:
             "minmax_scaler",
             "gp_classification_logistic",
             "gp_classification_probit",
+            "gp_classification_multiclass",
         }:
             records[fields[0]] = fields[1:]
     required = {
@@ -151,6 +202,7 @@ def parse(stdout: str) -> dict[str, list[str]]:
         "minmax_scaler",
         "gp_classification_logistic",
         "gp_classification_probit",
+        "gp_classification_multiclass",
     }
     if required - records.keys():
         raise RuntimeError(
@@ -203,6 +255,7 @@ def run(fortml: Path, root: Path) -> list[dict[str, object]]:
 
     logistic = laplace_oracle(query)
     probit = laplace_oracle(query, probit=True)
+    multiclass = laplace_ovr_oracle(query)
     gp_logistic = parsed["gp_classification_logistic"]
     gp_probit = parsed["gp_classification_probit"]
     logistic_error = max(
@@ -210,10 +263,15 @@ def run(fortml: Path, root: Path) -> list[dict[str, object]]:
         abs(float(gp_logistic[5]) - logistic["probability_sum"]),
     )
     probit_error = abs(float(gp_probit[2]) - probit["probability_sum"])
-    if logistic_error > 2.0e-8 or probit_error > 2.0e-8:
+    gp_multiclass = parsed["gp_classification_multiclass"]
+    multiclass_error = max(
+        abs(float(gp_multiclass[2]) - multiclass["accuracy"]),
+        abs(float(gp_multiclass[3]) - multiclass["probability_sum"]),
+    )
+    if logistic_error > 2.0e-8 or probit_error > 2.0e-8 or multiclass_error > 2.0e-8:
         raise RuntimeError(
             f"GP classification oracle mismatch: logistic={logistic_error:.3e}, "
-            f"probit={probit_error:.3e}"
+            f"probit={probit_error:.3e}, multiclass={multiclass_error:.3e}"
         )
     rows: list[dict[str, object]] = []
     rows.append(
@@ -289,6 +347,19 @@ def run(fortml: Path, root: Path) -> list[dict[str, object]]:
                 "max_abs_error": probit_error,
                 "oracle": "independent NumPy Laplace probit Newton solve",
                 "notes": "analytic Gaussian-CDF predictive map",
+            },
+            {
+                "workload": "gp_classification_multiclass",
+                "phase": "fit_predict",
+                "backend": "fortml",
+                "status": "pass",
+                "n_samples": 32,
+                "n_features": 1,
+                "metric": "accuracy",
+                "value": float(gp_multiclass[2]),
+                "max_abs_error": multiclass_error,
+                "oracle": "independent NumPy one-vs-rest Laplace logistic solve",
+                "notes": f"simplex sum={gp_multiclass[3]}; total iterations={gp_multiclass[4]}",
             },
         ]
     )
