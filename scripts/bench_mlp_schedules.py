@@ -162,18 +162,28 @@ def metadata(root: Path, fortml: Path, output: Path) -> dict[str, str]:
 
 
 def row(details: dict[str, str], schedule: str, phase: str, backend: str,
-        status: str, value: Any, seconds: Any, error: Any, notes: str) -> dict[str, Any]:
+        status: str, value: Any, seconds: Any, error: Any, notes: str,
+        device: str = "cpu") -> dict[str, Any]:
     result: dict[str, Any] = {field: "" for field in FIELDS}
     result.update(details)
     result.update({
         "workload": "mlp_schedules", "schedule": schedule, "phase": phase,
-        "backend": backend, "device": "cpu", "status": status,
+        "backend": backend, "device": device, "status": status,
         "n_updates": len(UPDATES), "repetitions": REPETITIONS,
         "seconds_per_operation": seconds, "metric": phase, "value": value,
         "max_abs_error": error, "oracle": "independent NumPy schedule formulas",
         "notes": notes,
     })
     return result
+
+
+def device_refusal_rows(details: dict[str, str]) -> list[dict[str, Any]]:
+    """Record the CUDA schedule boundary without retaining a fake timing."""
+    return [row(
+        details, name, "device_capability", "fortml", "unavailable", "", "", "",
+        "schedule device_supported(CUDA)=false; no resident optimizer lowering",
+        device="cuda",
+    ) for name, _ in SCHEDULES]
 
 
 def run_numpy(details: dict[str, str], expected: dict[tuple[str, int, str], float]) -> list[dict[str, Any]]:
@@ -277,6 +287,7 @@ def main() -> None:
     expected = independent_oracle()
     rows = run_numpy(details, expected)
     rows.extend(run_fortml(args.fortml.resolve(), details, expected))
+    rows.extend(device_refusal_rows(details))
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")

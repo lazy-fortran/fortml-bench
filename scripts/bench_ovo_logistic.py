@@ -421,6 +421,26 @@ def run_sklearn(details: dict[str, str]) -> list[dict[str, Any]]:
     ]
 
 
+def device_refusal_rows(details: dict[str, str]) -> list[dict[str, Any]]:
+    """Record CUDA capability refusals without reporting host timings."""
+    cuda_details = {**details, "device": "cuda"}
+    return [
+        row(
+            cuda_details,
+            phase=phase,
+            backend="fortml",
+            status="unavailable",
+            oracle="FortML device capability boundary; no CUDA execution",
+            notes="OVO device_supported(CUDA)=false; no resident pairwise kernel",
+        )
+        for phase in (
+            "predict", "predict_proba", "predict_proba_jvp",
+            "predict_proba_vjp", "predict_proba_parameter_jvp",
+            "predict_proba_parameter_vjp",
+        )
+    ]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--fortml", type=Path, default=Path("../fortml"))
@@ -432,6 +452,7 @@ def main() -> None:
         run_numpy(details)
         + run_fortml(arguments.fortml.resolve(), details)
         + run_sklearn(details)
+        + device_refusal_rows(details)
     )
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
     with arguments.output.open("w", newline="") as stream:

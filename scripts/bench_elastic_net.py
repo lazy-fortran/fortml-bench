@@ -235,6 +235,20 @@ def unavailable_rows(details: dict[str, str], reason: str) -> list[dict[str, Any
     ) for name in names]
 
 
+def device_refusal_rows(details: dict[str, str]) -> list[dict[str, Any]]:
+    """Record the explicit CUDA boundary without retaining a fake timing."""
+    names = ("fit_matrix", "fit_vector", "predict_matrix", "predict_vector",
+             "predict_jvp", "predict_vjp_theta", "predict_vjp_x")
+    return [base(
+        details, workload=name,
+        phase="fit" if name.startswith("fit") else "predict",
+        backend="fortml", device="cuda", status="unavailable", repetitions="",
+        seconds_per_operation="", metric="l2_norm", value="", max_abs_error="",
+        oracle="FortML device capability boundary; no CUDA execution",
+        notes="elastic-net device_supported(CUDA)=false; no resident CUDA kernel",
+    ) for name in names]
+
+
 def run_fortml(fortml: Path, target: str, details: dict[str, str],
                expected: dict[str, np.ndarray]) -> list[dict[str, Any]]:
     source = fortml / "app" / f"{target}.f90"
@@ -299,6 +313,7 @@ def main() -> None:
         rows.extend(unavailable_rows(details, "--skip-fortml"))
     else:
         rows.extend(run_fortml(fortml, args.target, details, expected))
+    rows.extend(device_refusal_rows(details))
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")

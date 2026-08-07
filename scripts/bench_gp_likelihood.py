@@ -219,6 +219,19 @@ def run_fortml(fortml: Path, target: str, metadata: dict[str, str],
     return rows
 
 
+def device_refusal_rows(metadata: dict[str, str]) -> list[dict[str, Any]]:
+    """Record CUDA value/JVP/VJP refusals without a fake timing."""
+    return [
+        row(
+            metadata, f"gp_likelihood_{name}", operation, "unavailable", "", "", "",
+            "GP likelihood device_supported(CUDA)=false; no resident CUDA reduction",
+            backend="fortml", device="cuda",
+        )
+        for name in ("logistic", "probit")
+        for operation in ("value", "jvp", "vjp")
+    ]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--fortml", type=Path, default=Path("../fortml"))
@@ -258,6 +271,7 @@ def main() -> None:
             ))
     rows.extend(run_fortml(args.fortml.resolve(), args.target, metadata,
                            expected_fortran))
+    rows.extend(device_refusal_rows(metadata))
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")
