@@ -118,8 +118,9 @@ the fixture, oracle tolerances, and required release-app records.
 
 The relaxed Bernoulli Naive Bayes lane uses a complete NumPy likelihood,
 log-softmax, and input-JVP oracle on sorted arbitrary labels.  It records a
-scikit-learn `BernoulliNB` context row and an explicit FortML target refusal
-until the matching release app is shipped:
+scikit-learn `BernoulliNB` context row and matched FortML fit, predict, and
+input-JVP rows through the release app (or an explicit target refusal when a
+checkout predates that app):
 
 ```bash
 .venv/bin/python -B scripts/bench_bernoulli_nb.py \

@@ -159,9 +159,9 @@ a different workload, precision, device, or residency policy.
   `results/CLASSIFICATION_MODELS.md`. The current raw record is
   `results/classification_models.csv`.
 - [x] Add a relaxed Bernoulli Naive Bayes lane with an independent NumPy
-  likelihood/log-softmax/input-JVP oracle, scikit-learn context rows, and an
-  explicit FortML release-app refusal until `fortml_bench_bernoulli_nb` is
-  available. The raw record is `results/bernoulli_naive_bayes.csv` and the
+  likelihood/log-softmax/input-JVP oracle, scikit-learn context rows, and
+  matched FortML release-app rows (with an explicit refusal if the target is
+  absent). The raw record is `results/bernoulli_naive_bayes.csv` and the
   protocol is documented in `results/BERNOULLI_NB.md`.
 - [ ] Add variational GP classification with GPyTorch likelihood references and
   independent dense small-data oracles. Binary and one-vs-rest Laplace lanes

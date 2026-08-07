@@ -23,12 +23,13 @@ The intended FortML release-app protocol is:
 ```
 
 The harness builds with `fo build --flag -O3`, invokes
-`fortml_bench_bernoulli_nb`, and sets `FORTML_BENCH_BERNOULLI_ORACLE`.  A
-complete app writes one-based CSV quantities `log_probability`, `probability`,
+`fortml_bench_bernoulli_nb`, and sets `FORTML_BENCH_BERNOULLI_ORACLE`.  The
+release app writes one-based CSV quantities `log_probability`, `probability`,
 and `prediction` and emits `bernoulli_nb_fit`, `bernoulli_nb_predict`, and
 `bernoulli_nb_jvp` timing records.  Every output array is checked against the
-independent oracle.  FortML main currently contains the classifier module but
-does not yet ship this release app, so the recorded FortML rows are explicit
+independent oracle.  The current FortML main includes this app, so the clean
+release record contains passing FortML fit, predict, and JVP rows.  If a
+target is absent in a future checkout, the same harness retains explicit
 `unavailable` refusals rather than inferred timings.
 
 The raw CSV records the exact FortML and benchmark revisions, compiler flags,
