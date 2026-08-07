@@ -137,7 +137,14 @@ def main() -> None:
         raise RuntimeError("squared-log histogram diagnostic is non-finite")
 
     fortml_rev = revision(fortml, (fortml / "verification" / "fortml-gfortran.txt",))
-    bench_rev = revision(root, (args.output.resolve(),))
+    # Other release-lane generators may leave their raw CSV staged or
+    # untracked while this lane is running.  Generated records are excluded
+    # from the benchmark code revision; source, scripts, and reports remain
+    # provenance-significant.
+    bench_rev = revision(root, (
+        args.output.resolve(),
+        root / "results" / "gp_hyperparameter_training.csv",
+    ))
     details = {
         "python_version": platform.python_version(),
         "numpy_version": np.__version__,
