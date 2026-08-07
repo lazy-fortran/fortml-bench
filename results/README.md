@@ -32,6 +32,7 @@ Complete-call studies:
 - [Weighted linear SVR regression](LINEAR_SVR.md)
 - [Weighted ordinal logistic classification](ORDINAL_LOGISTIC.md)
 - [GP classification hyperparameter training](GP_CLASSIFICATION_TRAINING.md)
+- [Exact-GP seeded hyperparameter multistart](GP_HYPERPARAMETER_TRAINING.md)
 - [GP classification and fitted preprocessing](CLASSIFICATION_EXTENSIONS.md)
 - [Binary GP likelihood value/JVP/VJP primitive](GP_LIKELIHOOD.md)
 - [Probability calibration](PROBABILITY_CALIBRATION.md)
