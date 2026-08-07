@@ -139,6 +139,10 @@ a different workload, precision, device, or residency policy.
   gradient/Hessian, regularized leaf-weight, split-gain, squared-objective, and
   logistic-objective checks. Record a dedicated FortML workload and an explicit
   optional-XGBoost contextual/refusal row in `results/xgboost_workloads.csv`.
+- [x] Extend that lane to one-vs-rest multiclass XGBoost probabilities over
+  sorted arbitrary labels. The NumPy oracle rebuilds one exact binary booster
+  per class, checks row normalization and argmax labels, and records fit and
+  prediction timings in the same raw CSV.
 - [x] Add matched multinomial softmax regression and multiclass neural
   classifier lanes. `scripts/bench_classification_models.py` uses independent
   NumPy damped-Newton and full-batch Adam oracles, records scikit-learn and

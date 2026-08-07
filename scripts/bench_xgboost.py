@@ -30,6 +30,7 @@ L1_REG = 0.15
 L2_REG = 1.5
 GAMMA = 0.01
 MIN_CHILD_WEIGHT = 0.1
+MULTICLASS_CLASSES = np.array((-1, 4, 9), dtype=np.int64)
 
 FIELDS = (
     "workload",
@@ -101,6 +102,15 @@ def fixture() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         )
     labels = (x[:, 0] + 0.2 * x[:, 1] >= 0.0).astype(np.float64)
     return x, regression, labels
+
+
+def multiclass_fixture(x: np.ndarray) -> np.ndarray:
+    """Return the sorted arbitrary labels used by the OVR workload."""
+    return np.where(
+        x[:, 0] < -0.35,
+        MULTICLASS_CLASSES[0],
+        np.where(x[:, 0] < 0.35, MULTICLASS_CLASSES[1], MULTICLASS_CLASSES[2]),
+    )
 
 
 def sigmoid(value: np.ndarray) -> np.ndarray:
@@ -222,6 +232,21 @@ def fit_boosting(
     return prediction, trees
 
 
+def multiclass_oracle(x: np.ndarray) -> tuple[float, float]:
+    """Reconstruct one exact binary booster and OVR normalization per class."""
+    labels = multiclass_fixture(x)
+    positive = []
+    for class_label in MULTICLASS_CLASSES:
+        margin, _trees = fit_boosting(
+            x, (labels == class_label).astype(np.float64), logistic=True
+        )
+        positive.append(sigmoid(margin))
+    matrix = np.column_stack(positive)
+    probabilities = matrix / np.sum(matrix, axis=1, keepdims=True)
+    predicted = MULTICLASS_CLASSES[np.argmax(probabilities, axis=1)]
+    return float(np.mean(predicted == labels)), float(np.sum(probabilities))
+
+
 def row(metadata_values: dict[str, str], **values: Any) -> dict[str, Any]:
     result = {field: "" for field in FIELDS}
     result.update(metadata_values)
@@ -240,6 +265,8 @@ def parse_fortran(stdout: str) -> dict[str, list[str]]:
         "xgb_regression_predict",
         "xgb_logistic_fit",
         "xgb_logistic_predict",
+        "xgb_multiclass_fit",
+        "xgb_multiclass_predict",
     }
     if expected - rows.keys():
         raise RuntimeError(f"FortML app omitted {sorted(expected - rows.keys())}")
@@ -268,6 +295,7 @@ def run_fortran(
         x, regression, logistic=False
     )
     logistic_prediction, logistic_trees = fit_boosting(x, labels, logistic=True)
+    multiclass_accuracy, multiclass_probability_sum = multiclass_oracle(x)
     regression_mse = float(np.mean((regression_prediction - regression) ** 2))
     logistic_probability = sigmoid(logistic_prediction)
     logistic_logloss = float(
@@ -302,6 +330,16 @@ def run_fortran(
     if logistic_error > 2.0e-11:
         raise RuntimeError(
             f"FortML XGBoost logistic oracle mismatch: {logistic_error:.3e}"
+        )
+    multiclass_error = max(
+        abs(float(parsed["xgb_multiclass_fit"][4]) - multiclass_accuracy),
+        abs(float(parsed["xgb_multiclass_fit"][5]) - multiclass_probability_sum),
+        abs(float(parsed["xgb_multiclass_predict"][4]) - multiclass_accuracy),
+        abs(float(parsed["xgb_multiclass_predict"][5]) - multiclass_probability_sum),
+    )
+    if multiclass_error > 2.0e-11:
+        raise RuntimeError(
+            f"FortML XGBoost multiclass oracle mismatch: {multiclass_error:.3e}"
         )
     return [
         row(
@@ -368,6 +406,38 @@ def run_fortran(
             oracle="independent NumPy logistic Newton stump search",
             notes="probability output and two-column probability product checked",
         ),
+        row(
+            metadata_values,
+            workload="xgboost_multiclass",
+            phase="fit",
+            backend="fortml",
+            status="pass",
+            n_samples=N_SAMPLES,
+            n_features=N_FEATURES,
+            n_estimators=N_ESTIMATORS,
+            seconds_per_operation=float(parsed["xgb_multiclass_fit"][3]),
+            metric="accuracy",
+            value=multiclass_accuracy,
+            max_abs_error=multiclass_error,
+            oracle="independent NumPy one-vs-rest exact second-order stump search",
+            notes="sorted labels=-1,4,9; normalized positive OVR probabilities",
+        ),
+        row(
+            metadata_values,
+            workload="xgboost_multiclass",
+            phase="predict",
+            backend="fortml",
+            status="pass",
+            n_samples=N_SAMPLES,
+            n_features=N_FEATURES,
+            n_estimators=N_ESTIMATORS,
+            seconds_per_operation=float(parsed["xgb_multiclass_predict"][3]),
+            metric="accuracy",
+            value=multiclass_accuracy,
+            max_abs_error=multiclass_error,
+            oracle="independent NumPy one-vs-rest exact second-order stump search",
+            notes="simplex sum checked at the independent row-normalization oracle",
+        ),
     ]
 
 
@@ -401,7 +471,7 @@ def main() -> None:
     records.append(optional_xgboost_row(metadata_values))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=FIELDS)
+        writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")
         writer.writeheader()
         writer.writerows(records)
     print(f"wrote {len(records)} rows to {args.output}")

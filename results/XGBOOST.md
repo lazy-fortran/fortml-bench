@@ -17,8 +17,9 @@ gradient/Hessian arrays, regularized leaf weights, split gains, tie order, and
 all staged predictions.
 
 The recorded Fortran rows pass with maximum absolute oracle errors of
-`9.24e-14` for squared loss and `3.69e-13` for logistic loss. The current
-gfortran CPU timings are:
+`9.24e-14` for squared loss, `3.69e-13` for binary logistic loss, and
+`3.13e-13` for one-vs-rest multiclass probabilities. The current gfortran CPU
+timings are:
 
 | workload / phase | seconds per operation | checked metric |
 |---|---:|---:|
@@ -26,6 +27,8 @@ gfortran CPU timings are:
 | squared objective / predict | 2.210719e-6 | MSE 1.1315101387132426e-2 |
 | logistic objective / fit | 1.839240e-4 | log loss 3.1036146708733506e-2 |
 | logistic objective / predict | 2.744219e-6 | accuracy 1.0 |
+| multiclass OVR / fit | 5.439903e-4 | accuracy 1.0, simplex sum 192 |
+| multiclass OVR / predict | 8.725500e-6 | accuracy 1.0, simplex sum 192 |
 
 Timings are machine-specific. The CSV records compiler flags, source commits,
 Python/NumPy versions, and the optional XGBoost package version.
@@ -36,7 +39,9 @@ This lane measures FortML's exact depth-one second-order estimator. It covers
 per-leaf gradient/Hessian aggregation, L1/L2 leaf regularisation, gamma split
 penalties, minimum child Hessian, deterministic feature/threshold order, and
 shrinkage. Predictions expose raw margins, probabilities for logistic loss,
-and a piecewise input JVP.
+and a piecewise input JVP. The multiclass rows fit one binary logistic model
+per sorted label, normalize the positive OVR probabilities, and check the same
+exact-split formulas independently with NumPy.
 
 The optional `xgboost_reference` row is a dependency check. An installed
 XGBoost release is contextual because histogram construction, tie handling,
