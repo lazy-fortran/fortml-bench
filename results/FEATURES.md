@@ -43,19 +43,19 @@ The recorded FortML rows all pass. The current gfortran CPU timings are:
 
 | workload / phase | seconds per operation | checked metric |
 |---|---:|---:|
-| MLP training / fit | 1.2934495e-3 | final MSE 1.5205011458254412e-3 |
-| basis pipeline / transform | 1.126278125e-5 | feature sum 2753.0921746559225 |
-| basis pipeline / JVP | 2.337684375e-5 | JVP sum 1231.6432747014742 |
-| basis pipeline / VJP | 1.227690625e-5 | parameter cotangent sum -5.287453498417015 |
-| CART regression / fit | 1.16589625e-4 | MSE 4.564795134272737e-4 |
-| CART regression / predict | 7.31859375e-7 | prediction sum 43.62121219974771 |
-| CART classification / fit | 1.27292375e-4 | accuracy 1.0 |
-| CART classification / predict | 7.64421875e-7 | probability sum 128.0 |
-| regression metrics / aggregate | 2.085328125e-6 | MSE 3.6625981037084515e-3 |
-| decision stump / fit | 4.7388e-5 | MSE 1.254599131397361e-2 |
-| decision stump / predict | 2.22296875e-7 | prediction sum 43.62121219974757 |
-| gradient boosting / fit | 7.5708525e-4 | MSE 6.647611998075403e-2 |
-| gradient boosting / predict | 3.324546875e-6 | prediction sum 43.62121219974761 |
+| MLP training / fit | 1.31623e-3 | final MSE 1.5205011458254412e-3 |
+| basis pipeline / transform | 1.0714875e-5 | feature sum 2753.0921746559225 |
+| basis pipeline / JVP | 2.23515e-5 | JVP sum 1231.6432747014742 |
+| basis pipeline / VJP | 1.17089375e-5 | parameter cotangent sum -5.287453498417015 |
+| CART regression / fit | 1.1452575e-4 | MSE 4.564795134272737e-4 |
+| CART regression / predict | 7.1353125e-7 | prediction sum 43.62121219974771 |
+| CART classification / fit | 1.218495e-4 | accuracy 1.0 |
+| CART classification / predict | 7.7928125e-7 | probability sum 128.0 |
+| regression metrics / aggregate | 2.027875e-6 | MSE 3.6625981037084515e-3 |
+| decision stump / fit | 4.6619125e-5 | MSE 1.254599131397361e-2 |
+| decision stump / predict | 2.1978125e-7 | prediction sum 43.62121219974757 |
+| gradient boosting / fit | 8.148465e-4 | MSE 6.647611998075403e-2 |
+| gradient boosting / predict | 3.291046875e-6 | prediction sum 43.62121219974761 |
 
 Timings are machine-specific and should only be compared after matching the
 compiler, flags, CPU affinity, precision, and repetition policy. The CSV
