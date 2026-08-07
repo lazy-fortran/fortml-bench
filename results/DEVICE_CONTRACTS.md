@@ -1,6 +1,6 @@
 # CUDA correctness contracts
 
-This lane is a correctness gate for two small resident CUDA paths and one
+This lane is a correctness gate for three small resident CUDA paths and one
 transfer-inclusive metric reduction that are not represented by the CPU
 release-app benchmarks. It deliberately records no device timing: a
 correctness-only gate must not be read as a performance claim for the full
@@ -33,18 +33,26 @@ host/device transfers, and checks the complete scalar against that oracle. A
 missing CUDA object is recorded as a typed `skipped` row rather than a host
 fallback.
 
+The AdamW row uses the same seven-step, five-parameter fixture as the
+dedicated `cuda_adamw` lane. Its independent oracle includes bias-corrected
+first and second moments and decoupled weight decay; the expected parameter
+norm is `0.3149703604198818` and the state checksum is
+`1.6129140383844665e-01`. The `run_cuda_adamw_state.sh` gate checks every
+resident parameter and moment entry with a maximum error threshold of
+`3e-13`.
+
 The recorded run used an NVIDIA GeForce RTX 5060 Ti (driver 610.43.03,
 16,311 MiB), CUDA 13.3, nvfortran 26.5, and gfortran as the host compiler.
-All three rows passed; the RMSprop native maximum error was `1.11e-16`, the
-kNN label checksum matched exactly, and the CUDA MSE scalar matched the
-independent value above. The CSV keeps the FortML and benchmark revisions,
+All four rows passed; the RMSprop and AdamW native maximum errors were
+`1.11e-16`, the kNN label checksum matched exactly, and the CUDA MSE scalar
+matched the independent value above. The CSV keeps the FortML and benchmark revisions,
 compiler flags, device, and oracle boundary. Empty timing fields are
 intentional. If `nvcc`, `nvfortran`, or a CUDA device is unavailable, the same
 rows become explicit `skipped` records instead of being relabeled as CPU
 measurements.
 
-This gate covers resident kNN prediction, the no-autodiff RMSprop state
-kernel, and the transfer-inclusive weighted MSE reduction only. It does not
+This gate covers resident kNN prediction, the no-autodiff RMSprop and AdamW
+state kernels, and the transfer-inclusive weighted MSE reduction. It does not
 establish CUDA support for MLP gradient assembly, RMSprop hypergradients,
 staged XGBoost, or GP classification training; those remain separate workload
 contracts.

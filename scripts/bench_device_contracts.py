@@ -117,6 +117,35 @@ def mse_oracle() -> float:
     return float(value)
 
 
+def adamw_oracle() -> tuple[float, float]:
+    """Return the resident AdamW fixture norm and state checksum.
+
+    This recurrence is intentionally independent of FortML's CUDA test and
+    mirrors the public plan contract: bias-corrected moments and decoupled
+    weight decay are evaluated for seven device-resident steps.
+    """
+    parameters = np.array([0.2, -0.1, 0.3, -0.25, 0.05], dtype=np.float64)
+    first = np.zeros(5, dtype=np.float64)
+    second = np.zeros(5, dtype=np.float64)
+    learning_rate, beta1, beta2 = 0.035, 0.81, 0.93
+    epsilon, weight_decay = 1.0e-6, 0.17
+    for step in range(7):
+        gradient = parameters - 0.07 * np.arange(1, 6, dtype=np.float64)
+        gradient += 0.01 * step
+        first = beta1 * first + (1.0 - beta1) * gradient
+        second = beta2 * second + (1.0 - beta2) * gradient**2
+        bias1 = 1.0 - beta1 ** (step + 1)
+        bias2 = 1.0 - beta2 ** (step + 1)
+        parameters = ((1.0 - learning_rate * weight_decay) * parameters -
+                      learning_rate * (first / bias1) /
+                      (np.sqrt(second / bias2) + epsilon))
+    norm = float(np.linalg.norm(parameters))
+    checksum = float(np.sum(parameters) + np.sum(first) + np.sum(second))
+    if not np.isfinite(norm) or not np.isfinite(checksum):
+        raise RuntimeError("CUDA AdamW independent oracle is nonfinite")
+    return norm, checksum
+
+
 def run_gate(fortml: Path, script_name: str) -> tuple[str, str, float | None]:
     script = fortml / "test" / script_name
     if not script.is_file():
@@ -152,6 +181,7 @@ def main() -> None:
     expected_knn, knn_checksum = knn_oracle()
     rmsprop_norm, rmsprop_checksum = rmsprop_oracle()
     mse_value = mse_oracle()
+    adamw_norm, adamw_checksum = adamw_oracle()
     rows: list[dict[str, Any]] = []
 
     status, notes, elapsed = run_gate(fortml, "run_knn_classifier_cuda.sh")
@@ -182,6 +212,21 @@ def main() -> None:
         seconds_per_operation="", metric="weighted_mean_squared_error", value=mse_value,
         max_abs_error="", oracle="independent NumPy weighted multi-output MSE",
         notes=f"native gate checks transfer-inclusive CUDA block reduction; expected value={mse_value:.16e}; {notes}"))
+
+    status, notes, elapsed = run_gate(fortml, "run_cuda_adamw_state.sh")
+    observed_error = None
+    match = re.search(r"max error ([0-9.+\-eE]+)", notes)
+    if match:
+        observed_error = float(match.group(1))
+        if status == "pass" and observed_error > 3.0e-13:
+            status = "failed"
+    rows.append(base(
+        details, workload="adamw_device_state", phase="optimizer_step", status=status,
+        seconds_per_operation="", metric="parameter_l2_norm", value=adamw_norm,
+        max_abs_error=(observed_error if observed_error is not None else
+                       (0.0 if status == "pass" else "")),
+        oracle="independent NumPy AdamW recurrence with decoupled weight decay",
+        notes=f"expected state checksum={adamw_checksum:.16e}; native gate checks seven resident steps; {notes}"))
 
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:
