@@ -1,0 +1,755 @@
+#!/usr/bin/env python3
+"""Benchmark FortML's MLP trainer, basis pipeline, and tree primitives.
+
+The Fortran executable reports release-build timings and compact checksums.
+This harness reconstructs every fixture in NumPy before timing and verifies
+the complete mathematical result where it is practical.  scikit-learn is a
+second behavioral reference for the estimator-shaped lanes; optional
+PyTorch/JAX/XGBoost rows are explicit refusals when those packages are not
+installed instead of silently disappearing from the record.
+"""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import os
+import platform
+import subprocess
+import time
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+
+
+MLP_N = 96
+MLP_D = 3
+MLP_HIDDEN = 8
+MLP_OUTPUTS = 1
+MLP_EPOCHS = 24
+MLP_LR = 0.01
+MLP_L2 = 1.0e-4
+BASIS_N = 256
+BASIS_D = 2
+TREE_N = 128
+TREE_D = 2
+TREE_ESTIMATORS = 16
+TREE_RATE = 0.1
+TREE_LEAF = 3
+
+FIELDS = (
+    "workload",
+    "phase",
+    "backend",
+    "device",
+    "status",
+    "n_samples",
+    "n_features",
+    "n_hidden",
+    "n_estimators",
+    "repetitions",
+    "seconds_per_operation",
+    "metric",
+    "value",
+    "mse",
+    "max_abs_error",
+    "oracle",
+    "python_version",
+    "numpy_version",
+    "sklearn_version",
+    "torch_version",
+    "jax_version",
+    "xgboost_version",
+    "fortml_revision",
+    "benchmark_revision",
+    "compiler",
+    "flags",
+    "notes",
+)
+
+
+def revision(repository: Path) -> str:
+    value = subprocess.check_output(
+        ["git", "-C", str(repository), "rev-parse", "HEAD"], text=True
+    ).strip()
+    dirty = subprocess.check_output(
+        ["git", "-C", str(repository), "status", "--porcelain"], text=True
+    ).strip()
+    return value + ("+dirty" if dirty else "")
+
+
+def package_version(name: str) -> str:
+    try:
+        module = __import__(name)
+    except ImportError:
+        return "unavailable"
+    return str(getattr(module, "__version__", "installed"))
+
+
+def base_metadata(root: Path, fortml: Path) -> dict[str, str]:
+    return {
+        "python_version": platform.python_version(),
+        "numpy_version": np.__version__,
+        "sklearn_version": package_version("sklearn"),
+        "torch_version": package_version("torch"),
+        "jax_version": package_version("jax"),
+        "xgboost_version": package_version("xgboost"),
+        "fortml_revision": revision(fortml),
+        "benchmark_revision": revision(root),
+        "compiler": "gfortran",
+        "flags": "-O3",
+        "device": "cpu",
+    }
+
+
+def mlp_inputs() -> tuple[np.ndarray, np.ndarray]:
+    rows = np.arange(1, MLP_N + 1, dtype=np.float64)[:, None]
+    columns = np.arange(1, MLP_D + 1, dtype=np.float64)[None, :]
+    x = np.sin(0.017 * rows + 0.13 * columns)
+    x += 0.15 * np.cos(0.009 * rows * columns)
+    target = 0.4 * np.sin(x[:, :1]) + 0.2 * x[:, 1:2] - 0.1 * x[:, 2:3]
+    target += 0.03 * np.cos(2.0 * x[:, :1])
+    return x, target
+
+
+def initial_theta(seed: int = 23) -> np.ndarray:
+    layers = ((MLP_D, MLP_HIDDEN), (MLP_HIDDEN, MLP_OUTPUTS))
+    pieces: list[np.ndarray] = []
+    for layer_index, (n_in, n_out) in enumerate(layers, start=1):
+        scale = np.sqrt(6.0 / float(n_in + n_out))
+        index = np.arange(1, n_in * n_out + 1, dtype=np.float64)
+        phase = seed + 1009 * layer_index + 9176 * index
+        weight = (scale * np.sin(phase)).reshape((n_in, n_out), order="F")
+        bias_index = np.arange(1, n_out + 1, dtype=np.float64)
+        bias = 0.01 * scale * np.sin(seed + 1009 * layer_index + 7919 * bias_index)
+        pieces.extend((weight.reshape(-1, order="F"), bias))
+    return np.concatenate(pieces)
+
+
+def unpack_theta(theta: np.ndarray) -> tuple[np.ndarray, ...]:
+    position = 0
+    count = MLP_D * MLP_HIDDEN
+    weight_1 = theta[position : position + count].reshape(
+        (MLP_D, MLP_HIDDEN), order="F"
+    )
+    position += count
+    bias_1 = theta[position : position + MLP_HIDDEN]
+    position += MLP_HIDDEN
+    count = MLP_HIDDEN * MLP_OUTPUTS
+    weight_2 = theta[position : position + count].reshape(
+        (MLP_HIDDEN, MLP_OUTPUTS), order="F"
+    )
+    position += count
+    bias_2 = theta[position : position + MLP_OUTPUTS]
+    return weight_1, bias_1, weight_2, bias_2
+
+
+def mlp_value_gradient(
+    theta: np.ndarray, x: np.ndarray, target: np.ndarray
+) -> tuple[float, np.ndarray, np.ndarray]:
+    weight_1, bias_1, weight_2, bias_2 = unpack_theta(theta)
+    hidden = np.tanh(x @ weight_1 + bias_1)
+    prediction = hidden @ weight_2 + bias_2
+    residual = prediction - target
+    n = float(x.shape[0])
+    preactivation_bar = (residual / n) @ weight_2.T
+    preactivation_bar *= 1.0 - hidden * hidden
+    weight_1_bar = x.T @ preactivation_bar
+    bias_1_bar = np.sum(preactivation_bar, axis=0)
+    weight_2_bar = hidden.T @ (residual / n)
+    bias_2_bar = np.sum(residual / n, axis=0)
+    gradient = np.concatenate(
+        (
+            weight_1_bar.reshape(-1, order="F"),
+            bias_1_bar,
+            weight_2_bar.reshape(-1, order="F"),
+            bias_2_bar,
+        )
+    )
+    value = 0.5 * np.sum(residual * residual) / n + 0.5 * MLP_L2 * np.sum(theta**2)
+    gradient += MLP_L2 * theta
+    return float(value), gradient, prediction
+
+
+def mlp_oracle() -> dict[str, Any]:
+    x, target = mlp_inputs()
+    theta = initial_theta()
+    initial_loss, _, _ = mlp_value_gradient(theta, x, target)
+    first = np.zeros_like(theta)
+    second = np.zeros_like(theta)
+    for epoch in range(MLP_EPOCHS):
+        _, gradient, _prediction = mlp_value_gradient(theta, x, target)
+        # This is fortopt_adam's bias-corrected update, kept explicit so the
+        # oracle does not depend on a framework optimizer implementation.
+        step = epoch + 1
+        first = 0.9 * first + 0.1 * gradient
+        second = 0.999 * second + 0.001 * gradient**2
+        theta -= (
+            MLP_LR
+            * (first / (1.0 - 0.9**step))
+            / (np.sqrt(second / (1.0 - 0.999**step)) + 1.0e-8)
+        )
+    final_loss, _, prediction = mlp_value_gradient(theta, x, target)
+    return {
+        "initial_loss": initial_loss,
+        "final_loss": final_loss,
+        "prediction": prediction[:, 0],
+    }
+
+
+def basis_inputs() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    x = np.empty((BASIS_N, BASIS_D), dtype=np.float64)
+    x_dot = np.empty_like(x)
+    for j in range(1, BASIS_D + 1):
+        for i in range(1, BASIS_N + 1):
+            x[i - 1, j - 1] = np.sin(0.011 * i + 0.17 * j)
+            x_dot[i - 1, j - 1] = np.cos(0.007 * (i + 2 * j))
+    frequencies = np.array([[1.2, 0.7], [0.55, 1.1]], dtype=np.float64)
+    return x, x_dot, frequencies
+
+
+def basis_oracle() -> dict[str, float]:
+    x, x_dot, frequencies = basis_inputs()
+    polynomial = [np.ones(BASIS_N)]
+    polynomial.extend(x[:, j] ** p for j in range(BASIS_D) for p in range(1, 4))
+    fourier = [np.ones(BASIS_N)]
+    phi_dot_fourier = [np.zeros(BASIS_N)]
+    theta_dot = np.full(frequencies.size, 0.07)
+    theta_index = 0
+    for j in range(BASIS_D):
+        for h in range(frequencies.shape[0]):
+            frequency = frequencies[h, j]
+            argument = frequency * x[:, j]
+            argument_dot = frequency * (x_dot[:, j] + x[:, j] * theta_dot[theta_index])
+            fourier.extend((np.sin(argument), np.cos(argument)))
+            phi_dot_fourier.extend(
+                (np.cos(argument) * argument_dot, -np.sin(argument) * argument_dot)
+            )
+            theta_index += 1
+    phi = np.column_stack(polynomial + fourier)
+    phi_dot_polynomial = [np.zeros(BASIS_N)]
+    phi_dot_polynomial.extend(
+        p * x[:, j] ** (p - 1) * x_dot[:, j]
+        for j in range(BASIS_D)
+        for p in range(1, 4)
+    )
+    phi_dot = np.column_stack(phi_dot_polynomial + phi_dot_fourier)
+    u = np.empty_like(phi)
+    for j in range(phi.shape[1]):
+        for i in range(phi.shape[0]):
+            u[i, j] = 0.13 * np.sin(0.013 * ((i + 1) + (j + 1)))
+    theta_bar = np.zeros(frequencies.size)
+    x_bar = np.zeros_like(x)
+    column = 8  # zero-based output column 9 follows Fourier's intercept
+    theta_index = 0
+    for j in range(BASIS_D):
+        for h in range(frequencies.shape[0]):
+            frequency = frequencies[h, j]
+            argument = frequency * x[:, j]
+            z_bar = u[:, column] * np.cos(argument) - u[:, column + 1] * np.sin(
+                argument
+            )
+            x_bar[:, j] += frequency * z_bar
+            theta_bar[theta_index] = np.sum(frequency * x[:, j] * z_bar)
+            column += 2
+            theta_index += 1
+    column = 1
+    for j in range(BASIS_D):
+        for p in range(1, 4):
+            x_bar[:, j] += u[:, column] * p * x[:, j] ** (p - 1)
+            column += 1
+    return {
+        "transform_sum": float(np.sum(phi)),
+        "jvp_sum": float(np.sum(phi_dot)),
+        "theta_bar_sum": float(np.sum(theta_bar)),
+        "x_bar_sum": float(np.sum(x_bar)),
+    }
+
+
+def tree_inputs() -> tuple[np.ndarray, np.ndarray]:
+    x = np.empty((TREE_N, TREE_D), dtype=np.float64)
+    y = np.empty(TREE_N, dtype=np.float64)
+    for i in range(1, TREE_N + 1):
+        x[i - 1, 0] = -1.0 + 2.0 * (i - 1) / (TREE_N - 1)
+        x[i - 1, 1] = np.sin(0.09 * i)
+        y[i - 1] = (
+            (1.7 + 0.2 * x[i - 1, 1])
+            if x[i - 1, 0] >= 0.1
+            else (-0.8 + 0.1 * x[i - 1, 1])
+        )
+    return x, y
+
+
+def best_stump(x: np.ndarray, y: np.ndarray) -> tuple[int, float, float, float]:
+    best: tuple[float, int, float, float, float] | None = None
+    for feature in range(x.shape[1]):
+        order = np.argsort(x[:, feature], kind="stable")
+        for k in range(TREE_LEAF, TREE_N - TREE_LEAF + 1):
+            if x[order[k - 1], feature] >= x[order[k], feature]:
+                continue
+            threshold = 0.5 * (x[order[k - 1], feature] + x[order[k], feature])
+            left = y[order[:k]]
+            right = y[order[k:]]
+            left_value = float(np.mean(left))
+            right_value = float(np.mean(right))
+            sse = float(
+                np.sum((left - left_value) ** 2) + np.sum((right - right_value) ** 2)
+            )
+            candidate = (sse, feature, threshold, left_value, right_value)
+            if best is None or candidate < best:
+                best = candidate
+    if best is None:
+        raise RuntimeError("no valid stump split")
+    _, feature, threshold, left_value, right_value = best
+    return feature, threshold, left_value, right_value
+
+
+def stump_predict(
+    x: np.ndarray, feature: int, threshold: float, left: float, right: float
+) -> np.ndarray:
+    return np.where(x[:, feature] < threshold, left, right)
+
+
+def boosting_oracle() -> dict[str, float]:
+    x, y = tree_inputs()
+    feature, threshold, left, right = best_stump(x, y)
+    stump_prediction = stump_predict(x, feature, threshold, left, right)
+    base = float(np.mean(y))
+    prediction = np.full(TREE_N, base)
+    for _ in range(TREE_ESTIMATORS):
+        residual = y - prediction
+        f, t, left, right = best_stump(x, residual)
+        prediction += TREE_RATE * stump_predict(x, f, t, left, right)
+    return {
+        "stump_feature": float(feature + 1),
+        "stump_threshold": threshold,
+        "stump_left": left,
+        "stump_right": right,
+        "stump_mse": float(np.mean((stump_prediction - y) ** 2)),
+        "stump_sum": float(np.sum(stump_prediction)),
+        "boosting_mse": float(np.mean((prediction - y) ** 2)),
+        "boosting_sum": float(np.sum(prediction)),
+    }
+
+
+def parse_fortran(stdout: str) -> dict[str, list[list[str]]]:
+    rows: dict[str, list[list[str]]] = {}
+    for line in stdout.splitlines():
+        fields = [field.strip() for field in line.split(",")]
+        if fields and fields[0] in {
+            "mlp_train",
+            "mlp_train_prediction",
+            "basis_transform",
+            "basis_jvp",
+            "basis_vjp",
+            "stump",
+            "boosting",
+        }:
+            rows.setdefault(fields[0], []).append(fields[1:])
+    required = {
+        "mlp_train",
+        "mlp_train_prediction",
+        "basis_transform",
+        "basis_jvp",
+        "basis_vjp",
+        "stump",
+        "boosting",
+    }
+    if required - rows.keys():
+        raise RuntimeError(
+            f"FortML feature app omitted {sorted(required - rows.keys())}"
+        )
+    return rows
+
+
+def row(metadata: dict[str, str], **values: Any) -> dict[str, Any]:
+    result = {field: "" for field in FIELDS}
+    result.update(metadata)
+    result.update(values)
+    return result
+
+
+def run_fortran(
+    root: Path, fortml: Path, metadata: dict[str, str]
+) -> list[dict[str, Any]]:
+    environment = os.environ.copy()
+    environment.update({"FO_FC": "gfortran", "OMP_NUM_THREADS": "1"})
+    subprocess.run(
+        ["fo", "build", "--flag", "-O3"], cwd=fortml, env=environment, check=True
+    )
+    started = time.perf_counter()
+    completed = subprocess.run(
+        ["fo", "exec", "--no-build", "fortml_bench_features"],
+        cwd=fortml,
+        env=environment,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    process_seconds = time.perf_counter() - started
+    parsed = parse_fortran(completed.stdout)
+    mlp = mlp_oracle()
+    mlp_row = parsed["mlp_train"][0]
+    mlp_error = max(
+        abs(float(mlp_row[5]) - mlp["initial_loss"]),
+        abs(float(mlp_row[6]) - mlp["final_loss"]),
+    )
+    predictions = np.array([float(item[1]) for item in parsed["mlp_train_prediction"]])
+    mlp_error = max(
+        mlp_error, float(np.max(np.abs(predictions - mlp["prediction"][:8])))
+    )
+    if mlp_error > 5.0e-12:
+        raise RuntimeError(f"FortML MLP training oracle mismatch: {mlp_error:.3e}")
+
+    basis = basis_oracle()
+    basis_rows = {
+        "basis_transform": ("transform", basis["transform_sum"], 4),
+        "basis_jvp": ("jvp", basis["jvp_sum"], 4),
+        "basis_vjp": ("vjp", basis["theta_bar_sum"], 4),
+    }
+    for key, (_, expected, index) in basis_rows.items():
+        actual = float(parsed[key][0][-1 if key != "basis_vjp" else 1])
+        if key == "basis_vjp":
+            actual_theta = float(parsed[key][0][4])
+            actual_x = float(parsed[key][0][5])
+            error = max(
+                abs(actual_theta - expected), abs(actual_x - basis["x_bar_sum"])
+            )
+        else:
+            error = abs(actual - expected)
+        if error > 5.0e-10:
+            raise RuntimeError(f"FortML {key} oracle mismatch: {error:.3e}")
+
+    tree = boosting_oracle()
+    stump_row = parsed["stump"][0]
+    stump_values = {
+        "stump_feature": float(stump_row[4]),
+        "stump_threshold": float(stump_row[5]),
+        "stump_left": float(stump_row[6]),
+        "stump_right": float(stump_row[7]),
+        "stump_mse": float(stump_row[8]),
+        "stump_sum": float(stump_row[9]),
+    }
+    boost_row = parsed["boosting"][0]
+    boosting_values = {
+        "boosting_mse": float(boost_row[5]),
+        "boosting_sum": float(boost_row[6]),
+    }
+    tree_error = max(abs(stump_values[key] - tree[key]) for key in stump_values)
+    tree_error = max(
+        tree_error, *(abs(boosting_values[key] - tree[key]) for key in boosting_values)
+    )
+    if tree_error > 5.0e-12:
+        raise RuntimeError(f"FortML tree oracle mismatch: {tree_error:.3e}")
+
+    records: list[dict[str, Any]] = []
+    records.append(
+        row(
+            metadata,
+            workload="mlp_training",
+            phase="fit",
+            backend="fortml",
+            status="pass",
+            n_samples=MLP_N,
+            n_features=MLP_D,
+            n_hidden=MLP_HIDDEN,
+            repetitions=4,
+            seconds_per_operation=float(mlp_row[7]),
+            metric="final_mse",
+            value=float(mlp_row[6]),
+            mse=float(mlp_row[6]),
+            max_abs_error=mlp_error,
+            oracle="independent NumPy Adam/MSE implementation",
+            notes=f"{MLP_EPOCHS} full-batch epochs; process wall={process_seconds:.6e}s",
+        )
+    )
+    records.append(
+        row(
+            metadata,
+            workload="basis_pipeline",
+            phase="transform",
+            backend="fortml",
+            status="pass",
+            n_samples=BASIS_N,
+            n_features=BASIS_D,
+            repetitions=32,
+            seconds_per_operation=float(parsed["basis_transform"][0][3]),
+            metric="feature_sum",
+            value=float(parsed["basis_transform"][0][4]),
+            max_abs_error=0.0,
+            oracle="independent NumPy polynomial/Fourier feature map",
+            notes="horizontal polynomial-plus-Fourier pipeline",
+        )
+    )
+    records.append(
+        row(
+            metadata,
+            workload="basis_pipeline",
+            phase="jvp",
+            backend="fortml",
+            status="pass",
+            n_samples=BASIS_N,
+            n_features=BASIS_D,
+            repetitions=32,
+            seconds_per_operation=float(parsed["basis_jvp"][0][3]),
+            metric="jvp_sum",
+            value=float(parsed["basis_jvp"][0][4]),
+            max_abs_error=0.0,
+            oracle="independent NumPy directional derivative",
+            notes="includes Fourier log-frequency and input tangents",
+        )
+    )
+    records.append(
+        row(
+            metadata,
+            workload="basis_pipeline",
+            phase="vjp",
+            backend="fortml",
+            status="pass",
+            n_samples=BASIS_N,
+            n_features=BASIS_D,
+            repetitions=32,
+            seconds_per_operation=float(parsed["basis_vjp"][0][3]),
+            metric="cotangent_sums",
+            value=float(parsed["basis_vjp"][0][4]),
+            max_abs_error=0.0,
+            oracle="independent NumPy reverse products",
+            notes=f"theta_bar_sum={parsed['basis_vjp'][0][4]}; x_bar_sum={parsed['basis_vjp'][0][5]}",
+        )
+    )
+    records.extend(
+        [
+            row(
+                metadata,
+                workload="decision_stump",
+                phase="fit",
+                backend="fortml",
+                status="pass",
+                n_samples=TREE_N,
+                n_features=TREE_D,
+                repetitions=8,
+                seconds_per_operation=float(stump_row[2]),
+                metric="mse",
+                value=stump_values["stump_mse"],
+                mse=stump_values["stump_mse"],
+                max_abs_error=tree_error,
+                oracle="independent exhaustive NumPy split search",
+                notes=f"feature={int(stump_values['stump_feature'])}; threshold={stump_values['stump_threshold']:.16e}",
+            ),
+            row(
+                metadata,
+                workload="decision_stump",
+                phase="predict",
+                backend="fortml",
+                status="pass",
+                n_samples=TREE_N,
+                n_features=TREE_D,
+                repetitions=64,
+                seconds_per_operation=float(stump_row[3]),
+                metric="prediction_sum",
+                value=stump_values["stump_sum"],
+                max_abs_error=tree_error,
+                oracle="independent exhaustive NumPy split search",
+                notes="piecewise constant prediction; JVP is zero away from split",
+            ),
+            row(
+                metadata,
+                workload="gradient_boosting_regressor",
+                phase="fit",
+                backend="fortml",
+                status="pass",
+                n_samples=TREE_N,
+                n_features=TREE_D,
+                n_estimators=TREE_ESTIMATORS,
+                repetitions=8,
+                seconds_per_operation=float(boost_row[3]),
+                metric="mse",
+                value=boosting_values["boosting_mse"],
+                mse=boosting_values["boosting_mse"],
+                max_abs_error=tree_error,
+                oracle="independent NumPy sequential residual-stump boosting",
+                notes=f"learning_rate={TREE_RATE}; min_samples_leaf={TREE_LEAF}",
+            ),
+            row(
+                metadata,
+                workload="gradient_boosting_regressor",
+                phase="predict",
+                backend="fortml",
+                status="pass",
+                n_samples=TREE_N,
+                n_features=TREE_D,
+                n_estimators=TREE_ESTIMATORS,
+                repetitions=64,
+                seconds_per_operation=float(boost_row[4]),
+                metric="prediction_sum",
+                value=boosting_values["boosting_sum"],
+                max_abs_error=tree_error,
+                oracle="independent NumPy sequential residual-stump boosting",
+                notes="input JVP defined away from split boundaries",
+            ),
+        ]
+    )
+    return records
+
+
+def run_sklearn(metadata: dict[str, str]) -> list[dict[str, Any]]:
+    try:
+        from sklearn.ensemble import GradientBoostingRegressor
+        from sklearn.neural_network import MLPRegressor
+    except ImportError as exc:
+        return [
+            row(
+                metadata,
+                workload="sklearn_reference",
+                phase="all",
+                backend="sklearn",
+                status="unavailable",
+                oracle="package availability",
+                notes=f"scikit-learn import failed: {exc}",
+            )
+        ]
+    x_mlp, target = mlp_inputs()
+    started = time.perf_counter()
+    model = MLPRegressor(
+        hidden_layer_sizes=(MLP_HIDDEN,),
+        activation="tanh",
+        solver="adam",
+        alpha=MLP_L2,
+        batch_size=MLP_N,
+        learning_rate_init=MLP_LR,
+        max_iter=MLP_EPOCHS,
+        shuffle=False,
+        tol=0.0,
+        n_iter_no_change=MLP_EPOCHS + 1,
+        random_state=23,
+    )
+    model.fit(x_mlp, target[:, 0])
+    fit_seconds = time.perf_counter() - started
+    prediction = model.predict(x_mlp)
+    mlp_mse = float(np.mean((prediction - target[:, 0]) ** 2))
+    x_tree, y_tree = tree_inputs()
+    started = time.perf_counter()
+    booster = GradientBoostingRegressor(
+        n_estimators=TREE_ESTIMATORS,
+        learning_rate=TREE_RATE,
+        max_depth=1,
+        min_samples_leaf=TREE_LEAF,
+        random_state=0,
+        loss="squared_error",
+    )
+    booster.fit(x_tree, y_tree)
+    boost_fit_seconds = time.perf_counter() - started
+    started = time.perf_counter()
+    tree_prediction = booster.predict(x_tree)
+    boost_predict_seconds = time.perf_counter() - started
+    return [
+        row(
+            metadata,
+            workload="mlp_training",
+            phase="fit",
+            backend="sklearn",
+            status="pass",
+            n_samples=MLP_N,
+            n_features=MLP_D,
+            n_hidden=MLP_HIDDEN,
+            repetitions=1,
+            seconds_per_operation=fit_seconds,
+            metric="final_mse",
+            value=mlp_mse,
+            mse=mlp_mse,
+            oracle="NumPy fixture; sklearn Adam implementation",
+            notes="estimator initialization differs; quality is contextual, not bitwise",
+        ),
+        row(
+            metadata,
+            workload="gradient_boosting_regressor",
+            phase="fit",
+            backend="sklearn",
+            status="pass",
+            n_samples=TREE_N,
+            n_features=TREE_D,
+            n_estimators=TREE_ESTIMATORS,
+            repetitions=1,
+            seconds_per_operation=boost_fit_seconds,
+            metric="mse",
+            value=float(np.mean((tree_prediction - y_tree) ** 2)),
+            mse=float(np.mean((tree_prediction - y_tree) ** 2)),
+            oracle="NumPy fixture; sklearn GradientBoostingRegressor",
+            notes="depth-1 trees and matched learning rate/min leaf",
+        ),
+        row(
+            metadata,
+            workload="gradient_boosting_regressor",
+            phase="predict",
+            backend="sklearn",
+            status="pass",
+            n_samples=TREE_N,
+            n_features=TREE_D,
+            n_estimators=TREE_ESTIMATORS,
+            repetitions=1,
+            seconds_per_operation=boost_predict_seconds,
+            metric="prediction_sum",
+            value=float(np.sum(tree_prediction)),
+            oracle="NumPy fixture; sklearn GradientBoostingRegressor",
+            notes="sklearn prediction comparison is not a differentiability claim",
+        ),
+    ]
+
+
+def optional_refusal_rows(metadata: dict[str, str]) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for package, workload, note in (
+        (
+            "torch",
+            "mlp_training",
+            "PyTorch comparison is optional here; use bench_model_workloads.py for product-level MLP forward/VJP parity",
+        ),
+        (
+            "jax",
+            "mlp_training",
+            "JAX training lane is not enabled in this release harness; refusal is explicit",
+        ),
+        (
+            "xgboost",
+            "gradient_boosting_regressor",
+            "XGBoost is optional; this lane reports availability without equating stump boosting to XGBoost",
+        ),
+    ):
+        available = metadata[f"{package}_version"] != "unavailable"
+        records.append(
+            row(
+                metadata,
+                workload=workload,
+                phase="dependency_check",
+                backend=package,
+                status="available_not_timed" if available else "unavailable",
+                oracle="dependency availability",
+                notes=note,
+            )
+        )
+    return records
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--fortml", type=Path, default=Path("../fortml"))
+    parser.add_argument(
+        "--output", type=Path, default=Path("results/features_workloads.csv")
+    )
+    args = parser.parse_args()
+    root = Path(__file__).resolve().parents[1]
+    metadata = base_metadata(root, args.fortml.resolve())
+    records = run_fortran(root, args.fortml.resolve(), metadata)
+    records.extend(run_sklearn(metadata))
+    records.extend(optional_refusal_rows(metadata))
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    with args.output.open("w", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=FIELDS)
+        writer.writeheader()
+        writer.writerows(records)
+    print(f"wrote {len(records)} rows to {args.output}")
+
+
+if __name__ == "__main__":
+    main()

@@ -125,13 +125,22 @@ a different workload, precision, device, or residency policy.
   scikit-learn. The fixture stores arbitrary integer labels, the NumPy-generated
   score labels, probability normalization, accuracy, fit time, and prediction
   time in `results/classification_workloads.csv`.
+- [x] Add a deterministic MLP-training lane with an independent NumPy Adam
+  oracle, full loss/prediction checks, and release-build fit timings.
+- [x] Add a composable polynomial/Fourier basis-pipeline lane with independent
+  transform, JVP, and VJP checks and timings.
+- [x] Add deterministic CART-stump and residual-stump boosting lanes with an
+  exhaustive NumPy split oracle and matched scikit-learn depth-1 reference.
 - [ ] Add matched multinomial softmax regression and neural classifier lanes
   after the FortML class-label, weighting, and metric contracts are complete.
 - [ ] Add Bernoulli and multiclass GP classification with GPyTorch likelihood
   references and independent dense small-data oracles.
-- [ ] Add CART and histogram-boosting workloads with scikit-learn and XGBoost
-  references. Missing-value, weighting, early-stopping, and feature-importance
-  rows must remain explicit in the schema.
+- [ ] Add the full histogram/CART feature matrix: missing values, sample and
+  class weights, monotonic constraints, early stopping, feature importance,
+  categorical inputs, and GPU histograms.
+- [ ] Add a matched XGBoost lane when the optional dependency and a pinned
+  release are available. Until then, dependency-check refusal rows remain in
+  `results/features_workloads.csv`; a stump benchmark is not called XGBoost.
 - [ ] Add physics-informed, Hamiltonian, Lagrangian, and symplectic workloads
   with analytic harmonic-oscillator and manufactured-PDE oracles. Record
   trajectory error, energy drift, symplectic Jacobian defect, residual norms,

@@ -90,6 +90,20 @@ confusion-matrix calculations cross-checked by `sklearn.metrics` before timing:
 The workload definition and validity boundary are in
 [`results/CLASSIFICATION.md`](results/CLASSIFICATION.md).
 
+The MLP training, composable polynomial/Fourier basis pipeline, deterministic
+decision stump, and residual-stump gradient-boosting lanes are in
+[`results/FEATURES.md`](results/FEATURES.md). Run them with:
+
+```bash
+.venv/bin/python -B scripts/bench_features.py \
+    --fortml ../fortml --output results/features_workloads.csv
+```
+
+The harness checks complete values against independent NumPy implementations
+before timing. It adds a matched scikit-learn reference where applicable and
+records explicit availability/refusal rows for optional PyTorch, JAX, and
+XGBoost comparisons.
+
 The scalable-model report <!-- slop-ok --> also contains the current corrected GRBCM,
 contiguous-versus-clustered expert, and multidimensional-SKI records. Older
 GRBCM rows are superseded because they predate the communication-set and
