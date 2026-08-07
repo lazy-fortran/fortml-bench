@@ -676,6 +676,17 @@ explicit `skipped` records:
 See [`results/DEVICE_CONTRACTS.md`](results/DEVICE_CONTRACTS.md) for the exact
 fixtures, GPU/toolchain metadata, and remaining resident-workload boundaries.
 
+The joint basis-pipeline training lane checks the packed Fourier basis and
+linear coefficient objective, including value/JVP/HVP finite differences and
+the typed CUDA refusal:
+
+```bash
+python -B scripts/bench_basis_pipeline_training.py \
+  --fortml ../fortml --output results/basis_pipeline_training.csv
+```
+
+See [`results/BASIS_PIPELINE_TRAINING.md`](results/BASIS_PIPELINE_TRAINING.md).
+
 The resident CUDA AdamW state lane wraps
 `../fortml/test/run_cuda_adamw_state.sh` and independently reconstructs its
 seven-step bias-corrected recurrence and decoupled weight decay in NumPy. A

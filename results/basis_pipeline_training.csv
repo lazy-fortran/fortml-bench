@@ -1,0 +1,2 @@
+workload,phase,backend,device,status,n_samples,n_parameters,seconds_per_operation,metric,value,max_abs_error,oracle,python_version,numpy_version,fortml_revision,benchmark_revision,compiler,flags,notes
+basis_pipeline_training,value_derivatives,fortml,cpu,pass,7,4,,objective_fixture_value,0.0312,0.0,independent Fourier/ridge fixture plus Fortran behavioral gate,3.14.6,2.5.1,8d758c8aead9af0404640a9a0c2d6346fbbe521c,409cb06183a96ea567dc3c50ab3e27b6475bfe58+dirty,gfortran,-O3,Fortran finite-difference/JVP/HVP and CUDA-refusal gate
