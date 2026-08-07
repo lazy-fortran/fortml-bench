@@ -968,6 +968,20 @@ See [`results/XGBOOST.md`](results/XGBOOST.md) for the regularisation settings,
 weighted-histogram fixture, oracle boundary, and recorded timings. The
 optional package row never turns a different histogram or tree-growth policy
 into a bitwise comparison.
+
+The separately named LightGBM-style lane records weighted regression and
+binary-logistic histogram boosting with deterministic globally best-leaf growth
+up to `num_leaves`. The six-sample weighted-Newton fixture is an independent
+oracle; CPU timing and the typed CUDA refusal are kept in a dedicated CSV:
+
+```bash
+.venv/bin/python -B scripts/bench_lightgbm.py \
+  --fortml ../fortml --output results/lightgbm_leafwise.csv
+```
+
+See [`results/LIGHTGBM_LEAFWISE.md`](results/LIGHTGBM_LEAFWISE.md). GOSS,
+EFB, categorical statistics, distributed workers, and resident GPU histograms
+remain explicit follow-up gaps.
 The same release protocol now checks regression margins, binary positive-class
 probabilities, multiclass simplex probabilities, staged raw margins, and
 normalized gain feature importance after every boosting stage.
