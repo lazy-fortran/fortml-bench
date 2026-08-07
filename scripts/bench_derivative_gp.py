@@ -79,11 +79,15 @@ def scalar_kernel(a: np.ndarray, b: np.ndarray, name: str) -> float:
     return 1.3 * denominator ** (-1.7)
 
 
-def scalar_partials(a: np.ndarray, b: np.ndarray, name: str) -> tuple[float, float, float]:
+def scalar_partials(a: np.ndarray, b: np.ndarray, name: str,
+                    theta: np.ndarray | None = None) -> tuple[float, float, float]:
     """Return F(s), F'(s), F''(s), s=||a-b||², independently."""
     squared = float(np.sum((a - b) ** 2))
     if name == "periodic":
-        period, lengthscale = 2.1, 0.8
+        if theta is None:
+            variance, lengthscale, period = 1.3, 0.8, 2.1
+        else:
+            variance, lengthscale, period = np.exp(theta[:3])
         frequency = np.pi / period
         radius = np.sqrt(squared)
         argument = frequency * radius
@@ -95,36 +99,47 @@ def scalar_partials(a: np.ndarray, b: np.ndarray, name: str) -> tuple[float, flo
             t2 = frequency * (2.0 * frequency * radius * np.cos(2.0 * argument) -
                               np.sin(2.0 * argument)) / (4.0 * radius**3)
         t = np.sin(argument) ** 2
-        value = 1.3 * np.exp(-2.0 * t / lengthscale**2)
+        value = variance * np.exp(-2.0 * t / lengthscale**2)
         bscale = 2.0 / lengthscale**2
         return value, -bscale * t1 * value, (bscale**2 * t1**2 - bscale * t2) * value
     if name == "cosine":
-        lengthscale = 0.8
+        if theta is None:
+            variance, lengthscale = 1.3, 0.8
+        else:
+            variance, lengthscale = np.exp(theta[:2])
         radius = np.sqrt(squared)
         if radius <= 1.0e-8:
-            return 1.3, -1.3 / (2.0 * lengthscale**2), 1.3 / (12.0 * lengthscale**4)
+            return variance, -variance / (2.0 * lengthscale**2), variance / (12.0 * lengthscale**4)
         z = radius / lengthscale
         sine = np.sin(z)
         cosine = np.cos(z)
-        value = 1.3 * cosine
-        p = -1.3 * sine / (2.0 * lengthscale * radius)
-        p2 = 1.3 * (sine - z * cosine) / (4.0 * lengthscale**4 * z**3)
+        value = variance * cosine
+        p = -variance * sine / (2.0 * lengthscale * radius)
+        p2 = variance * (sine - z * cosine) / (4.0 * lengthscale**4 * z**3)
         return value, p, p2
-    alpha, lengthscale = 1.7, 0.8
+    if theta is None:
+        variance, lengthscale, alpha = 1.3, 0.8, 1.7
+    else:
+        variance, lengthscale, alpha = np.exp(theta[:3])
     denominator = 1.0 + squared / (2.0 * alpha * lengthscale**2)
-    value = 1.3 * denominator ** (-alpha)
+    value = variance * denominator ** (-alpha)
     p = -0.5 * value / (lengthscale**2 * denominator)
     p2 = value * (alpha + 1.0) / (4.0 * alpha * lengthscale**4 * denominator**2)
     return value, p, p2
 
 
-def covariance(a: np.ndarray, ca: int, b: np.ndarray, cb: int, name: str) -> float:
+def covariance(a: np.ndarray, ca: int, b: np.ndarray, cb: int, name: str,
+               theta: np.ndarray | None = None) -> float:
     """Independent analytic value/gradient/mixed-Hessian covariance blocks."""
     if name == "polynomial":
-        base = 1.5 + 0.4 * float(np.dot(a, b))
-        value = 1.3 * base ** 2.2
-        coefficient = 1.3 * 2.2 * 0.4 * base ** 1.2
-        curvature = 1.3 * 2.2 * 1.2 * 0.4**2 * base ** 0.2
+        if theta is None:
+            variance, scale, offset, degree = 1.3, 0.4, 1.5, 2.2
+        else:
+            variance, scale, offset, degree = np.exp(theta[:4])
+        base = offset + scale * float(np.dot(a, b))
+        value = variance * base ** degree
+        coefficient = variance * degree * scale * base ** (degree - 1.0)
+        curvature = variance * degree * (degree - 1.0) * scale**2 * base ** (degree - 2.0)
         if ca == 0 and cb == 0:
             return value
         if ca > 0 and cb == 0:
@@ -134,7 +149,7 @@ def covariance(a: np.ndarray, ca: int, b: np.ndarray, cb: int, name: str) -> flo
         return float(coefficient * (1.0 if ca == cb else 0.0) +
                      curvature * b[ca - 1] * a[cb - 1])
     difference = a - b
-    value, p, p2 = scalar_partials(a, b, name)
+    value, p, p2 = scalar_partials(a, b, name, theta)
     if ca == 0 and cb == 0:
         return value
     if ca > 0 and cb == 0:
@@ -166,25 +181,27 @@ def predict(x: np.ndarray, components: np.ndarray, y: np.ndarray,
 
 
 def joint_covariance(x: np.ndarray, components: np.ndarray, y: np.ndarray,
-                     query: np.ndarray, query_components: np.ndarray, name: str) -> np.ndarray:
+                     query: np.ndarray, query_components: np.ndarray, name: str,
+                     theta: np.ndarray | None = None) -> np.ndarray:
     """Independent dense latent posterior covariance oracle."""
     k_train = np.empty((len(x), len(x)))
     cross = np.empty((len(x), len(query)))
     prior = np.empty((len(query), len(query)))
     for i in range(len(x)):
         for j in range(len(x)):
-            k_train[i, j] = covariance(x[i], int(components[i]), x[j], int(components[j]), name)
+            k_train[i, j] = covariance(x[i], int(components[i]), x[j], int(components[j]), name, theta)
         for j in range(len(query)):
-            cross[i, j] = covariance(x[i], int(components[i]), query[j], int(query_components[j]), name)
+            cross[i, j] = covariance(x[i], int(components[i]), query[j], int(query_components[j]), name, theta)
     for i in range(len(query)):
         for j in range(len(query)):
-            prior[i, j] = covariance(query[i], int(query_components[i]), query[j], int(query_components[j]), name)
-    k_train.flat[:: len(x) + 1] += NOISE + JITTER
+            prior[i, j] = covariance(query[i], int(query_components[i]), query[j], int(query_components[j]), name, theta)
+    noise = NOISE if theta is None else float(np.exp(theta[-1]))
+    k_train.flat[:: len(x) + 1] += noise + JITTER
     work = np.linalg.solve(k_train, cross)
     return 0.5 * (prior - cross.T @ work + (prior - cross.T @ work).T)
 
 
-def oracle(name: str) -> tuple[float, float, float]:
+def oracle(name: str) -> tuple[float, float, float, float, float]:
     x, y, components, query, direction, query_components, mean_bar, variance_bar = fixture()
     h = 1.0e-5
     mean_plus, variance_plus = predict(x, components, y, query + h * direction, query_components, name)
@@ -200,7 +217,33 @@ def oracle(name: str) -> tuple[float, float, float]:
             x_bar[i, j] = (float(np.sum(mean_bar * mean_plus) + np.sum(variance_bar * variance_plus)) -
                            float(np.sum(mean_bar * mean_minus) + np.sum(variance_bar * variance_minus))) / (2.0 * h)
     covariance = joint_covariance(x, components, y, query, query_components, name)
-    return input_jvp, float(np.sum(x_bar)), float(np.sum(covariance))
+    kernel_parameter_count = {"periodic": 3, "rational_quadratic": 3,
+                              "cosine": 2, "polynomial": 4}[name]
+    theta = np.log({"periodic": [1.3, 0.8, 2.1],
+                    "rational_quadratic": [1.3, 0.8, 1.7],
+                    "cosine": [1.3, 0.8],
+                    "polynomial": [1.3, 0.4, 1.5, 2.2]}[name] + [NOISE])
+    parameter_direction = 0.08 - 0.017 * np.arange(1, kernel_parameter_count + 2)
+    covariance_plus = joint_covariance(x, components, y, query, query_components, name,
+                                       theta + 1.0e-5 * parameter_direction)
+    covariance_minus = joint_covariance(x, components, y, query, query_components, name,
+                                        theta - 1.0e-5 * parameter_direction)
+    covariance_jvp = (covariance_plus - covariance_minus) / (2.0e-5)
+    covariance_bar = np.empty((Q, Q))
+    for i in range(Q):
+        for j in range(Q):
+            covariance_bar[i, j] = 0.15 + 0.02 * (i + 1) - 0.03 * (j + 1)
+    covariance_vjp = np.empty(kernel_parameter_count + 1)
+    for i in range(kernel_parameter_count + 1):
+        unit = np.zeros_like(parameter_direction)
+        unit[i] = 1.0e-5
+        covariance_plus = joint_covariance(x, components, y, query, query_components, name,
+                                           theta + unit)
+        covariance_minus = joint_covariance(x, components, y, query, query_components, name,
+                                            theta - unit)
+        covariance_vjp[i] = np.sum(covariance_bar * (covariance_plus - covariance_minus)) / (2.0e-5)
+    return (input_jvp, float(np.sum(x_bar)), float(np.sum(covariance)),
+            float(np.sum(covariance_jvp)), float(np.sum(covariance_vjp)))
 
 
 def read_app(output: str) -> dict[tuple[str, str], tuple[float, float]]:
@@ -243,6 +286,10 @@ def main() -> None:
                         seconds_per_operation="", value=values[1], max_abs_error="0.0"))
         rows.append(row(kernel=name, operation="joint_covariance", backend="numpy_oracle",
                         seconds_per_operation="", value=values[2], max_abs_error="0.0"))
+        rows.append(row(kernel=name, operation="joint_covariance_jvp", backend="numpy_oracle",
+                        seconds_per_operation="", value=values[3], max_abs_error="0.0"))
+        rows.append(row(kernel=name, operation="joint_covariance_vjp", backend="numpy_oracle",
+                        seconds_per_operation="", value=values[4], max_abs_error="0.0"))
 
     subprocess.run(["fo", "build", "--flag", "-O3"], cwd=fortml, check=True)
     environment = os.environ.copy()
@@ -251,7 +298,8 @@ def main() -> None:
                                    cwd=fortml, env=environment, capture_output=True, text=True, check=True)
     records = read_app(completed.stdout)
     for name, values in expected.items():
-        for operation, expected_value in zip(("input_jvp", "input_vjp", "joint_covariance"), values):
+        for operation, expected_value in zip(("input_jvp", "input_vjp", "joint_covariance",
+                                              "joint_covariance_jvp", "joint_covariance_vjp"), values):
             if (name, operation) not in records:
                 raise RuntimeError(f"release app omitted {name}/{operation}")
             seconds, actual = records[(name, operation)]

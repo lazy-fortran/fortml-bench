@@ -177,11 +177,12 @@ python -B scripts/bench_features.py \
 See [`results/FEATURES.md`](results/FEATURES.md); the HVP row is CPU evidence
 for the polynomial/Fourier pipeline contract, not a GPU claim.
 
-The derivative-GP lane checks exact query-input JVP/VJP products for mixed
-value/first-derivative periodic, rational-quadratic, and cosine GPs against an
-independent NumPy covariance and posterior oracle. CPU timings are retained
-only after the checks pass; CUDA is an explicit typed refusal until the
-resident derivative-GP graph is linked:
+The derivative-GP lane checks exact query-input JVP/VJP products and dense
+posterior covariance parameter JVP/VJP products for mixed value/first-derivative
+periodic, rational-quadratic, cosine, and polynomial GPs against an independent
+NumPy covariance and posterior finite-difference oracle. CPU timings are
+retained only after the checks pass; CUDA is an explicit typed refusal until
+the resident derivative-GP graph is linked:
 
 ```bash
 python -B scripts/bench_derivative_gp.py \

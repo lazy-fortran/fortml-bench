@@ -107,6 +107,11 @@ not completion gates.
   query-input JVP/VJP workloads. The independent covariance/posterior oracle
   gates every CPU row; the resident derivative-GP CUDA graph remains an
   explicit typed refusal. See [`results/DERIVATIVE_GP.md`](results/DERIVATIVE_GP.md).
+- [x] Add dense derivative-GP posterior covariance parameter JVP/VJP
+  workloads for periodic, rational-quadratic, cosine, and polynomial kernels.
+  The benchmark finite-differences every packed log-kernel/log-noise coordinate
+  through an independent NumPy Cholesky oracle, checks the release app's
+  exact CPU products, and records typed CUDA refusal rows.
 
 ## Evidence
 
