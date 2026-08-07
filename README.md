@@ -153,6 +153,18 @@ See [`results/MLP_SCHEDULE_HYPERGRADIENT.md`](results/MLP_SCHEDULE_HYPERGRADIENT
 The lane records explicit CUDA and outer-hyper-HVP refusal rows rather than
 silently falling back to host finite differences.
 
+Binary probability calibration (Platt sigmoid and weighted PAVA isotonic) is
+checked against an independent NumPy oracle:
+
+```bash
+.venv/bin/python -B scripts/bench_probability_calibration.py \
+    --fortml ../fortml --output results/probability_calibration.csv
+```
+
+See [`results/PROBABILITY_CALIBRATION.md`](results/PROBABILITY_CALIBRATION.md).
+CUDA capability rows are explicit refusals because no resident calibration
+kernel is linked.
+
 The matched multinomial softmax and multiclass neural-classifier lane uses an
 independent NumPy damped-Newton/Adam oracle, scikit-learn and optional resident
 PyTorch context rows, and an explicit FortML app protocol. Missing FortML
