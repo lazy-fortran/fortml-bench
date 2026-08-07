@@ -688,6 +688,20 @@ explicit refusal for the complete MLP HVP trajectory:
 
 See [`results/RMSPROP_HYPERGRADIENT.md`](results/RMSPROP_HYPERGRADIENT.md).
 
+The fixed full-batch Adagrad hypergradient lane independently finite-differences
+the validation value, all three packed log hyperparameters, and a directional
+JVP for the accumulated-square trajectory. The FortML release app is retained
+only after its complete value/gradient/JVP array agrees with the NumPy oracle;
+the raw record includes CPU timing, repository/compiler provenance, and typed
+CUDA refusals:
+
+```bash
+.venv/bin/python -B scripts/bench_adagrad_hypergradient.py \
+  --fortml ../fortml --output results/adagrad_hypergradient.csv
+```
+
+See [`results/ADAGRAD_HYPERGRADIENT.md`](results/ADAGRAD_HYPERGRADIENT.md).
+
 The resident CUDA contract lane independently checks the native kNN prediction
 plan, the resident dense-affine inference primitive (all eight MLP activations
 and their forward-mode JVP/reverse-mode VJP), its single-layer tanh MSE update,

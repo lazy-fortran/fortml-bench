@@ -25,6 +25,7 @@ Complete-call studies:
 - [RMSprop optimizer and MLP training](RMSPROP.md)
 - [Generic trainer checkpoint continuation](TRAINER_CHECKPOINT.md)
 - [RMSprop trajectory hypergradients](RMSPROP_HYPERGRADIENT.md)
+- [Adagrad trajectory hypergradients](ADAGRAD_HYPERGRADIENT.md)
 - [Resident CUDA correctness contracts](DEVICE_CONTRACTS.md)
 - [Grouped MLP value, HVP, and bounded L-BFGS-B](MLP_GROUPED_TRAINING.md)
 - [Physics-informed and Hamiltonian model evidence](PHYSICS_MODELS.md)
