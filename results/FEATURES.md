@@ -46,22 +46,22 @@ The recorded FortML rows all pass. The current gfortran CPU timings are:
 
 | workload / phase | seconds per operation | checked metric |
 |---|---:|---:|
-| MLP training / fit | 1.42942625e-3 | final MSE 1.5205011458254412e-3 |
-| basis-linear / fit | 1.2081625e-5 | MSE 3.4915906185525344e-31 |
-| basis-linear / predict | 1.0635625e-6 | prediction sum 118.30705401978305 |
-| basis-linear / JVP | 2.374e-6 | JVP sum 105.28373944064631 |
-| basis pipeline / transform | 1.05198125e-5 | feature sum 2753.0921746559225 |
-| basis pipeline / JVP | 2.2064375e-5 | JVP sum 1231.6432747014742 |
-| basis pipeline / VJP | 1.14521875e-5 | parameter cotangent sum -5.287453498417015 |
-| CART regression / fit | 1.09888375e-4 | MSE 4.564795134272737e-4 |
-| CART regression / predict | 6.8221875e-7 | prediction sum 43.62121219974771 |
-| CART classification / fit | 1.2056975e-4 | accuracy 1.0 |
-| CART classification / predict | 7.15734375e-7 | probability sum 128.0 |
-| regression metrics / aggregate | 1.981078125e-6 | MSE 3.6625981037084515e-3 |
-| decision stump / fit | 4.42835e-5 | MSE 1.254599131397361e-2 |
-| decision stump / predict | 2.08046875e-7 | prediction sum 43.62121219974757 |
-| gradient boosting / fit | 7.2032125e-4 | MSE 6.647611998075403e-2 |
-| gradient boosting / predict | 3.108515625e-6 | prediction sum 43.62121219974761 |
+| MLP training / fit | 1.284255e-3 | final MSE 1.5205011458254412e-3 |
+| basis-linear / fit | 1.2145375e-5 | MSE 3.4915906185525344e-31 |
+| basis-linear / predict | 1.134953125e-6 | prediction sum 118.30705401978305 |
+| basis-linear / JVP | 2.51459375e-6 | JVP sum 105.28373944064631 |
+| basis pipeline / transform | 1.103890625e-5 | feature sum 2753.0921746559225 |
+| basis pipeline / JVP | 2.283365625e-5 | JVP sum 1231.6432747014742 |
+| basis pipeline / VJP | 1.211375e-5 | parameter cotangent sum -5.287453498417015 |
+| CART regression / fit | 1.1355525e-4 | MSE 4.564795134272737e-4 |
+| CART regression / predict | 7.05703125e-7 | prediction sum 43.62121219974771 |
+| CART classification / fit | 1.25199625e-4 | accuracy 1.0 |
+| CART classification / predict | 7.503125e-7 | probability sum 128.0 |
+| regression metrics / aggregate | 2.082828125e-6 | MSE 3.6625981037084515e-3 |
+| decision stump / fit | 4.5996625e-5 | MSE 1.254599131397361e-2 |
+| decision stump / predict | 2.60796875e-7 | prediction sum 43.62121219974757 |
+| gradient boosting / fit | 7.47105375e-4 | MSE 6.647611998075403e-2 |
+| gradient boosting / predict | 3.306859375e-6 | prediction sum 43.62121219974761 |
 
 Timings are machine-specific and should only be compared after matching the
 compiler, flags, CPU affinity, precision, and repetition policy. The CSV
