@@ -78,13 +78,19 @@ FIELDS = (
 )
 
 
-def revision(repository: Path) -> str:
+def revision(repository: Path, ignored_paths: tuple[Path, ...] = ()) -> str:
     value = subprocess.check_output(
         ["git", "-C", str(repository), "rev-parse", "HEAD"], text=True
     ).strip()
-    dirty = subprocess.check_output(
+    status_lines = subprocess.check_output(
         ["git", "-C", str(repository), "status", "--porcelain"], text=True
-    ).strip()
+    ).splitlines()
+    ignored = {path.resolve() for path in ignored_paths}
+    dirty = []
+    for line in status_lines:
+        path_text = line[3:].split(" -> ")[-1].strip()
+        if (repository / path_text).resolve() not in ignored:
+            dirty.append(line)
     return value + ("+dirty" if dirty else "")
 
 
@@ -96,7 +102,9 @@ def package_version(name: str) -> str:
     return str(getattr(module, "__version__", "installed"))
 
 
-def base_metadata(root: Path, fortml: Path) -> dict[str, str]:
+def base_metadata(
+    root: Path, fortml: Path, ignored_paths: tuple[Path, ...] = ()
+) -> dict[str, str]:
     return {
         "python_version": platform.python_version(),
         "numpy_version": np.__version__,
@@ -105,7 +113,7 @@ def base_metadata(root: Path, fortml: Path) -> dict[str, str]:
         "jax_version": package_version("jax"),
         "xgboost_version": package_version("xgboost"),
         "fortml_revision": revision(fortml),
-        "benchmark_revision": revision(root),
+        "benchmark_revision": revision(root, ignored_paths),
         "compiler": "gfortran",
         "flags": "-O3",
         "device": "cpu",
@@ -1431,7 +1439,8 @@ def main() -> None:
     )
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
-    metadata = base_metadata(root, args.fortml.resolve())
+    ignored_outputs = (args.output.resolve(),)
+    metadata = base_metadata(root, args.fortml.resolve(), ignored_outputs)
     records = run_fortran(root, args.fortml.resolve(), metadata)
     records.extend(run_sklearn(metadata))
     records.extend(optional_refusal_rows(metadata))
