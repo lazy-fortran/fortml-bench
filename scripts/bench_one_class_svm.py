@@ -8,6 +8,7 @@ import csv
 import os
 import platform
 import subprocess
+import tempfile
 import time
 from pathlib import Path
 from typing import Any
@@ -87,15 +88,21 @@ def fit_oracle(x: np.ndarray) -> tuple[np.ndarray, float, int]:
     else:
         raise RuntimeError("NumPy one-class SVM dual oracle did not converge")
     scores = kernel @ alpha
+    # Construct the complete KKT offset interval, including zero and capped
+    # weights.  A projected iterate can leave a numerically inconsistent
+    # interval; use the deterministic mean-score fallback in that case.
+    lower, upper = -np.inf, np.inf
     free = (alpha > 1.0e-10) & (alpha < cap - 1.0e-10)
+    if np.any(alpha <= 1.0e-10):
+        lower = max(lower, float(np.max(scores[alpha <= 1.0e-10])))
+    if np.any(alpha >= cap - 1.0e-10):
+        upper = min(upper, float(np.min(scores[alpha >= cap - 1.0e-10])))
     if np.any(free):
-        offset = float(scores[free].mean())
-    else:
-        lower = float(np.max(scores[alpha <= 1.0e-10])) if np.any(alpha <= 1.0e-10) else -np.inf
-        upper = (float(np.min(scores[alpha >= cap - 1.0e-10]))
-                 if np.any(alpha >= cap - 1.0e-10) else np.inf)
-        offset = (float(0.5 * (lower + upper))
-                  if np.isfinite(lower + upper) else float(scores.mean()))
+        lower = max(lower, float(np.max(scores[free])))
+        upper = min(upper, float(np.min(scores[free])))
+    offset = (float(0.5 * (lower + upper))
+              if np.isfinite(lower + upper) and lower <= upper
+              else float(scores.mean()))
     if (abs(float(alpha.sum()) - 1.0) > 2.0e-10 or
             np.any(alpha < -2.0e-10) or np.any(alpha > cap + 2.0e-10)):
         raise RuntimeError("NumPy one-class SVM dual oracle violated capped-simplex constraints")
@@ -133,7 +140,8 @@ def make_row(details: dict[str, str], **values: Any) -> dict[str, Any]:
     return row
 
 
-def numpy_rows(details: dict[str, str]) -> tuple[list[dict[str, Any]], np.ndarray, np.ndarray]:
+def numpy_rows(details: dict[str, str]) -> tuple[
+        list[dict[str, Any]], np.ndarray, float, np.ndarray, np.ndarray]:
     x, query = fixture()
     alpha, offset, iterations = fit_oracle(x)
     expected_scores, expected_labels = predict_oracle(x, query, alpha, offset)
@@ -157,23 +165,100 @@ def numpy_rows(details: dict[str, str]) -> tuple[list[dict[str, Any]], np.ndarra
                  oracle="independent NumPy RBF score/label oracle",
                  notes="signed score and ±1 anomaly-label checksum"),
     ]
-    return rows, expected_scores, expected_labels
+    return rows, alpha, offset, expected_scores, expected_labels
 
 
-def fortml_rows(fortml: Path, details: dict[str, str]) -> list[dict[str, Any]]:
+def parse_fortran(path: Path) -> tuple[np.ndarray, float, np.ndarray, np.ndarray]:
+    weights = np.full(N_SAMPLES, np.nan, dtype=np.float64)
+    offset = np.nan
+    scores = np.full(N_QUERY, np.nan, dtype=np.float64)
+    labels = np.full(N_QUERY, -999, dtype=np.int64)
+    with path.open(newline="") as stream:
+        for record in csv.DictReader(stream):
+            quantity = record["quantity"]
+            row = int(record["row"]) - 1
+            value = float(record["value"])
+            if quantity == "weight":
+                weights[row] = value
+            elif quantity == "offset":
+                offset = value
+            elif quantity == "score":
+                scores[row] = value
+            elif quantity == "prediction":
+                labels[row] = int(value)
+            else:
+                raise RuntimeError(f"unknown FortML quantity {quantity!r}")
+    if (np.isnan(weights).any() or not np.isfinite(offset) or
+            np.isnan(scores).any() or np.any(labels == -999)):
+        raise RuntimeError("FortML omitted a one-class SVM output")
+    return weights, offset, scores, labels
+
+
+def parse_timing(stdout: str) -> dict[str, float]:
+    values: dict[str, float] = {}
+    for line in stdout.splitlines():
+        fields = line.strip().split(",")
+        if len(fields) == 5 and fields[0] in {
+                "one_class_svm_fit", "one_class_svm_predict"}:
+            values[fields[0]] = float(fields[-1])
+    return values
+
+
+def fortml_rows(fortml: Path, details: dict[str, str], expected_alpha: np.ndarray,
+                expected_offset: float, expected_scores: np.ndarray,
+                expected_labels: np.ndarray, no_build: bool) -> list[dict[str, Any]]:
     target = "fortml_bench_one_class_svm"
     source = fortml / "app" / f"{target}.f90"
     if not source.is_file():
         return [make_row(
-            details, phase=phase, backend="fortml", device="cpu", status="unavailable",
+            details, phase=phase, backend="fortml_cpu", device="cpu", status="unavailable",
             oracle="typed release-target contract",
             notes=f"release target source is absent: {source.name}",
-        ) for phase in ("fit", "predict")]
-    return [make_row(
-        details, phase=phase, backend="fortml", device="cpu", status="unavailable",
-        oracle="typed release-target contract",
-        notes="one-class release app exists but this lane has no checked protocol yet",
-    ) for phase in ("fit", "predict")]
+        ) for phase in ("fit", "predict")] + [make_row(
+            details, phase="predict", backend="fortml_cuda", device="cuda",
+            status="unavailable", oracle="typed_device_contract",
+            notes="no resident RBF one-class SVM kernel; FORTNUM_NOT_IMPLEMENTED",
+        )]
+    if not no_build:
+        subprocess.run(["fo", "build", "--flag", "-O3"], cwd=fortml, check=True)
+    environment = os.environ.copy()
+    environment.update({"FO_FC": environment.get("FO_FC", "gfortran"),
+                        "OMP_NUM_THREADS": "1"})
+    with tempfile.TemporaryDirectory(dir=fortml / "build") as directory:
+        output = Path(directory) / "one_class_svm.csv"
+        environment["FORTML_BENCH_ONE_CLASS_SVM_OUTPUT"] = str(output)
+        completed = subprocess.run(
+            ["fo", "exec", "--no-build", target], cwd=fortml,
+            env=environment, capture_output=True, text=True, check=True,
+        )
+        actual_alpha, actual_offset, actual_scores, actual_labels = parse_fortran(output)
+    error = max(
+        float(np.max(np.abs(actual_alpha - expected_alpha))),
+        abs(actual_offset - expected_offset),
+        float(np.max(np.abs(actual_scores - expected_scores))),
+        float(np.max(actual_labels != expected_labels)),
+    )
+    if error > 5.0e-9:
+        raise RuntimeError(f"FortML one-class SVM oracle mismatch {error:.3e}")
+    timing = parse_timing(completed.stdout)
+    if "one_class_svm_fit" not in timing or "one_class_svm_predict" not in timing:
+        raise RuntimeError("FortML one-class SVM app omitted timing records")
+    rows = [
+        make_row(details, phase="fit", backend="fortml_cpu", device="cpu", status="pass",
+                 seconds_per_operation=timing["one_class_svm_fit"], accuracy=1.0,
+                 max_abs_error=error,
+                 oracle="independent NumPy capped-simplex dual/offset oracle",
+                 notes="complete support weights and KKT offset matched"),
+        make_row(details, phase="predict", backend="fortml_cpu", device="cpu", status="pass",
+                 seconds_per_operation=timing["one_class_svm_predict"], accuracy=1.0,
+                 max_abs_error=error,
+                 oracle="independent NumPy RBF score/label oracle",
+                 notes="complete signed scores and ±1 anomaly labels matched"),
+        make_row(details, phase="predict", backend="fortml_cuda", device="cuda",
+                 status="unavailable", oracle="typed_device_contract",
+                 notes="no resident RBF one-class SVM kernel; FORTNUM_NOT_IMPLEMENTED"),
+    ]
+    return rows
 
 
 def main() -> None:
@@ -181,17 +266,15 @@ def main() -> None:
     parser.add_argument("--fortml", type=Path, default=Path("../fortml"))
     parser.add_argument("--output", type=Path,
                         default=Path("results/one_class_svm.csv"))
+    parser.add_argument("--no-build", action="store_true",
+                        help="reuse a previously built FortML release app")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     fortml = args.fortml.resolve()
     details = metadata(root, fortml, args.output)
-    rows, expected_scores, expected_labels = numpy_rows(details)
-    rows.extend(fortml_rows(fortml, details))
-    rows.append(make_row(
-        details, phase="predict", backend="fortml", device="cuda", status="unavailable",
-        oracle="typed_device_contract",
-        notes="no resident RBF one-class SVM kernel; FORTNUM_NOT_IMPLEMENTED",
-    ))
+    rows, expected_alpha, expected_offset, expected_scores, expected_labels = numpy_rows(details)
+    rows.extend(fortml_rows(fortml, details, expected_alpha, expected_offset,
+                            expected_scores, expected_labels, args.no_build))
     if expected_scores.shape != (N_QUERY,) or expected_labels.shape != (N_QUERY,):
         raise RuntimeError("one-class SVM oracle returned malformed query arrays")
     args.output.parent.mkdir(parents=True, exist_ok=True)
