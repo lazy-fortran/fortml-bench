@@ -104,6 +104,20 @@ before timing. It adds a matched scikit-learn reference where applicable and
 records explicit availability/refusal rows for optional PyTorch, JAX, and
 XGBoost comparisons.
 
+The exact second-order XGBoost-style lane has its own workload and raw record.
+It checks squared and logistic depth-one boosting against an independent NumPy
+gradient/Hessian oracle, then records an explicit optional-XGBoost contextual
+row:
+
+```bash
+.venv/bin/python -B scripts/bench_xgboost.py \
+  --fortml ../fortml --output results/xgboost_workloads.csv
+```
+
+See [`results/XGBOOST.md`](results/XGBOOST.md) for the regularisation settings,
+oracle boundary, and recorded timings. The optional package row never turns a
+different histogram or tree-growth policy into a bitwise comparison.
+
 The scalable-model report <!-- slop-ok --> also contains the current corrected GRBCM,
 contiguous-versus-clustered expert, and multidimensional-SKI records. Older
 GRBCM rows are superseded because they predate the communication-set and

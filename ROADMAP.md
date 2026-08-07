@@ -131,6 +131,10 @@ a different workload, precision, device, or residency policy.
   transform, JVP, and VJP checks and timings.
 - [x] Add deterministic CART-stump and residual-stump boosting lanes with an
   exhaustive NumPy split oracle and matched scikit-learn depth-1 reference.
+- [x] Add an exact depth-one second-order boosting lane with independent NumPy
+  gradient/Hessian, regularized leaf-weight, split-gain, squared-objective, and
+  logistic-objective checks. Record a dedicated FortML workload and an explicit
+  optional-XGBoost contextual/refusal row in `results/xgboost_workloads.csv`.
 - [ ] Add matched multinomial softmax regression and neural classifier lanes.
   FortML now has the softmax and multiclass MLP implementations (including
   deterministic input-shape oracles), but this repository still needs the
@@ -141,9 +145,11 @@ a different workload, precision, device, or residency policy.
 - [ ] Add the full histogram/CART feature matrix: missing values, sample and
   class weights, monotonic constraints, early stopping, feature importance,
   categorical inputs, and GPU histograms.
-- [ ] Add a matched XGBoost lane when the optional dependency and a pinned
-  release are available. Until then, dependency-check refusal rows remain in
-  `results/features_workloads.csv`. A stump benchmark is not called XGBoost.
+- [ ] Add a matched full XGBoost lane when the optional dependency and a pinned
+  release are available. The current exact depth-one FortML lane is recorded in
+  `results/xgboost_workloads.csv`. Histogram, deeper-tree, missing-value, and
+  constraint comparisons remain separate work. A stump benchmark is not called
+  XGBoost.
 - [ ] Add physics-informed, Hamiltonian, Lagrangian, and symplectic workloads
   with analytic harmonic-oscillator and manufactured-PDE oracles. Record
   trajectory error, energy drift, symplectic Jacobian defect, residual norms,
