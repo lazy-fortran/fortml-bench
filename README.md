@@ -77,6 +77,19 @@ boundaries, plots, and the recorded machine results are in
 [`results/MODEL_WORKLOADS.md`](results/MODEL_WORKLOADS.md) and
 [`results/GP_FEATURES.md`](results/GP_FEATURES.md).
 
+The kernel-catalog lane checks the periodic and rational-quadratic covariance
+leaves, their input derivatives, and logarithmic parameter JVP/VJP/HVP products
+against independent NumPy formulas. It records host timings and explicit CUDA
+capability refusals until the resident postfix ABI carries the third leaf
+parameter:
+
+```bash
+python -B scripts/bench_kernel_catalog.py \
+  --fortml ../fortml --output results/kernel_catalog.csv
+```
+
+See [`results/KERNEL_CATALOG.md`](results/KERNEL_CATALOG.md).
+
 The binary classification lane compares the FortML logistic estimator with
 scikit-learn on a deterministic two-label fixture. It checks full predicted
 labels and probabilities with independent NumPy accuracy, log-loss, and
