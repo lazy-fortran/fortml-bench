@@ -10,11 +10,12 @@ projected-gradient updates enforce `0 <= alpha_i <= 1/(nu n)` and
 checks the dual constraints, signed query scores, and `+1`/`-1` anomaly labels
 before retaining CPU NumPy fit and prediction timings.
 
-FortML CPU rows are explicit `unavailable` records until a release app with a
-checked one-class SVM protocol is published.  The CUDA row is also an explicit
-typed refusal (`FORTNUM_NOT_IMPLEMENTED`); no host timing is relabeled as
-device evidence.  Fit active-set/hyperparameter derivatives and a resident
-CUDA kernel are separate implementation work.
+The release app now emits complete support weights, the KKT offset, query
+scores, and anomaly labels.  The benchmark retains FortML CPU fit and predict
+timings only after every emitted value matches the independent oracle.  The
+CUDA row remains an explicit typed refusal (`FORTNUM_NOT_IMPLEMENTED`); no host
+timing is relabeled as device evidence.  Fit active-set/hyperparameter
+derivatives and a resident CUDA kernel are separate implementation work.
 
 Run the lane with:
 

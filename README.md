@@ -319,9 +319,9 @@ radius-search reduction is linked.
 
 The dense RBF one-class SVM lane checks a capped-simplex dual fit, KKT offset,
 signed scores, and `+1`/`-1` anomaly labels against an independent NumPy oracle,
-then records CPU NumPy fit/predict timings.  FortML CPU and CUDA rows remain
-explicit unavailable/typed-refusal records until their resident release
-protocols are linked:
+then records NumPy and checked FortML CPU fit/predict timings.  The CUDA row
+remains an explicit typed-refusal record until a resident release kernel is
+linked:
 
 ```bash
 .venv/bin/python -B scripts/bench_one_class_svm.py \
