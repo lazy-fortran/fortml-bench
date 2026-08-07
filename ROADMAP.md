@@ -112,6 +112,11 @@ not completion gates.
   The benchmark finite-differences every packed log-kernel/log-noise coordinate
   through an independent NumPy Cholesky oracle, checks the release app's
   exact CPU products, and records typed CUDA refusal rows.
+- [x] Extend the derivative-GP benchmark to the GPyTorch-compatible
+  spectral-mixture kernel. The independent dense oracle covers mixed
+  value/first-derivative blocks, query JVP/VJP, posterior covariance, and
+  packed parameter JVP/VJP products; the release app records exact CPU rows
+  and the resident CUDA graph remains an explicit typed refusal.
 
 ## Evidence
 
@@ -465,6 +470,12 @@ a different workload, precision, device, or residency policy.
   importance, categorical inputs, and native GPU histograms. CPU weighted
   binary/regression/multiclass histogram growth is now covered by the release
   lane; the CUDA histogram gate remains open.
+- [x] Add the bounded LightGBM-style leaf-wise lane. `scripts/bench_lightgbm.py`
+  checks an independent six-row weighted-Newton oracle, while the FortML app
+  records weighted regression, binary-logistic, deterministic best-leaf CPU
+  timings, and a typed CUDA refusal in `results/lightgbm_leafwise.csv`.
+  GOSS/EFB, categorical statistics, distributed workers, and resident GPU
+  histograms remain open.
 - [ ] Add a matched full XGBoost lane when the optional dependency and a pinned
   release are available. The current exact depth-limited and weighted CPU
   histogram FortML lanes are recorded in `results/xgboost_workloads.csv`; both
