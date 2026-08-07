@@ -140,6 +140,19 @@ warm-up-plus-cosine, and exponential-decay values and analytic products:
 See [`results/MLP_SCHEDULES.md`](results/MLP_SCHEDULES.md). CUDA schedule rows
 are explicit `unavailable` capability records, not host timings.
 
+The scheduled trajectory hypergradient lane checks a complete `3-8-1` MLP
+training trajectory with exact reverse gradients and a directional JVP over
+base-rate, L2, minimum-fraction, and decay-logit hyperparameters:
+
+```bash
+.venv/bin/python -B scripts/bench_mlp_schedule_hypergradient.py \
+  --fortml ../fortml --output results/mlp_schedule_hypergradient.csv
+```
+
+See [`results/MLP_SCHEDULE_HYPERGRADIENT.md`](results/MLP_SCHEDULE_HYPERGRADIENT.md).
+The lane records explicit CUDA and outer-hyper-HVP refusal rows rather than
+silently falling back to host finite differences.
+
 The matched multinomial softmax and multiclass neural-classifier lane uses an
 independent NumPy damped-Newton/Adam oracle, scikit-learn and optional resident
 PyTorch context rows, and an explicit FortML app protocol. Missing FortML
