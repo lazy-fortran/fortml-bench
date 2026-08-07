@@ -102,6 +102,20 @@ python -B scripts/bench_discriminant_analysis.py \
 
 See [`results/DISCRIMINANT_ANALYSIS.md`](results/DISCRIMINANT_ANALYSIS.md).
 
+The deterministic random-forest lane exercises the seeded bootstrap CART
+ensemble on a separated three-class fixture. A direct NumPy threshold oracle
+checks all six query labels and the probability-simplex contract without a
+scikit-learn dependency:
+
+```bash
+python -B scripts/bench_random_forest.py \
+  --fortml ../fortml --output results/random_forest.csv
+```
+
+See [`results/RANDOM_FOREST.md`](results/RANDOM_FOREST.md). The CSV records
+CPU fit/predict timings and an explicit CUDA capability refusal until a
+resident tree-ensemble kernel is available.
+
 The derivative-GP lane checks exact query-input JVP/VJP products for mixed
 value/first-derivative periodic and rational-quadratic GPs against an
 independent NumPy covariance and posterior oracle. CPU timings are retained
