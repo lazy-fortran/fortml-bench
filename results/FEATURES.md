@@ -8,7 +8,7 @@ Fortran app is `fortml_bench_features`. It is built with `fo build --flag
 
 ## What is checked
 
-The lane contains seven families of complete calls:
+The lane contains eight families of complete calls:
 
 - `mlp_training` trains a deterministic 3-8-1 tanh MLP for 24 full-batch
   Adam epochs. NumPy reproduces the Xavier/phase initializer, MSE plus L2
@@ -18,6 +18,9 @@ The lane contains seven families of complete calls:
   Fourier pipeline on 256 two-dimensional samples. NumPy checks the feature
   sum, input/parameter JVP sum, and parameter/input VJP sums. The pipeline
   uses exact log-frequency tangents, not finite differences.
+- `basis_linear_regression` fits a one-frequency Fourier basis followed by a
+  linear regressor. NumPy independently solves the design least-squares
+  problem and checks the composed prediction and basis/coefficients/input JVP.
 - `decision_stump` checks the exhaustive squared-error split, leaf values,
   predictions, and piecewise-constant result against an independent NumPy
   split search. The prediction JVP is zero away from split boundaries.
@@ -43,19 +46,22 @@ The recorded FortML rows all pass. The current gfortran CPU timings are:
 
 | workload / phase | seconds per operation | checked metric |
 |---|---:|---:|
-| MLP training / fit | 1.30136425e-3 | final MSE 1.5205011458254412e-3 |
-| basis pipeline / transform | 1.07784375e-5 | feature sum 2753.0921746559225 |
-| basis pipeline / JVP | 2.28565e-5 | JVP sum 1231.6432747014742 |
-| basis pipeline / VJP | 1.187109375e-5 | parameter cotangent sum -5.287453498417015 |
-| CART regression / fit | 1.30537125e-4 | MSE 4.564795134272737e-4 |
-| CART regression / predict | 9.00921875e-7 | prediction sum 43.62121219974771 |
-| CART classification / fit | 1.2555525e-4 | accuracy 1.0 |
-| CART classification / predict | 7.52046875e-7 | probability sum 128.0 |
-| regression metrics / aggregate | 2.050578125e-6 | MSE 3.6625981037084515e-3 |
-| decision stump / fit | 4.6187e-5 | MSE 1.254599131397361e-2 |
-| decision stump / predict | 2.1946875e-7 | prediction sum 43.62121219974757 |
-| gradient boosting / fit | 7.86092375e-4 | MSE 6.647611998075403e-2 |
-| gradient boosting / predict | 3.28259375e-6 | prediction sum 43.62121219974761 |
+| MLP training / fit | 1.42942625e-3 | final MSE 1.5205011458254412e-3 |
+| basis-linear / fit | 1.2081625e-5 | MSE 3.4915906185525344e-31 |
+| basis-linear / predict | 1.0635625e-6 | prediction sum 118.30705401978305 |
+| basis-linear / JVP | 2.374e-6 | JVP sum 105.28373944064631 |
+| basis pipeline / transform | 1.05198125e-5 | feature sum 2753.0921746559225 |
+| basis pipeline / JVP | 2.2064375e-5 | JVP sum 1231.6432747014742 |
+| basis pipeline / VJP | 1.14521875e-5 | parameter cotangent sum -5.287453498417015 |
+| CART regression / fit | 1.09888375e-4 | MSE 4.564795134272737e-4 |
+| CART regression / predict | 6.8221875e-7 | prediction sum 43.62121219974771 |
+| CART classification / fit | 1.2056975e-4 | accuracy 1.0 |
+| CART classification / predict | 7.15734375e-7 | probability sum 128.0 |
+| regression metrics / aggregate | 1.981078125e-6 | MSE 3.6625981037084515e-3 |
+| decision stump / fit | 4.42835e-5 | MSE 1.254599131397361e-2 |
+| decision stump / predict | 2.08046875e-7 | prediction sum 43.62121219974757 |
+| gradient boosting / fit | 7.2032125e-4 | MSE 6.647611998075403e-2 |
+| gradient boosting / predict | 3.108515625e-6 | prediction sum 43.62121219974761 |
 
 Timings are machine-specific and should only be compared after matching the
 compiler, flags, CPU affinity, precision, and repetition policy. The CSV
