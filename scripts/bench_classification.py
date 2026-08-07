@@ -274,10 +274,17 @@ def main() -> None:
     rows = run_sklearn(x, labels)
     rows.extend(run_fortran(args.fortml.resolve()))
     output_path = args.output.resolve()
+    root = Path(__file__).resolve().parents[1]
+    ignored_outputs = (
+        output_path,
+        (root / "results/classification_workloads.csv").resolve(),
+        (root / "results/classification_models.csv").resolve(),
+        (root / "results/classification_extensions.csv").resolve(),
+    )
     metadata = {
         "python_version": platform.python_version(),
         "numpy_version": np.__version__,
-        "benchmark_revision": git_revision(Path.cwd(), (output_path,)),
+        "benchmark_revision": git_revision(root, ignored_outputs),
         "fortml_revision": git_revision(args.fortml.resolve()),
     }
     try:
