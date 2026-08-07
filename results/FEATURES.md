@@ -24,7 +24,7 @@ The lane contains nine families of complete calls:
 - `gaussian_naive_bayes` fits three arbitrary integer classes with weighted
   Gaussian moments and global variance smoothing. NumPy independently forms
   class means, population variances, shifted log densities, and the analytic
-  input JVP; the FortML log-probability and JVP sums agree below `5e-8`.
+  input JVP. The FortML log-probability and JVP sums agree below `5e-8`.
 - `decision_stump` checks the exhaustive squared-error split, leaf values,
   predictions, and piecewise-constant result against an independent NumPy
   split search. The prediction JVP is zero away from split boundaries.
@@ -73,10 +73,10 @@ The recorded FortML rows all pass. The current gfortran CPU timings are:
 The raw CSV also carries explicit FortML CUDA capability-boundary rows for
 GaussianNB (fit, predict, and input JVP), the MLP trainer (fit), and the
 logistic objective (value/gradient and HVP). They are `unavailable` rows with
-no timing: the current release apps expose host memory only. The NumPy
+no timing. The current release apps expose host memory only. The NumPy
 behavioral checks run before these refusals are emitted, so a refusal cannot
 hide a host-side oracle failure. Resident PyTorch CUDA evidence belongs to
-the separate model/classifier lanes; it must not be inferred for FortML from
+the separate model/classifier lanes. It must not be inferred for FortML from
 those rows.
 
 Timings are machine-specific and should only be compared after matching the
@@ -97,15 +97,15 @@ The GaussianNB row is checked against an independent NumPy density
 implementation rather than a scikit-learn call, because the FortML contract
 also includes packed-parameter and input derivative products that are outside
 scikit-learn's estimator API. The fixture uses equal class weights and
-`var_smoothing=1e-9`; weighted-fit and explicit-prior behavior is covered by
+`var_smoothing=1e-9`. Weighted-fit and explicit-prior behavior is covered by
 the FortML unit oracle.
 
 PyTorch, JAX, and XGBoost are represented by explicit dependency-check rows.
-On the recorded machine PyTorch is installed but is not timed by this lane.
-the existing model-workloads benchmark covers its MLP forward/VJP product.
-JAX and XGBoost are unavailable, so no timing or quality claim is inferred for
-either package. An unavailable package is a refusal row, never an omitted
-competitor.
+On the recorded machine all three packages are unavailable to this Python
+environment, so no timing or quality claim is inferred for any of them. An
+unavailable package is a refusal row, never an omitted competitor. Resident
+PyTorch CPU/CUDA evidence is maintained by the classifier and model lanes
+when the pinned optional dependency is installed.
 
 ## Reproduce
 

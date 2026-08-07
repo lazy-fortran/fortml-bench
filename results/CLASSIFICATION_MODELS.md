@@ -27,22 +27,24 @@ Run the lane serially from this repository:
 ```
 
 The current CSV records four NumPy-oracle rows, four scikit-learn context rows,
-four FortML CPU passes, four explicit FortML CUDA capability refusals, and
-four resident PyTorch CPU/CUDA passes. The NumPy and
-FortML references pass with softmax accuracy `0.53125` and MLP accuracy
-`0.640625`. The FortML maximum probability error is `2.46e-6` for softmax and
-`2.33e-15` for the MLP. PyTorch agrees with the independent MLP oracle to
-`4.44e-16` on both devices. All probability normalization errors are at most
-`2.22e-16`. Fit and prediction timing fields remain in the raw CSV. The
+two explicit PyTorch dependency refusals, four FortML CPU passes, and four
+explicit FortML CUDA capability refusals. The NumPy and FortML references pass
+with softmax accuracy `0.53125` and MLP accuracy `0.640625`. The FortML
+maximum probability error is `2.46e-6` for softmax and `2.44e-15` for the MLP.
+All probability normalization errors are at most `2.22e-16`. Fit and
+prediction timing fields remain in the raw CSV. The
 scikit-learn rows use multinomial `lbfgs`
 and a tanh
 `MLPClassifier` with matched exposed settings.  They are contextual timings,
 not a claim that optimizer stopping or regularization conventions are
-bit-for-bit identical.  The optional PyTorch MLP rows use resident float64
-tensors, the same initialized weights, explicit L2, and `foreach=False` Adam.
-CPU and CUDA are separate records. If either device or the optional package is
+bit-for-bit identical. When available, the optional PyTorch MLP rows use
+resident float64 tensors, the same initialized weights, explicit L2, and
+`foreach=False` Adam. CPU and CUDA are separate records. If either device or the optional package is
 unavailable, the harness retains an explicit machine-readable `unavailable`
-row instead of omitting that comparison.
+row instead of omitting that comparison. The recorded environment has no
+importable PyTorch package, so its CPU/CUDA rows are refusals rather than
+timings. Install the pinned benchmark environment to obtain resident PyTorch
+device measurements.
 
 FortML integration remains an explicit gate for every release run. The
 harness invokes the release target `fortml_bench_classifiers` and sets
@@ -70,5 +72,5 @@ therefore a behavioral result, not merely a successful process exit.
 The FortML CUDA rows are intentionally `unavailable` and contain no timing.
 The classifier release app has no device-resident implementation, so the
 benchmark refuses a CUDA execution rather than relabeling a host measurement.
-PyTorch CUDA rows demonstrate the independent resident-device oracle only;
+PyTorch CUDA rows demonstrate the independent resident-device oracle only.
 they do not imply CUDA support for FortML's classifier or MLP trainer.
