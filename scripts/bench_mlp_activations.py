@@ -27,7 +27,8 @@ N_FEATURES = 8
 N_HIDDEN = 32
 N_OUTPUTS = 4
 REPETITIONS = 32
-KINDS = ("linear", "tanh", "relu", "gelu", "silu", "elu", "softplus", "leaky_relu")
+KINDS = ("linear", "tanh", "relu", "gelu", "silu", "elu", "softplus",
+         "leaky_relu", "sigmoid", "mish")
 FIELDS = (
     "activation", "backend", "device", "status", "n_samples", "n_features",
     "n_hidden", "n_outputs", "repetitions", "seconds_per_operation", "checksum",
@@ -102,6 +103,19 @@ def activation(values: np.ndarray, name: str) -> np.ndarray:
                         np.log1p(np.exp(values)))
     if name == "leaky_relu":
         return np.where(values >= 0.0, values, 0.01 * values)
+    if name == "sigmoid":
+        positive = values >= 0.0
+        result = np.empty_like(values)
+        result[positive] = 1.0 / (1.0 + np.exp(-values[positive]))
+        exp_values = np.exp(values[~positive])
+        result[~positive] = exp_values / (1.0 + exp_values)
+        return result
+    if name == "mish":
+        positive = values >= 0.0
+        softplus = np.empty_like(values)
+        softplus[positive] = values[positive] + np.log1p(np.exp(-values[positive]))
+        softplus[~positive] = np.log1p(np.exp(values[~positive]))
+        return values * np.tanh(softplus)
     raise ValueError(f"unknown activation {name}")
 
 

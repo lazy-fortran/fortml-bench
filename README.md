@@ -398,8 +398,10 @@ See [`results/MLP_SCHEDULES.md`](results/MLP_SCHEDULES.md). CUDA schedule rows
 are explicit `unavailable` capability records, not host timings.
 
 The dense MLP activation lane checks the packed `8-32-4` forward path for
-linear, `tanh`, ReLU, GELU, SiLU, ELU, softplus, and leaky ReLU against an
-independent NumPy checksum oracle:
+linear, `tanh`, ReLU, GELU, SiLU, ELU, softplus, leaky ReLU, sigmoid, and Mish
+against an independent NumPy checksum oracle. Sigmoid uses a branch-stable
+reference at extreme logits; sigmoid and Mish remain explicit CUDA capability
+refusals until resident kernels are linked:
 
 ```bash
 .venv/bin/python -B scripts/bench_mlp_activations.py \

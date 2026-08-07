@@ -7,8 +7,8 @@ slope (`0.01`) leaky ReLU. The NumPy implementation computes an independent
 packed-weight checksum before any FortML timing is retained. The raw record is
 [`mlp_activations.csv`](mlp_activations.csv).
 
-The current record contains 24 rows: eight NumPy oracle passes, eight FortML
-CPU passes, and eight explicit CUDA `unavailable` capability rows. The largest
+The current record contains 30 rows: ten NumPy oracle passes, ten FortML CPU
+passes, and ten explicit CUDA `unavailable` capability rows. The largest
 FortML/NumPy checksum error is `2.51e-12`; all rows pass the `2e-11` gate. CPU
 timings are per 2,048-sample forward call and include no process-startup time:
 
