@@ -1,7 +1,7 @@
 # Derivative-observation GP query products
 
-`bench_derivative_gp.py` checks periodic, rational-quadratic, and cosine mixed
-value/first-derivative GPs. The independent NumPy oracle builds the value,
+`bench_derivative_gp.py` checks periodic, rational-quadratic, cosine, and
+polynomial mixed value/first-derivative GPs. The independent NumPy oracle builds the value,
 gradient, and mixed-Hessian covariance blocks from scalar formulas, then
 finite-differences complete posterior queries for input JVP and VJP checks and
 assembles a dense joint posterior covariance. The FortML release app emits CPU

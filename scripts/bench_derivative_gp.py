@@ -2,7 +2,7 @@
 """Correctness-gated derivative-observation GP query-product benchmark.
 
 The NumPy path independently assembles value/first/mixed covariance blocks
-from scalar periodic, rational-quadratic, and cosine formulas. It then finite-differences
+from scalar periodic, rational-quadratic, cosine, and polynomial formulas. It then finite-differences
 the complete posterior query to obtain an oracle for the exact FortML
 third-input products. CUDA is represented as an explicit typed refusal until a
 resident derivative-GP graph is available.
@@ -68,6 +68,8 @@ def fixture() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarra
 
 
 def scalar_kernel(a: np.ndarray, b: np.ndarray, name: str) -> float:
+    if name == "polynomial":
+        return 1.3 * (1.5 + 0.4 * float(np.dot(a, b))) ** 2.2
     squared = float(np.sum((a - b) ** 2))
     if name == "periodic":
         return 1.3 * np.exp(-2.0 * np.sin(np.pi * np.sqrt(squared) / 2.1) ** 2 / 0.8**2)
@@ -118,6 +120,19 @@ def scalar_partials(a: np.ndarray, b: np.ndarray, name: str) -> tuple[float, flo
 
 def covariance(a: np.ndarray, ca: int, b: np.ndarray, cb: int, name: str) -> float:
     """Independent analytic value/gradient/mixed-Hessian covariance blocks."""
+    if name == "polynomial":
+        base = 1.5 + 0.4 * float(np.dot(a, b))
+        value = 1.3 * base ** 2.2
+        coefficient = 1.3 * 2.2 * 0.4 * base ** 1.2
+        curvature = 1.3 * 2.2 * 1.2 * 0.4**2 * base ** 0.2
+        if ca == 0 and cb == 0:
+            return value
+        if ca > 0 and cb == 0:
+            return float(coefficient * b[ca - 1])
+        if ca == 0 and cb > 0:
+            return float(coefficient * a[cb - 1])
+        return float(coefficient * (1.0 if ca == cb else 0.0) +
+                     curvature * b[ca - 1] * a[cb - 1])
     difference = a - b
     value, p, p2 = scalar_partials(a, b, name)
     if ca == 0 and cb == 0:
@@ -209,7 +224,7 @@ def main() -> None:
         "fortml_revision": revision(fortml), "benchmark_revision": revision(root, (args.output,)),
         "compiler": os.environ.get("FO_FC", "gfortran"), "flags": "-O3",
     }
-    expected = {name: oracle(name) for name in ("periodic", "rational_quadratic", "cosine")}
+    expected = {name: oracle(name) for name in ("periodic", "rational_quadratic", "cosine", "polynomial")}
 
     def row(**values: object) -> dict[str, str]:
         result = {field: "" for field in FIELDS}
