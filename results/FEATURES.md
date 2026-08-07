@@ -8,7 +8,7 @@ Fortran app is `fortml_bench_features`. It is built with `fo build --flag
 
 ## What is checked
 
-The lane contains nine families of complete calls:
+The lane contains ten families of complete calls:
 
 - `mlp_training` trains a deterministic 3-8-1 tanh MLP for 24 full-batch
   Adam epochs. NumPy reproduces the Xavier/phase initializer, MSE plus L2
@@ -16,8 +16,9 @@ The lane contains nine families of complete calls:
   final loss, and the first eight predictions agree to below `5e-12`.
 - `basis_pipeline` evaluates a horizontal degree-3 polynomial plus two-harmonic
   Fourier pipeline on 256 two-dimensional samples. NumPy checks the feature
-  sum, input/parameter JVP sum, and parameter/input VJP sums. The pipeline
-  uses exact log-frequency tangents, not finite differences.
+  sum, input/parameter JVP sum, parameter/input VJP sums, and a central-
+  difference-of-VJP HVP oracle. The pipeline uses exact log-frequency tangents,
+  analytic HVPs, and no hidden finite-difference fallback in FortML.
 - `basis_linear_regression` fits a one-frequency Fourier basis followed by a
   linear regressor. NumPy independently solves the design least-squares
   problem and checks the composed prediction and basis/coefficients/input JVP.
@@ -60,6 +61,7 @@ The recorded FortML rows all pass. The current gfortran CPU timings are:
 | basis pipeline / transform | 1.03783125e-5 | feature sum 2753.0921746559225 |
 | basis pipeline / JVP | 2.17425e-5 | JVP sum 1231.6432747014742 |
 | basis pipeline / VJP | 1.1352625e-5 | parameter cotangent sum -5.287453498417015 |
+| basis pipeline / HVP | 1.40561875e-5 | parameter HVP sum -57.44631363446601; input HVP sum 110.16320819354650 |
 | CART regression / fit | 1.08389125e-4 | MSE 4.564795134272737e-4 |
 | CART regression / predict | 6.77375e-7 | prediction sum 43.62121219974771 |
 | CART classification / fit | 1.18467e-4 | accuracy 1.0 |
