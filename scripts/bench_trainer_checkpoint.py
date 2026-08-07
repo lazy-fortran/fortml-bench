@@ -45,8 +45,8 @@ def revision(repository: Path, ignored: tuple[Path, ...] = ()) -> str:
 
 def oracle() -> tuple[float, float, int]:
     """Return final norm, continuation error, and the checkpoint step."""
-    target = np.array([1.5, -0.5, 0.25], dtype=np.float64)
-    initial = np.array([0.0, 1.0, -0.4], dtype=np.float64)
+    target = np.array([1.5, -0.5], dtype=np.float64)
+    initial = np.array([0.0, 1.0], dtype=np.float64)
     learning_rate, beta1, beta2, epsilon = 0.05, 0.8, 0.95, 1.0e-8
     steps, split = 8, 3
 
@@ -64,9 +64,9 @@ def oracle() -> tuple[float, float, int]:
         return parameters, first, second, step
 
     full, full_first, full_second, full_step = advance(
-        initial.copy(), np.zeros(3), np.zeros(3), 0, steps)
+        initial.copy(), np.zeros(2), np.zeros(2), 0, steps)
     split_parameters, split_first, split_second, split_step = advance(
-        initial.copy(), np.zeros(3), np.zeros(3), 0, split)
+        initial.copy(), np.zeros(2), np.zeros(2), 0, split)
     resumed, resumed_first, resumed_second, resumed_step = advance(
         split_parameters, split_first, split_second, split_step, steps - split)
     error = max(float(np.max(np.abs(full - resumed))),
@@ -108,7 +108,7 @@ def main() -> None:
         row = {field: "" for field in FIELDS}
         row.update(details)
         row.update({"workload": "trainer_checkpoint", "backend": "fortml",
-                    "device": "cpu", "n_parameters": 3, "steps": 8})
+                    "device": "cpu", "n_parameters": 2, "steps": 8})
         row.update(values)
         rows.append(row)
 

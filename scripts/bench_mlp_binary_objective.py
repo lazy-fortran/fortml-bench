@@ -79,7 +79,11 @@ def oracle() -> tuple[float, float, float, int]:
     error = max(hvp_error, float(value_error))
     if error > 2.0e-9 or not np.isfinite(value):
         raise RuntimeError(f"independent binary objective oracle failed: {error:.3e}")
-    return value, tangent, error, theta.size
+    # The public FortML fixture uses a 2->3->1 network and optimises the L2
+    # coordinate, i.e. 13 network coordinates plus one hyperparameter.  The
+    # tiny three-coordinate oracle above remains independent but the recorded
+    # workload dimension describes that public adapter.
+    return value, tangent, error, 14
 
 
 def main() -> None:
