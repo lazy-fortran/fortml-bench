@@ -246,6 +246,21 @@ def main() -> None:
         oracle="independent NumPy AdamW recurrence with decoupled weight decay",
         notes=f"expected state checksum={adamw_checksum:.16e}; native gate checks seven resident steps; {notes}"))
 
+    status, notes, elapsed = run_gate(fortml, "run_cuda_forest_plan.sh")
+    observed_error = None
+    match = re.search(r"max error ([0-9.+\-eE]+)", notes)
+    if match:
+        observed_error = float(match.group(1))
+        if status == "pass" and observed_error > 1.0e-13:
+            status = "failed"
+    rows.append(base(
+        details, workload="cuda_forest_resident_prediction", phase="predict", status=status,
+        seconds_per_operation="", metric="max_abs_error", value="",
+        max_abs_error=(observed_error if observed_error is not None else
+                       (0.0 if status == "pass" else "")),
+        oracle="independent CPU tree-walk probabilities and sorted-label tie oracle",
+        notes=f"native gate retains flattened trees across repeated query batches; {notes}"))
+
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")
