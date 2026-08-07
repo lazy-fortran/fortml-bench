@@ -168,6 +168,10 @@ a different workload, precision, device, or residency policy.
   and one-vs-rest multiclass Laplace-GP lanes with independent NumPy transform
   and Newton posterior oracles. The raw record is
   `results/classification_extensions.csv`.
+- [x] Add bounded binary and shared-kernel one-vs-rest GP classification
+  hyperparameter-training rows with an independent NumPy mode/envelope-gradient
+  oracle. This records the mode-log-posterior adapter, not full Laplace
+  evidence; the raw record is `results/gp_classification_training.csv`.
 - [x] Add an exact depth-limited recursive second-order boosting lane with independent NumPy
   gradient/Hessian, regularized leaf-weight, split-gain, squared-objective, and
   logistic-objective checks. Record a dedicated FortML workload and an explicit

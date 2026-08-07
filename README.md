@@ -268,6 +268,18 @@ See [`results/KNN.md`](results/KNN.md). Neighbor selection is discrete, so
 input JVP/VJP refusal is recorded by the FortML unit contract rather than
 inventing a derivative timing.
 
+The GP-classification training lane checks the bounded binary and shared-kernel
+one-vs-rest L-BFGS-B adapters against an independent NumPy Laplace-mode and
+envelope-gradient recurrence. It records mode-log-posterior training only,
+not full Laplace evidence:
+
+```bash
+.venv/bin/python -B scripts/bench_gp_classification_training.py \
+  --fortml ../fortml --output results/gp_classification_training.csv
+```
+
+See [`results/GP_CLASSIFICATION_TRAINING.md`](results/GP_CLASSIFICATION_TRAINING.md).
+
 The exact second-order XGBoost-style lane has its own workload and raw record.
 It checks squared, binary logistic, one-vs-rest multiclass, and learned-NaN
 default-direction depth-two boosting against independent recursive NumPy
