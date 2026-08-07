@@ -128,6 +128,19 @@ See [`results/MULTILABEL_LOGISTIC.md`](results/MULTILABEL_LOGISTIC.md). CUDA
 capability rows are explicit refusals until a resident multi-head kernel is
 linked; host timings are never relabeled as accelerator evidence.
 
+The radius-neighbor lane checks a closed Euclidean-radius classifier with
+inverse-distance votes, sample weights, arbitrary labels, and an explicit
+outlier policy against a complete NumPy oracle:
+
+```bash
+.venv/bin/python -B scripts/bench_radius_neighbors.py \
+    --fortml ../fortml --output results/radius_neighbors.csv
+```
+
+See [`results/RADIUS_NEIGHBORS.md`](results/RADIUS_NEIGHBORS.md). CUDA is an
+explicit unavailable capability row until a resident radius-search kernel is
+linked.
+
 The ordered-label lane fits a weighted cumulative-logit classifier with
 strictly increasing cut points. It checks the complete probability matrix and
 predicted labels against an independent SciPy L-BFGS-B oracle before timing:
