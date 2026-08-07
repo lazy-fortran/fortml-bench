@@ -56,6 +56,7 @@ Complete-call studies:
 - [Robust Huber and quantile XGBoost](XGBOOST_ROBUST.md)
 - [XGBoost validation and early stopping](XGBOOST_EARLY_STOPPING.md)
 - [XGBoost row and feature sampling](XGBOOST_SAMPLING.md)
+- [XGBoost text persistence](XGBOOST_SERIALIZATION.md)
 - [Hyperparameter grid, seeded random, and L-BFGS-B search](HYPERPARAMETER_SEARCH.md)
 - [Large-GP review comparison](SCALABLE_GP.md)
 
