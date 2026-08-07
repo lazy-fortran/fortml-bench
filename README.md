@@ -574,6 +574,19 @@ python3 scripts/bench_missing_indicator.py \
 See [`results/MISSING_INDICATOR.md`](results/MISSING_INDICATOR.md). Sparse
 CSR/CSC views and resident device kernels remain separate work packages.
 
+The sparse preprocessing lane checks sparse-safe CSC standard scaling against
+an independent dense NumPy expansion. It compares transformed and inverse
+stored values plus exact value JVP/VJP products, records the implicit-zero
+statistics contract, and retains a typed CUDA refusal until a resident sparse
+transform kernel is linked:
+
+```bash
+python3 scripts/bench_sparse_preprocessing.py \
+  --fortml ../fortml --output results/sparse_preprocessing.csv
+```
+
+See [`results/SPARSE_PREPROCESSING.md`](results/SPARSE_PREPROCESSING.md).
+
 The AdamW and fixed-trajectory MLP hypergradient lanes use separate release
 contracts.  NumPy independently checks the AdamW moments/decoupled decay and
 the validation objective, log-hyperparameter finite-difference gradient, and

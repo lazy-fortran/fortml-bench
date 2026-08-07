@@ -238,6 +238,12 @@ a different workload, precision, device, or residency policy.
   policies, with complete transform and zero JVP/VJP array checks, release CPU
   timings, independent NumPy NaN-mask oracles, and explicit CUDA refusal rows.
   Sparse CSR/CSC views and resident indicator kernels remain separate work.
+- [x] Add a sparse-safe CSC standard-scaler lane with implicit-zero means and
+  population scales, complete transform/inverse/JVP/VJP value checks against
+  an independent dense NumPy expansion, release CPU timings, and a typed CUDA
+  refusal row. The raw record is `results/sparse_preprocessing.csv` and the
+  protocol is documented in `results/SPARSE_PREPROCESSING.md`; CSR conversion,
+  sparse categorical/indicator views, and resident kernels remain open.
 - [x] Add a composable polynomial/Fourier basis-pipeline lane with independent
   transform, JVP, and VJP checks and timings.
 - [x] Add the fitted basis-linear regression composition lane with an
