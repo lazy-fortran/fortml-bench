@@ -52,6 +52,13 @@ def scores(labels: np.ndarray, predictions: np.ndarray) -> dict[str, np.ndarray]
     micro_tp, micro_fp, micro_fn = tp.sum(), fp.sum(), fn.sum()
     micro = np.array([micro_tp / (micro_tp + micro_fp), micro_tp / (micro_tp + micro_fn),
                       2.0 * micro_tp / (2.0 * micro_tp + micro_fp + micro_fn)])
+    beta_squared = 4.0
+    micro_fbeta = np.array([
+        micro_tp / (micro_tp + micro_fp),
+        micro_tp / (micro_tp + micro_fn),
+        (1.0 + beta_squared) * micro_tp /
+        ((1.0 + beta_squared) * micro_tp + beta_squared * micro_fn + micro_fp),
+    ])
     rows = []
     for y_true, y_pred in zip(labels, predictions):
         row_tp = float(np.sum((y_true == 1) & (y_pred == 1)))
@@ -60,7 +67,20 @@ def scores(labels: np.ndarray, predictions: np.ndarray) -> dict[str, np.ndarray]
         rows.append([0.0 if row_tp + row_fp == 0 else row_tp / (row_tp + row_fp),
                      0.0 if row_tp + row_fn == 0 else row_tp / (row_tp + row_fn),
                      0.0 if 2.0 * row_tp + row_fp + row_fn == 0 else 2.0 * row_tp / (2.0 * row_tp + row_fp + row_fn)])
+    fbeta_rows = []
+    for y_true, y_pred in zip(labels, predictions):
+        row_tp = float(np.sum((y_true == 1) & (y_pred == 1)))
+        row_fp = float(np.sum((y_true == 0) & (y_pred == 1)))
+        row_fn = float(np.sum((y_true == 1) & (y_pred == 0)))
+        fbeta_rows.append([
+            0.0 if row_tp + row_fp == 0 else row_tp / (row_tp + row_fp),
+            0.0 if row_tp + row_fn == 0 else row_tp / (row_tp + row_fn),
+            0.0 if (1.0 + beta_squared) * row_tp + beta_squared * row_fn + row_fp == 0
+            else (1.0 + beta_squared) * row_tp /
+            ((1.0 + beta_squared) * row_tp + beta_squared * row_fn + row_fp),
+        ])
     samples = np.mean(np.asarray(rows), axis=0)
+    fbeta_samples = np.mean(np.asarray(fbeta_rows), axis=0)
     jaccard = []
     hamming = []
     for average in ("micro", "macro", "samples"):
@@ -82,6 +102,7 @@ def scores(labels: np.ndarray, predictions: np.ndarray) -> dict[str, np.ndarray]
                 out=np.zeros_like(row_intersection, dtype=np.float64), where=row_union > 0))))
             hamming.append(float(np.mean(np.mean(labels != predictions, axis=1))))
     return {"micro": micro, "macro": macro, "samples": samples,
+            "fbeta_micro": micro_fbeta, "fbeta_samples": fbeta_samples,
             "jaccard_micro": np.asarray([jaccard[0]]),
             "jaccard_macro": np.asarray([jaccard[1]]),
             "jaccard_samples": np.asarray([jaccard[2]]),
@@ -134,6 +155,19 @@ def main() -> None:
                 "n_labels": labels.shape[1], "seconds_per_operation": "", "metric": metric,
                 "value": value, "max_abs_error": abs(float(metric_error)),
                 "oracle": "independent NumPy multilabel TP/FP/FN oracle", "notes": "explicit zero-division and >= threshold"})
+    for phase in ("fbeta_micro", "fbeta_samples"):
+        actual = observed[f"multilabel_{phase}"]
+        error = float(np.max(np.abs(actual - expected[phase])))
+        if error > 2.0e-14:
+            raise RuntimeError(f"multilabel {phase} mismatch: {error:.3e}")
+        for metric, value, metric_error in zip(("precision", "recall", "fbeta_beta2"), actual,
+                                                actual - expected[phase]):
+            rows.append({**metadata, "workload": "multilabel_metrics", "phase": phase,
+                "backend": "fortml", "device": "cpu", "status": "pass", "n_samples": labels.shape[0],
+                "n_labels": labels.shape[1], "seconds_per_operation": "", "metric": metric,
+                "value": value, "max_abs_error": abs(float(metric_error)),
+                "oracle": "independent NumPy weighted F-beta (beta=2) oracle",
+                "notes": "micro and samples reductions; explicit zero-division policy"})
     for metric in ("jaccard_micro", "jaccard_macro", "jaccard_samples",
                    "hamming_micro", "hamming_macro", "hamming_samples"):
         actual = observed[f"multilabel_{metric}"]

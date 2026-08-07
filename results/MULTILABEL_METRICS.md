@@ -1,6 +1,6 @@
 # Multilabel classification metrics
 
-`bench_multilabel_metrics.py` checks precision, recall, F1, Jaccard, and
+`bench_multilabel_metrics.py` checks precision, recall, F1, F-beta (beta=2), Jaccard, and
 Hamming loss for a dense binary indicator matrix against independent NumPy
 intersection/union/error oracles. The fixture records micro, macro, and
 samples averages, plus probability thresholding at `0.5` with the documented
@@ -14,7 +14,9 @@ python -B scripts/bench_multilabel_metrics.py \
   --fortml ../fortml --output results/multilabel_metrics.csv
 ```
 
-The CSV stores all eighteen CPU metric values and a typed CUDA capability row.
+The CSV stores the CPU precision/recall/F1 values for all three reductions,
+micro and samples precision/recall/F-beta values, Jaccard/Hamming reductions,
+and a typed CUDA capability row.
 The latter is `unavailable` until resident multilabel reduction kernels are
 linked; the FortML device entry points return a typed refusal and the harness
 never substitutes a host timing.  ROC-AUC is intentionally a separate lane
