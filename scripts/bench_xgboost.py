@@ -94,7 +94,8 @@ def package_version(name: str) -> str:
 def metadata(root: Path, fortml: Path, output: Path) -> dict[str, str]:
     ignored = tuple(root / "results" / name for name in (
         "knn.csv", "rmsprop.csv", "xgboost_workloads.csv",
-        "gp_classification_training.csv", "adamw_beta_hypergradient.csv"))
+        "gp_classification_training.csv", "adamw_beta_hypergradient.csv",
+        "cuda_adamw.csv", "ridge.csv"))
     return {
         "python_version": platform.python_version(),
         "numpy_version": np.__version__,
