@@ -14,7 +14,7 @@ those values before retaining fit or prediction timings. The raw record is
 The recorded FortML temperature differs from the NumPy oracle by
 `1.20e-09`, with probability error below `1.20e-09`; the difference is from
 the release app's formatted CSV precision. The recorded CPU timings are
-`2.6925e-04 s` per fit and `4.4844e-06 s` per prediction on the captured host.
+`2.62625e-04 s` per fit and `4.515625e-06 s` per prediction on the captured host.
 
 Reproduce with:
 
