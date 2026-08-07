@@ -15,6 +15,7 @@ Complete-call studies:
 - [Deterministic k-nearest-neighbor classification](KNN.md)
 - [GP classification hyperparameter training](GP_CLASSIFICATION_TRAINING.md)
 - [GP classification and fitted preprocessing](CLASSIFICATION_EXTENSIONS.md)
+- [Binary GP likelihood value/JVP/VJP primitive](GP_LIKELIHOOD.md)
 - [Multinomial and neural classification](CLASSIFICATION_MODELS.md)
 - [Differentiable Multinomial Naive Bayes](MULTINOMIAL_NB.md)
 - [Differentiable Complement Naive Bayes](COMPLEMENT_NB.md)

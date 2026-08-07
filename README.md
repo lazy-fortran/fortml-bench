@@ -102,6 +102,20 @@ See [`results/CLASSIFICATION_EXTENSIONS.md`](results/CLASSIFICATION_EXTENSIONS.m
 The lane now includes one-vs-rest multiclass Laplace GP probabilities. Variational
 GP classification remains a separate benchmark contract.
 
+The shared binary GP likelihood lane separately checks signed-margin logistic
+and probit value/JVP/VJP products, including a stable negative-probit tail and
+an independent adjoint oracle:
+
+```bash
+.venv/bin/python -B scripts/bench_gp_likelihood.py \
+  --fortml ../fortml --output results/gp_likelihood.csv
+```
+
+See [`results/GP_LIKELIHOOD.md`](results/GP_LIKELIHOOD.md). The CSV keeps the
+NumPy timing complete while recording missing FortML release-app output as
+explicit `unavailable`; it does not infer GPU performance from a host
+likelihood call.
+
 The matched multinomial softmax and multiclass neural-classifier lane uses an
 independent NumPy damped-Newton/Adam oracle, scikit-learn and optional resident
 PyTorch context rows, and an explicit FortML app protocol. Missing FortML

@@ -197,6 +197,11 @@ a different workload, precision, device, or residency policy.
   hyperparameter-training rows with an independent NumPy mode/envelope-gradient
   oracle. This records the mode-log-posterior adapter, not full Laplace
   evidence; the raw record is `results/gp_classification_training.csv`.
+- [x] Add the shared binary GP likelihood value/JVP/VJP lane for logistic and
+  probit signed margins, including a stable negative-tail oracle and an
+  independent adjoint check. The raw record is `results/gp_likelihood.csv`;
+  absent complete-array FortML output is retained as an explicit `unavailable`
+  row and no host timing is presented as GPU evidence.
 - [x] Add an exact depth-limited recursive second-order boosting lane with independent NumPy
   gradient/Hessian, regularized leaf-weight, split-gain, squared-objective, and
   logistic-objective checks. Record a dedicated FortML workload and an explicit
