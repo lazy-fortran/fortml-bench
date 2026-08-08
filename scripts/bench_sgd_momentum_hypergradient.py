@@ -177,7 +177,7 @@ def oracle_rows(details: dict[str, str], expected: dict[str, Any]) -> list[dict[
             variant="affine_one_layer", backend="numpy_oracle", status="pass",
             metric=f"hvp_{index}", value=float(value), max_abs_error=0.0,
             oracle="independent central finite-difference of trajectory gradient",
-            notes=f"direction={DIRECTION.tolist()}; nested h={FD_STEP:g}",
+            notes=f"direction={DIRECTION.tolist()}; inner h={FD_STEP:g}; outer h={HVP_STEP:g}",
         ))
     return rows
 
