@@ -947,6 +947,18 @@ python -B scripts/bench_basis_pipeline_training.py \
 
 See [`results/BASIS_PIPELINE_TRAINING.md`](results/BASIS_PIPELINE_TRAINING.md).
 
+The scheduled-Adagrad lane checks exact fixed-trajectory value/gradient/JVP/VJP
+products, FortOpt L-BFGS-B integration, default schedule validation, malformed
+options, and the typed CUDA refusal:
+
+```bash
+python -B scripts/bench_mlp_adagrad_schedule_hypergradient.py \
+  --fortml ../fortml \
+  --output results/mlp_adagrad_schedule_hypergradient.csv
+```
+
+See [`results/MLP_ADAGRAD_SCHEDULE_HYPERGRADIENT.md`](results/MLP_ADAGRAD_SCHEDULE_HYPERGRADIENT.md).
+
 The shared objective-trainer and XGBoost additive-contribution correctness
 lane runs independent Fortran behavioral gates and an independent NumPy
 quadratic update oracle. Its wall times are correctness-gate timings, not
