@@ -76,6 +76,7 @@ Complete-call studies:
 - [Stochastic, derivative, multi-output, and variational GP features](GP_FEATURES.md)
 - [Pinned exact-GP comparison with scikit-learn and optional GPyTorch](GP_REFERENCE.md)
 - [Derivative-observation GP query products](DERIVATIVE_GP.md)
+- [Local-periodic derivative-observation GP products](DERIVATIVE_GP_LOCAL_PERIODIC.md)
 - [GPyTorch-compatible spectral-mixture kernel](SPECTRAL_MIXTURE.md)
 - [Multilabel classification metrics](MULTILABEL_METRICS.md)
 - [ROC-AUC and PR-AUC ranking metrics](ROC_AUC.md)
