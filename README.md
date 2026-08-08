@@ -821,6 +821,21 @@ See [`results/MULTICLASS_CALIBRATION.md`](results/MULTICLASS_CALIBRATION.md).
 The CUDA row remains an explicit refusal until a resident calibration kernel
 is linked.
 
+The weighted multiclass isotonic lane fits one one-vs-rest PAVA map per raw
+softmax column and renormalizes the interpolated values to a simplex. It checks
+the complete 192-row fixture, sorted labels, weights, knot count, predictions,
+and typed active-set derivative/CUDA boundaries against an independent NumPy
+oracle before retaining timing:
+
+```bash
+python3 -B scripts/bench_multiclass_isotonic_calibration.py \
+    --fortml ../fortml --output results/multiclass_isotonic_calibration.csv
+```
+
+See [`results/MULTICLASS_ISOTONIC_CALIBRATION.md`](results/MULTICLASS_ISOTONIC_CALIBRATION.md).
+Multiclass Platt scaling and resident isotonic kernels remain explicit
+unavailable boundaries.
+
 The reliability-diagram lane checks weighted equal-width confidence bins,
 including empty-bin zero conventions and deterministic first-maximum ties,
 against an independent NumPy oracle before retaining timing:
