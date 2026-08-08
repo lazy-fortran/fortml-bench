@@ -174,6 +174,19 @@ FO_SCAN_FALLBACK=regex python -B scripts/bench_local_periodic_gp.py \
 
 See [`results/LOCAL_PERIODIC_GP.md`](results/LOCAL_PERIODIC_GP.md).
 
+The change-point GP lane checks a gated RBF-plus-constant covariance, exact-GP
+posterior moments, and packed parameter JVP/VJP/HVP products against an
+independent NumPy covariance and central-difference oracle. The Fortran gate
+covers input gradients and mixed Hessians. Resident CUDA covariance remains a
+typed refusal:
+
+```bash
+FO_SCAN_FALLBACK=regex python -B scripts/bench_change_point_gp.py \
+  --fortml ../fortml --output results/change_point_gp.csv
+```
+
+See [`results/CHANGE_POINT_GP.md`](results/CHANGE_POINT_GP.md).
+
 The production Lion trainer lane checks the stateful CPU recurrence, decoupled
 weight decay, clipping, EMA, validation, and uninterrupted versus checkpointed
 text-resume trajectories against an independent NumPy oracle. Resident Lion
