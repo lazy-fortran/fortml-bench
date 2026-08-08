@@ -93,8 +93,9 @@ def main() -> None:
         if fields:
             parsed[fields[0]] = fields[1:]
     for key in ("lightgbm_fit", "lightgbm_predict", "lightgbm_staged",
-                "lightgbm_contributions", "lightgbm_slice", "lightgbm_binary",
-                "lightgbm_oracle", "lightgbm_cuda"):
+                "lightgbm_contributions", "lightgbm_slice", "lightgbm_persistence",
+                "lightgbm_persistence_invalid", "lightgbm_binary", "lightgbm_oracle",
+                "lightgbm_cuda"):
         if key not in parsed:
             raise RuntimeError(f"missing release row {key}")
     oracle_error = float(parsed["lightgbm_oracle"][0])
@@ -142,6 +143,21 @@ def main() -> None:
         n_estimators=int(float(sliced[2])), seconds_per_operation=float(sliced[3]),
         metric="prefix_prediction_max_abs_error", value=slice_error,
         max_abs_error=slice_error, notes="transactional four-tree prefix")
+    persisted = parsed["lightgbm_persistence"]
+    persistence_error = float(persisted[4])
+    if persistence_error > 1.0e-12:
+        raise RuntimeError(f"persistence mismatch: {persistence_error}")
+    add(phase="persistence", n_samples=int(persisted[0]),
+        n_features=int(persisted[1]), n_estimators=int(float(persisted[2])),
+        seconds_per_operation=float(persisted[3]),
+        metric="round_trip_prediction_max_abs_error", value=persistence_error,
+        max_abs_error=persistence_error, notes="versioned text save/load")
+    if parsed["lightgbm_persistence_invalid"] != ["1"]:
+        raise RuntimeError(f"unexpected persistence refusal {parsed['lightgbm_persistence_invalid']!r}")
+    add(phase="persistence_refusal", n_samples=int(persisted[0]),
+        n_features=int(persisted[1]), n_estimators=int(float(persisted[2])),
+        seconds_per_operation=0.0, metric="status_code", value=1.0,
+        max_abs_error=0.0, notes="trailing-record FORTNUM_DOMAIN_ERROR (status 1)")
     binary = parsed["lightgbm_binary"]
     add(phase="binary", n_samples=int(binary[0]), n_features=int(binary[1]),
         n_estimators=int(float(binary[2])), seconds_per_operation=0.0,
