@@ -101,6 +101,17 @@ python -B scripts/bench_random_forest_permutation.py \
 
 See [`results/RANDOM_FOREST_PERMUTATION.md`](results/RANDOM_FOREST_PERMUTATION.md).
 
+The affine one-layer SGD momentum lane additionally checks exact outer
+hyper-HVP components against an independent nested finite-difference NumPy
+trajectory oracle and records the typed CUDA boundary:
+
+```bash
+python -B scripts/bench_sgd_momentum_hypergradient.py \
+  --fortml ../fortml --output results/sgd_momentum_hypergradient_hvp.csv
+```
+
+See [`results/MLP_SGD_MOMENTUM_HYPERGRADIENT_HVP.md`](results/MLP_SGD_MOMENTUM_HYPERGRADIENT_HVP.md).
+
 The canonical symplectic-form lane checks a harmonic-oscillator
 velocity-Verlet Jacobian, residual/value JVP/VJP products, the physics
 constraint bridge, and the explicit CUDA boundary against an independent

@@ -12,6 +12,7 @@ Complete-call studies:
 - [Random Fourier feature basis](RANDOM_FOURIER.md)
 - [Differentiable Chebyshev basis](CHEBYSHEV_BASIS.md)
 - [SGD/Nesterov training and differentiable imputation](TRAINING_IMPUTER.md)
+- [Affine SGD momentum outer hyper-HVP](MLP_SGD_MOMENTUM_HYPERGRADIENT_HVP.md)
 - [AdamW training and MLP hypergradients](ADAMW_HYPERGRADIENT.md)
 - [AdamW beta-logit hypergradients](ADAMW_BETA_HYPERGRADIENT.md)
 - [Typed MLP learning-rate schedules](MLP_SCHEDULES.md)
