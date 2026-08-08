@@ -1197,6 +1197,20 @@ python -B scripts/bench_xgboost_slice.py \
 
 See [`results/XGBOOST_SLICE.md`](results/XGBOOST_SLICE.md).
 
+The warm-start lane continues a fitted two-tree prefix to four trees. An
+independent NumPy Newton-stump replay gates the fourth staged margin against a
+fresh four-tree fit, and the release app records transactional refusals for
+changed controls, non-increasing targets, and unfitted sources:
+
+```bash
+python -B scripts/bench_xgboost_warm_start.py \
+  --fortml ../fortml --output results/xgboost_warm_start.csv
+```
+
+See [`results/XGBOOST_WARM_START.md`](results/XGBOOST_WARM_START.md). The CUDA
+row is an explicit unavailable capability record because warm-start
+continuation has no resident CUDA entry point.
+
 The generic hyperparameter-search lane uses an independent three-parameter
 quadratic oracle to gate Cartesian grid, seeded random, single-start FortOpt
 L-BFGS-B, and eight-start bounded L-BFGS-B timings. The random and multistart
