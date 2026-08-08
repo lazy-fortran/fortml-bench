@@ -4,9 +4,9 @@
 The NumPy path independently assembles value/gradient/mixed-Hessian covariance
 blocks and finite-differences the dense likelihood gradient in packed
 log-variance/log-lengthscale/log-noise coordinates.  The FortML test is a
-separate behavioral gate for the analytic mixed-observation parameter JVP.
-Query-input products remain an explicit typed refusal until the local-periodic
-third-input derivative is generated.
+separate behavioral gate for analytic mixed-observation parameter and
+query-input JVP products. Query finite differences are formed from this
+independent covariance/Cholesky implementation, including a coincident query.
 """
 
 from __future__ import annotations
@@ -113,8 +113,10 @@ def likelihood(theta: np.ndarray) -> float:
                  0.5 * len(x) * np.log(2.0 * np.pi))
 
 
-def prediction(theta: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def prediction(theta: np.ndarray, query_override: np.ndarray | None = None) -> tuple[np.ndarray, np.ndarray]:
     x, y, components, query, query_components = fixture()
+    if query_override is not None:
+        query = query_override
     matrix = gram(theta, x, components)
     alpha = np.linalg.solve(matrix, y)
     cross = np.empty((len(x), len(query)), dtype=np.float64)
@@ -140,13 +142,27 @@ def oracle() -> dict[str, float]:
         direction[i] = h
         gradient[i] = (likelihood(theta + direction) - likelihood(theta - direction)) / (2.0 * h)
     direction = np.array([0.11, -0.08, 0.14, -0.06, 0.17], dtype=np.float64)
-    mean, variance = prediction(theta)
+    x, _, _, query, _ = fixture()
+    query[0] = x[0]
+    query_direction = np.array([
+        [0.07, 0.11], [-0.03, -0.05], [0.09, -0.08],
+    ], dtype=np.float64)
+    mean, variance = prediction(theta, query)
+    query_step = 2.0e-5
+    mean_plus, variance_plus = prediction(theta, query + query_step * query_direction)
+    mean_minus, variance_minus = prediction(theta, query - query_step * query_direction)
+    mean_jvp = (mean_plus - mean_minus) / (2.0 * query_step)
+    variance_jvp = (variance_plus - variance_minus) / (2.0 * query_step)
     return {
         "likelihood": likelihood(theta),
         "gradient_norm": float(np.linalg.norm(gradient)),
         "directional_jvp": float(np.dot(gradient, direction)),
         "minimum_posterior_variance": float(np.min(variance)),
         "mean_norm": float(np.linalg.norm(mean)),
+        "query_mean_jvp_norm": float(np.linalg.norm(mean_jvp)),
+        "query_variance_jvp_norm": float(np.linalg.norm(variance_jvp)),
+        "query_jvp_max_abs": float(max(np.max(np.abs(mean_jvp)),
+                                        np.max(np.abs(variance_jvp)))),
     }
 
 
@@ -168,7 +184,7 @@ def main() -> None:
         environment["FO_SCAN_FALLBACK"] = "regex"
         subprocess.run(["fo", "test", "test_derivative_gp_local_periodic"],
                        cwd=fortml, env=environment, check=True)
-        status, notes = "pass", "analytic mixed-observation parameter JVP and typed query refusal"
+        status, notes = "pass", "analytic mixed-observation parameter and query-input JVP"
     elapsed = time.perf_counter() - started
     details = {
         "python_version": platform.python_version(), "numpy_version": np.__version__,
@@ -199,15 +215,18 @@ def main() -> None:
         "independent NumPy dense Cholesky Schur complement")
     add("prediction", "mean_norm", metrics["mean_norm"],
         "independent NumPy mixed-observation posterior")
+    add("query_products", "mean_jvp_norm", metrics["query_mean_jvp_norm"],
+        "independent NumPy central difference of query posterior means")
+    add("query_products", "variance_jvp_norm", metrics["query_variance_jvp_norm"],
+        "independent NumPy central difference of query posterior variances")
+    add("query_products", "jvp_max_abs", metrics["query_jvp_max_abs"],
+        "independent NumPy query-input directional finite difference")
     add("public_contract_gate", "fortml_derivative_gp_local_periodic_test", 1.0,
         "FortML independent analytic/finite-difference behavioral gate", backend="fortml",
         seconds_per_operation=elapsed, notes=notes)
     add("device_boundary", "typed_cuda_derivative_gp", float("nan"),
         "typed FORTNUM_DOMAIN_ERROR refusal", device="cuda", row_status="refused",
         backend="fortml", notes="resident derivative-GP covariance/factorization graph is not linked")
-    add("capability_boundary", "typed_query_input_jvp", float("nan"),
-        "typed FORTNUM_NOT_IMPLEMENTED refusal", row_status="refused", backend="fortml",
-        notes="local-periodic third-input derivative remains intentionally gated")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS)
