@@ -89,6 +89,18 @@ python -B scripts/bench_multi_output_gp_products.py \
 
 See [`results/MULTI_OUTPUT_GP_PRODUCTS.md`](results/MULTI_OUTPUT_GP_PRODUCTS.md).
 
+The batched multi-output product lane checks independent query-set stacking,
+fixed-fit input JVP/VJP products, CPU dispatch, malformed-shape validation,
+and the typed CUDA boundary against a direct NumPy intrinsic-coregionalization
+oracle:
+
+```bash
+python -B scripts/bench_multi_output_gp_batch.py \
+  --fortml ../fortml --output results/multi_output_gp_batch.csv
+```
+
+See [`results/MULTI_OUTPUT_GP_BATCH.md`](results/MULTI_OUTPUT_GP_BATCH.md).
+
 The exact-GP mean lane checks trainable constant and intercept-plus-linear
 means, packed coefficients, posterior predictions, log marginal likelihood,
 and analytic mean hypergradients/HVPs against an independent NumPy covariance

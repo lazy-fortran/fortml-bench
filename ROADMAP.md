@@ -99,6 +99,12 @@ not completion gates.
   evidence against KeOps, GPyTorch-KeOps, and dense PyTorch.
 - [x] Add derivative-observation and derivative-prediction workloads.
 - [x] Add multi-output and variational GP workloads.
+- [x] Add the batched multi-output GP shape contract. The independent NumPy
+  oracle assembles output-major intrinsic-coregionalization covariance and
+  checks batched posterior means, input JVPs, and VJP scalar duality. The raw
+  record is `results/multi_output_gp_batch.csv`; CPU shape/device gates and an
+  explicit resident-CUDA refusal are documented in
+  [`results/MULTI_OUTPUT_GP_BATCH.md`](results/MULTI_OUTPUT_GP_BATCH.md).
 - [x] Add periodic and rational-quadratic kernel value, input-derivative, and
   logarithmic parameter JVP/VJP/HVP checks with release CPU timings and
   explicit CUDA capability-refusal rows. See
