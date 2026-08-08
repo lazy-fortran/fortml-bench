@@ -6,7 +6,7 @@ metadata, and a committed raw record.
 
 ## Status and handoff
 
-Last updated 2026-08-07. The scalable-GP study of Liu et al. (IEEE TNNLS <!-- slop-ok -->
+Last updated 2026-08-08. The scalable-GP study of Liu et al. (IEEE TNNLS <!-- slop-ok -->
 31(11):4405-4423, 2020) is complete and is the centrepiece of the GP evidence
 here. Read `results/SCALABLE_GP.md` first: it states what "matching the paper"
 can mean (the review publishes no numeric result tables), which half of each
@@ -294,6 +294,10 @@ a different workload, precision, device, or residency policy.
   and XGBoost additive tree contributions. The raw record is
   `results/training_core.csv`; the rows are correctness wall times, not
   throughput claims, and the independent NumPy/Fortran oracles remain explicit.
+- [x] Add fitted XGBoost ensemble prefix slicing. The independent NumPy staged
+  and full-ensemble replay checks prefix predictions, preserves the fitted
+  objective/routing state, and records the zero-length-prefix refusal in
+  `results/xgboost_slice.csv` and `results/XGBOOST_SLICE.md`.
 - [x] Add the generic trainer portable text checkpoint/resume lane. An
   independent NumPy Adam state continuation oracle is paired with the
   `test_trainer` malformed/truncated/extra-record gate in
@@ -304,6 +308,11 @@ a different workload, precision, device, or residency policy.
   `test_trainer` and `test_mlp_adafactor` recurrence/checkpoint gates in
   `results/adafactor.csv`; the packed-vector API does not claim matrix-factored
   state, and the CPU-only CUDA boundary remains an explicit unavailable row.
+- [x] Add the exact fixed full-batch unfactored Adafactor trajectory
+  hypergradient lane. The independent NumPy recurrence checks the objective,
+  all five packed hyperparameter derivatives, JVP, VJP, bounded L-BFGS-B path,
+  and the typed CUDA refusal in `results/adafactor_hypergradient.csv` and
+  `results/ADAFACTOR_HYPERGRADIENT.md`.
 - [x] Add the weighted binary MLP objective adapter and bounded L-BFGS-B lane.
   The independent value/JVP/HVP finite-difference oracle and FortOpt contract
   are recorded in `results/mlp_binary_objective.csv`; no resident CUDA graph is
