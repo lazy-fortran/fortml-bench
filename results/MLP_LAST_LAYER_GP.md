@@ -15,12 +15,12 @@ python3 scripts/bench_mlp_last_layer_gp.py \
   --fortml ../fortml --output results/mlp_last_layer_gp.csv
 ```
 
-`results/mlp_last_layer_gp.csv` records the oracle timing and provenance. The
-captured snapshot intentionally uses `--skip-fortml` because the dependency
-checkout was being rebuilt; rerunning without that option is required to retain
-the release-app CPU row. The CUDA row is `unavailable`: resident feature-map
-and normal-equation kernels are not implemented, and no host timing is
-relabeled as GPU evidence.
+`results/mlp_last_layer_gp.csv` records the clean source revision
+`c2d9c4c498a435c3b8b405782418659ce640f3c6`, the NumPy oracle timing, and the
+release-app CPU row (about `6.12e-05` seconds per prediction, with maximum
+MSE error `2.78e-17`). The CUDA row is `unavailable`: resident feature-map and
+normal-equation kernels are not implemented, and no host timing is relabeled
+as GPU evidence.
 
 This is a finite-width last-layer posterior mean, not an exact NNGP/NTK or
 infinite-width equivalence. Full NNGP covariance propagation and structure-
