@@ -337,6 +337,11 @@ a different workload, precision, device, or residency policy.
   sparse categorical/indicator views, and resident kernels remain open.
 - [x] Add a composable polynomial/Fourier basis-pipeline lane with independent
   transform, JVP, and VJP checks and timings.
+- [x] Add the differentiable Chebyshev first-kind basis lane. The NumPy
+  recurrence independently checks value, input JVP, input VJP, and scalar
+  contraction HVP reductions for a 4,096-by-3 degree-eight fixture; the raw
+  rows are `results/chebyshev_basis.csv`, with CPU timings and a typed CUDA
+  refusal documented in `results/CHEBYSHEV_BASIS.md`.
 - [x] Add the typed device-dispatch lane for the column-selecting basis union.
   CPU transform/JVP/VJP/HVP calls are compared with the host products and an
   independent NumPy feature oracle; CUDA remains an explicit refusal with
