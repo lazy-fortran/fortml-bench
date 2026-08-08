@@ -150,6 +150,23 @@ def adamw_oracle() -> tuple[float, float]:
     return norm, checksum
 
 
+def adagrad_oracle() -> tuple[float, float]:
+    """Return the resident Adagrad fixture norm and state checksum."""
+    parameters = np.array([0.2, -0.1, 0.3, -0.25, 0.05], dtype=np.float64)
+    accumulated = np.zeros(5, dtype=np.float64)
+    learning_rate, epsilon = 0.035, 1.0e-6
+    for step in range(8):
+        gradient = parameters - 0.07 * np.arange(1, 6, dtype=np.float64)
+        gradient += 0.01 * step
+        accumulated += gradient**2
+        parameters -= learning_rate * gradient / (np.sqrt(accumulated) + epsilon)
+    norm = float(np.linalg.norm(parameters))
+    checksum = float(np.sum(parameters) + np.sum(accumulated))
+    if not np.isfinite(norm) or not np.isfinite(checksum):
+        raise RuntimeError("CUDA Adagrad independent oracle is nonfinite")
+    return norm, checksum
+
+
 def dense_oracle() -> tuple[float, float, float]:
     """Return value, JVP, and VJP activation-sweep checksums for the dense plan.
 
@@ -294,6 +311,7 @@ def main() -> None:
     rmsprop_norm, rmsprop_checksum = rmsprop_oracle()
     mse_value = mse_oracle()
     adamw_norm, adamw_checksum = adamw_oracle()
+    adagrad_norm, adagrad_checksum = adagrad_oracle()
     dense_checksum, dense_jvp_checksum, dense_vjp_checksum = dense_oracle()
     dense_mse_loss = dense_mse_oracle()
     rows: list[dict[str, Any]] = []
@@ -356,6 +374,21 @@ def main() -> None:
                        (0.0 if status == "pass" else "")),
         oracle="independent NumPy AdamW recurrence with decoupled weight decay",
         notes=f"expected state checksum={adamw_checksum:.16e}; native gate checks seven resident steps; {notes}"))
+
+    status, notes, elapsed = run_gate(fortml, "run_cuda_adagrad_state.sh")
+    observed_error = None
+    match = re.search(r"max error ([0-9.+\-eE]+)", notes)
+    if match:
+        observed_error = float(match.group(1))
+        if status == "pass" and observed_error > 2.0e-13:
+            status = "failed"
+    rows.append(base(
+        details, workload="adagrad_device_state", phase="optimizer_step", status=status,
+        seconds_per_operation="", metric="parameter_l2_norm", value=adagrad_norm,
+        max_abs_error=(observed_error if observed_error is not None else
+                       (0.0 if status == "pass" else "")),
+        oracle="independent NumPy Adagrad recurrence",
+        notes=f"expected state checksum={adagrad_checksum:.16e}; native gate checks eight resident steps; {notes}"))
 
     status, notes, elapsed = run_gate(fortml, "run_cuda_forest_plan.sh")
     observed_error = None

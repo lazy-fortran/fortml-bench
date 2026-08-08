@@ -1,6 +1,6 @@
 # CUDA correctness contracts
 
-This lane is a correctness gate for nine small resident CUDA paths and one
+This lane is a correctness gate for ten small resident CUDA paths and one
 transfer-inclusive metric reduction that are not represented by the CPU
 release-app benchmarks. It deliberately records no device timing: a
 correctness-only gate must not be read as a performance claim for the full
@@ -41,6 +41,12 @@ norm is `0.3149703604198818` and the state checksum is
 resident parameter and moment entry with a maximum error threshold of
 `3e-13`.
 
+The Adagrad row uses an eight-step, five-parameter fixture with learning rate
+`0.035` and epsilon `1e-6`. Its independent NumPy recurrence checks the
+accumulated-square state and parameter norm; `run_cuda_adagrad_state.sh` must
+stay below `2e-13` maximum error. This is a no-autodiff resident optimizer
+state contract, separate from the CPU Adagrad hypergradient lane.
+
 The resident weighted-MSE row exercises `run_cuda_mse_plan.sh`. Creation copies
 the target, prediction, and optional weights once; five execute calls reuse
 those device buffers and return the same scalar as the independent NumPy
@@ -67,7 +73,7 @@ support.
 
 The recorded run used an NVIDIA GeForce RTX 5060 Ti (driver 610.43.03,
 16,311 MiB), CUDA 13.3, nvfortran 26.5, and gfortran as the host compiler.
-All ten rows passed; the RMSprop, AdamW, and dense native maximum errors were
+All eleven rows passed; the RMSprop, AdamW, Adagrad, and dense native maximum errors were
 `1.11e-16`, the kNN label checksum matched exactly, and the CUDA MSE scalar
 and the five resident-plan executions matched the independent value above. The CSV keeps the FortML and benchmark revisions,
 compiler flags, device, and oracle boundary. Empty timing fields are
@@ -76,7 +82,8 @@ rows become explicit `skipped` records instead of being relabeled as CPU
 measurements.
 
 This gate covers resident kNN, forest, and dense-affine prediction/JVP/VJP, the
-no-autodiff RMSprop and AdamW state kernels, and both weighted MSE reductions.
+no-autodiff RMSprop, AdamW, and Adagrad state kernels, and both weighted MSE
+reductions.
 It does not establish CUDA support for MLP gradient assembly, RMSprop
 hypergradients, staged XGBoost, or GP classification training; those remain
 separate workload contracts.
