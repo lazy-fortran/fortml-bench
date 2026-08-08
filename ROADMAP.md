@@ -773,6 +773,13 @@ a different workload, precision, device, or residency policy.
   random-guessing-bound error, `log((1-error)/error)+log(K-1)` stage weight,
   weighted-vote margins, stabilized softmax, and labels. The raw record is
   `results/adaboost_samme.csv`; the CUDA row is an explicit typed refusal.
+- [x] Add the multiclass SAMME.R probability-update lane. The release app fits
+  a deterministic weighted-CART stump with clipped centred log-probability
+  updates, unit stage weights, and the normalized geometric probability
+  ensemble. `scripts/bench_adaboost_samme_r.py` independently replays the
+  clipped NumPy oracle, checks probabilities and labels, and records the typed
+  CUDA refusal in `results/adaboost_samme_r.csv`; the protocol is documented in
+  `results/ADABOOST_SAMME_R.md`.
 - [x] Add the seeded bagging classifier lane. The release app fits a
   bootstrap CART ensemble, while `scripts/bench_bagging_classifier.py`
   independently checks the six cluster labels and probability simplex. The

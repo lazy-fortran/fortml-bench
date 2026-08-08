@@ -1644,6 +1644,19 @@ python3 -B scripts/bench_adaboost_samme.py \
 
 See [`results/ADABOOST_SAMME.md`](results/ADABOOST_SAMME.md).
 
+The multiclass SAMME.R lane fits the same deterministic stump with the
+probability-update policy. Its independent NumPy oracle clips tree
+probabilities, replays the centred log update, and checks the normalized
+geometric probability ensemble, unit stage weight, labels, and typed CUDA
+refusal:
+
+```bash
+python3 -B scripts/bench_adaboost_samme_r.py \
+  --fortml ../fortml --output results/adaboost_samme_r.csv
+```
+
+See [`results/ADABOOST_SAMME_R.md`](results/ADABOOST_SAMME_R.md).
+
 The bagging lane exercises the seeded bootstrap and without-replacement CART
 ensemble with three integer classes. Its independent NumPy oracle checks the
 cluster labels and probability simplex, while the release app records fit and
