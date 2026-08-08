@@ -245,11 +245,19 @@ def run_release_app(fortml: Path, target: str, details: dict[str, object],
         r"^second_derivative_gp_rbf_order3,\s*(prediction|input_jvp|input_vjp|"
         r"hyperparameter_hvp),\s*cpu,\s*([0-9Ee+.-]+),\s*([0-9Ee+.-]+)$"
     )
+    refusal_pattern = re.compile(
+        r"^second_derivative_gp_rbf_order3,\s*device,\s*cuda,\s*refused,\s*(\d+)$"
+    )
     expected = release_oracle()
     release_details = dict(details, n_samples=24, n_queries=16)
     found = 0
+    refusal_codes: list[int] = []
     for line in result.stdout.splitlines():
         match = pattern.match(line.strip())
+        refusal = refusal_pattern.match(line.strip())
+        if refusal is not None:
+            refusal_codes.append(int(refusal.group(1)))
+            continue
         if match is None:
             continue
         found += 1
@@ -267,6 +275,8 @@ def run_release_app(fortml: Path, target: str, details: dict[str, object],
                              notes="-O3; fixed order-three RBF fixture"))
     if found != 4:
         raise RuntimeError(f"release app emitted {found} order-three timing rows")
+    if refusal_codes != [3]:
+        raise RuntimeError(f"release app emitted unexpected CUDA refusal codes: {refusal_codes}")
 
 
 def main() -> None:
