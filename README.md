@@ -937,8 +937,8 @@ See [`results/DEVICE_CONTRACTS.md`](results/DEVICE_CONTRACTS.md) for the exact
 fixtures, GPU/toolchain metadata, and remaining resident-workload boundaries.
 
 The joint basis-pipeline training lane checks the packed Fourier basis and
-linear coefficient objective, including value/JVP/HVP finite differences and
-the typed CUDA refusal:
+linear coefficient objective, including value/JVP/HVP finite differences, the
+exact optimized-ridge coordinate/mixed products, and the typed CUDA refusal:
 
 ```bash
 python -B scripts/bench_basis_pipeline_training.py \

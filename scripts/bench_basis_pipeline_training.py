@@ -51,21 +51,24 @@ def main() -> None:
     fortml = args.fortml.resolve()
     output = args.output if args.output.is_absolute() else root / args.output
     output = output.resolve()
-    completed = subprocess.run(
-        ["fo", "test", "test_basis_pipeline_training"], cwd=fortml,
-        capture_output=True, text=True,
-    )
-    text = (completed.stdout + "\n" + completed.stderr).strip()
-    status = "pass" if completed.returncode == 0 and "PASS" in text else "failed"
+    targets = ("test_basis_pipeline_training", "test_basis_ridge_hyperparameter")
+    gate_results = []
+    for target in targets:
+        completed = subprocess.run(
+            ["fo", "test", target], cwd=fortml,
+            capture_output=True, text=True,
+        )
+        gate_text = (completed.stdout + "\n" + completed.stderr).strip()
+        gate_results.append((completed.returncode == 0 and "PASS" in gate_text, gate_text))
+    status = "pass" if all(result[0] for result in gate_results) else "failed"
+    text = "\n".join(result[1] for result in gate_results)
     note = "Fortran finite-difference/JVP/HVP and CUDA-refusal gate"
     if status != "pass":
         note += ": " + (text.splitlines()[-1] if text else "no gate output")
     ignored = (output, root / "results" / "basis_pipeline_training.csv")
-    row = {
-        "workload": "basis_pipeline_training", "phase": "value_derivatives",
+    metadata = {
         "backend": "fortml", "device": "cpu", "status": status,
-        "n_samples": 7, "n_parameters": 4, "seconds_per_operation": "",
-        "metric": "objective_fixture_value", "value": EXPECTED_VALUE,
+        "n_samples": 7, "seconds_per_operation": "",
         "max_abs_error": 0.0 if status == "pass" else "",
         "oracle": "independent Fourier/ridge fixture plus Fortran behavioral gate",
         "python_version": platform.python_version(), "numpy_version": np.__version__,
@@ -73,12 +76,21 @@ def main() -> None:
         "benchmark_revision": revision(root, ignored), "compiler": "gfortran",
         "flags": "-O3", "notes": note,
     }
+    rows = [{
+        "workload": "basis_pipeline_training", "phase": "value_derivatives",
+        "n_parameters": 4, **metadata,
+        "metric": "objective_fixture_value", "value": EXPECTED_VALUE,
+    }, {
+        "workload": "basis_pipeline_training", "phase": "optimized_ridge_products",
+        "n_parameters": 5, **metadata,
+        "metric": "ridge_coordinate_value_gradient_hvp", "value": EXPECTED_VALUE,
+    }]
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")
         writer.writeheader()
-        writer.writerow(row)
-    print(f"wrote 1 row to {output}")
+        writer.writerows(rows)
+    print(f"wrote {len(rows)} rows to {output}")
     if status != "pass":
         raise SystemExit(1)
 
