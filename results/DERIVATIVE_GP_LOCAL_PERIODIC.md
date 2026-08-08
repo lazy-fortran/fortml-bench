@@ -8,12 +8,12 @@ the packed logarithmic kernel/noise coordinates. The fixture covers value,
 first-derivative, and second mixed input components in both training and
 query observations.
 
-The FortML gate passes the independent posterior and hyperparameter-gradient
-checks after the analytic local-periodic parameter JVP is enabled. Query-input
-JVP remains a deliberate `FORTNUM_NOT_IMPLEMENTED` capability boundary until
-the corresponding third-input derivative is generated. Resident CUDA remains
-an explicit typed refusal because the derivative-GP covariance/factorization
-graph is not linked.
+The FortML gate passes the independent posterior, hyperparameter-gradient, and
+query-input JVP checks after the analytic local-periodic third-input rule is
+enabled. The query fixture includes value, first-feature, and second-feature
+components and a query coincident with a training row, so the removable radial
+limits are exercised. Resident CUDA remains an explicit typed refusal because
+the derivative-GP covariance/factorization graph is not linked.
 
 ```bash
 python -B scripts/bench_derivative_gp_local_periodic.py \
@@ -22,7 +22,7 @@ python -B scripts/bench_derivative_gp_local_periodic.py \
 
 The recorded fixture has five training observations, three mixed-component
 queries, a minimum posterior variance of `1.218188755371994`, and a
-FortML behavioral-gate runtime of approximately five seconds on the recorded
+FortML behavioral-gate runtime of approximately six seconds on the recorded
 CPU. The CSV stores exact source and benchmark revisions, environment
-metadata, independent-oracle rows, and the typed CUDA/query-product refusal
-rows.
+metadata, independent-oracle rows, query-JVP norms, and the typed CUDA
+refusal row.

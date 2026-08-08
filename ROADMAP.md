@@ -105,9 +105,11 @@ not completion gates.
 - [x] Add derivative-observation and derivative-prediction workloads.
 - [x] Add the locally-periodic mixed-observation derivative-GP lane. An
   independent dense NumPy Cholesky oracle checks value/first-derivative
-  covariance blocks, parameter JVPs, posterior moments, and typed query/CUDA
-  boundaries in `results/derivative_gp_local_periodic.csv`; the protocol is
-  documented in `results/DERIVATIVE_GP_LOCAL_PERIODIC.md`.
+  covariance blocks, parameter JVPs, posterior moments, and query-input JVPs,
+  including a coincident query row. The raw record in
+  `results/derivative_gp_local_periodic.csv` retains the explicit CUDA
+  refusal; the protocol is documented in
+  `results/DERIVATIVE_GP_LOCAL_PERIODIC.md`.
 - [x] Add multi-output and variational GP workloads.
 - [x] Add the batched multi-output GP shape contract. The independent NumPy
   oracle assembles output-major intrinsic-coregionalization covariance and
