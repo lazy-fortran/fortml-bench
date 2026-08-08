@@ -16,10 +16,10 @@ python3 -B scripts/bench_gp_sparse_likelihood_noise.py \
   --output results/gp_sparse_likelihood_noise.csv
 ```
 
-The recorded source revision is `a2c55bf`, and the benchmark source is pinned
-after the benchmark documentation commit. The NumPy oracle reports a
+The recorded source revision is `d7904d4`, and the benchmark source is pinned
+after the integrated closure lanes. The NumPy oracle reports a
 log-noise gradient of `1.720479112421458e+01` and an HVP of
-`-2.070479121485391e+01`. The FortML behavioral gate passed in 5.16 seconds
+`-2.070479121485391e+01`. The FortML behavioral gate passed in about 5.04 seconds
 on the clean checkout. The CUDA row is `unavailable` because
 the inducing solve and ELBO reduction are not resident. The device entry point
 returns `FORTNUM_NOT_IMPLEMENTED` and performs no host fallback.
