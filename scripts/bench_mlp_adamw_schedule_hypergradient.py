@@ -60,60 +60,8 @@ def objective(parameters: np.ndarray) -> tuple[float, np.ndarray, float]:
     train_y = 0.6 * train_x - 0.35
     validation_x = np.array([-1.75, 0.25, 1.9], dtype=np.float64)
     validation_y = 0.6 * validation_x - 0.35
-    base = np.exp(parameters[0])
-    l2 = np.exp(parameters[1])
-    decay = np.exp(parameters[2])
-    beta1 = sigmoid(parameters[3])
-    beta2 = sigmoid(parameters[4])
-    epsilon = np.exp(parameters[5])
-    minimum = sigmoid(parameters[6])
     direction = np.array([0.21, -0.17, 0.23, -0.19, 0.13, 0.11, 0.07, -0.05])
-    theta = np.array([0.12, -0.08], dtype=np.float64)
-    tangent = np.zeros((2, 8), dtype=np.float64)
-    first = np.zeros(2, dtype=np.float64)
-    second = np.zeros(2, dtype=np.float64)
     h = 2.0e-6
-    for step in range(1, 7):
-        prediction = theta[0] * train_x + theta[1]
-        residual = prediction - train_y
-        gradient = np.array([np.mean(residual * train_x), np.mean(residual)]) + l2 * theta
-        first_previous = first.copy()
-        second_previous = second.copy()
-        first = beta1 * first_previous + (1.0 - beta1) * gradient
-        second = beta2 * second_previous + (1.0 - beta2) * gradient**2
-        c1 = 1.0 - beta1**step
-        c2 = 1.0 - beta2**step
-        update = (first / c1) / (np.sqrt(second / c2) + epsilon)
-        rate = cosine_rate(step, base, minimum, 8)
-        for index in range(8):
-            gradient_tangent = tangent[:, index].copy()
-            if index == 1:
-                gradient_tangent += theta
-            first_tangent = beta1 * np.zeros(2)  # overwritten by recurrence below
-            second_tangent = beta2 * np.zeros(2)
-            # Recompute moment tangents from the complete prefix.  The affine
-            # fixture is tiny; this keeps the oracle obvious and independent.
-            ttheta = np.array([0.12, -0.08], dtype=np.float64)
-            tm = np.zeros(2)
-            tv = np.zeros(2)
-            for inner in range(1, step + 1):
-                tp = ttheta[0] * train_x + ttheta[1]
-                tr = tp - train_y
-                tg = np.array([np.mean(tr * train_x), np.mean(tr)]) + l2 * ttheta
-                if index == 1:
-                    tg += theta if inner == step else 0.0
-                # Central finite differences only determine this independent
-                # oracle; no FortML derivative product is reused here.
-                if inner == step:
-                    first_tangent = tg
-                    second_tangent = 2.0 * gradient * tg
-                ttheta = ttheta  # state prefix is only used for the value oracle
-            # The release rows use central differences of this independent
-            # recurrence, assembled after the value function below.
-            del gradient_tangent, first_tangent, second_tangent
-        theta = (1.0 - rate * decay) * theta - rate * update
-    validation_residual = theta[0] * validation_x + theta[1] - validation_y
-    value = 0.5 * np.mean(validation_residual**2)
 
     def scalar(p: np.ndarray) -> float:
         # Use a standalone recurrence for the FD oracle, never the release app.
@@ -134,6 +82,7 @@ def objective(parameters: np.ndarray) -> tuple[float, np.ndarray, float]:
         rv = t[0] * validation_x + t[1] - validation_y
         return 0.5 * np.mean(rv**2)
 
+    value = scalar(parameters)
     gradient = np.empty(8)
     for index in range(8):
         plus = parameters.copy(); plus[index] += h
