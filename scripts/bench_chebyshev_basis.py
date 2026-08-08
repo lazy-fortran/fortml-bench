@@ -87,7 +87,7 @@ def oracle() -> dict[str, float]:
             t_previous, t_current = t_current, t_next
             d_previous, d_current = d_current, d_next
         for c in range(DEGREE):
-            u[:, column + c] = 0.11*np.sin(0.009*(index[:, 0] + column + c))
+            u[:, column + c] = 0.11*np.sin(0.009*(index[:, 0] + 1.0 + column + c))
         column += DEGREE
     vjp = np.zeros((N_SAMPLES, N_INPUTS), dtype=np.float64)
     hvp = np.zeros_like(vjp)
