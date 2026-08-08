@@ -453,6 +453,19 @@ python -B scripts/bench_derivative_gp.py \
 
 See [`results/DERIVATIVE_GP.md`](results/DERIVATIVE_GP.md).
 
+The binary Laplace-GP HVP lane checks implicit differentiation through the
+converged Newton mode for both logistic and probit likelihoods. An independent
+NumPy path refits central RBF parameter probes and differences the envelope
+gradient before the FortML release timing is retained. The selected-CUDA row
+records the typed resident-state refusal:
+
+```bash
+python -B scripts/bench_gp_classification_hvp.py \
+  --fortml ../fortml --output results/gp_classification_hvp.csv
+```
+
+See [`results/GP_CLASSIFICATION_HYPERPARAMETER_HVP.md`](results/GP_CLASSIFICATION_HYPERPARAMETER_HVP.md).
+
 The binary classification lane compares the FortML logistic estimator with
 scikit-learn on a deterministic two-label fixture. It checks full predicted
 labels and probabilities with independent NumPy accuracy, log-loss, and
