@@ -1039,6 +1039,19 @@ python3 -B scripts/bench_gp_variational_classification.py \
 
 See [`results/GP_VARIATIONAL_CLASSIFICATION.md`](results/GP_VARIATIONAL_CLASSIFICATION.md).
 
+The weighted variational-GP lane extends that gate with nonuniform sample
+weights shared by binary and one-vs-rest heads. Its independent NumPy oracle
+checks that uniform weights scale only the expected likelihood, verifies the
+packed weighted gradient by finite differences, and records malformed-weight
+refusals plus the typed CUDA boundary:
+
+```bash
+python3 -B scripts/bench_gp_variational_classification_weights.py \
+  --fortml ../fortml --output results/gp_variational_classification_weights.csv
+```
+
+See [`results/GP_VARIATIONAL_CLASSIFICATION_WEIGHTS.md`](results/GP_VARIATIONAL_CLASSIFICATION_WEIGHTS.md).
+
 The XGBoost-style lane has its own workload and raw record. It checks squared,
 binary logistic, one-vs-rest multiclass, and learned-NaN default-direction
 depth-two boosting against independent recursive NumPy gradient/Hessian
