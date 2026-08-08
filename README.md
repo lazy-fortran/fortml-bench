@@ -883,6 +883,19 @@ its centered recurrence against an independent CPU oracle. The benchmark CSV
 does not claim a CUDA timing for the full MLP trainer until gradient assembly,
 transfer accounting, and matched device timing are included.
 
+The resident RMSprop state gate also checks malformed creation arguments,
+null gradient/download boundaries, and the explicit create/step/download/
+destroy lifecycle. Its independent recurrence and typed refusal row are
+recorded separately from the CPU MLP trainer lane:
+
+```bash
+python3 scripts/bench_cuda_rmsprop.py \
+  --fortml ../fortml --output results/cuda_rmsprop.csv
+```
+
+See [`results/CUDA_RMSPROP.md`](results/CUDA_RMSPROP.md). This is a
+no-autodiff optimizer-state contract, not end-to-end resident MLP training.
+
 The fixed full-batch RMSprop hypergradient lane independently finite-differences
 the value, all five packed hyperparameters, and a directional JVP for separate
 centered and uncentered trajectories. The FortML release app is retained only after its

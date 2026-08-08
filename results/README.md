@@ -39,6 +39,7 @@ Complete-call studies:
 - [Bounded PINN training adapter](PINN.md)
 - [Deterministic grouped K-fold validation](GROUP_KFOLD.md)
 - [Resident CUDA AdamW state gate](CUDA_ADAMW.md)
+- [Resident CUDA RMSprop state gate](CUDA_RMSPROP.md)
 - [Deterministic k-nearest-neighbor classification](KNN.md)
 - [One-vs-one logistic classification](OVO_LOGISTIC.md)
 - [Multilabel logistic classification](MULTILABEL_LOGISTIC.md)
