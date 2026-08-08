@@ -84,7 +84,7 @@ def main() -> None:
         if fields[0] == "xgb_tweedie_oracle_max_error":
             parsed[fields[0]] = fields[1]
         elif fields[0] in {"xgb_tweedie_fit", "xgb_tweedie_predict"}:
-            if len(fields) != 6:
+            if len(fields) != 7:
                 raise RuntimeError(f"malformed {fields[0]} line: {line!r}")
             parsed[fields[0]] = fields[1:]
         elif fields[0] == "xgb_tweedie_hist":
