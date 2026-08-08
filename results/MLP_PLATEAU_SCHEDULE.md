@@ -1,25 +1,24 @@
-# Metric-aware plateau schedule
+# Metric-aware plateau trainer
 
-The release lane checks the stateless `MLP_SCHEDULE_PLATEAU` contract. Each
-scenario supplies the metric mode, current metric, best value, consecutive
-bad-observation count, and reduction count. The independent Python oracle
-checks patience resets, `min_delta` comparisons, compounded `factor` rates,
-the exact base-rate and factor products, and the documented zero products for
-comparison decisions.
+This lane checks typed `MLP_SCHEDULE_PLATEAU` integration in `mlp_train`.
+The independent NumPy recurrence uses four one-update epochs, patience two,
+`min_delta=0.02`, and factor `0.4`; it predicts a final learning rate of
+`1.6e-13`.  The Fortran release app matches that value to machine precision and
+also emits four optimizer updates.  The source fixture independently checks
+minimize/maximize transitions, active-branch base/factor products, malformed
+fields, formatted checkpoint round-trip, and interrupted versus uninterrupted
+trainer trajectories.
 
-The FortML app emits 132 values for each scenario before timing. The committed
-CSV therefore contains 132 Python-oracle rows, 132 FortML CPU rows, and two
-explicit CUDA capability rows. The CPU rows pass with zero maximum error in
-the release run. CUDA is recorded as `unavailable` because no resident
-metric-aware optimizer lowering is linked.
+The CUDA row is intentionally `unavailable`: metric reduction and optimizer
+state are not resident, and the trainer never hides a host fallback behind a
+CUDA request.
 
-Reproduce from this repository with:
+Run:
 
-```sh
-python3 -B scripts/bench_mlp_plateau_schedule.py \
-    --fortml ../fortml --output results/mlp_plateau_schedule.csv
+```bash
+python -B scripts/bench_mlp_plateau_schedule.py \
+  --fortml ../fortml \
+  --output results/mlp_plateau_schedule.csv
 ```
 
-The application uses the release Fortran archive produced by `fo build` and a
-temporary executable under `/mnt/storage`. No host timing is relabeled as a
-CUDA measurement.
+The CSV pins the exact FortML and benchmark commits used to generate the rows.
