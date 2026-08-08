@@ -162,6 +162,18 @@ FO_SCAN_FALLBACK=regex python -B scripts/bench_second_derivative_gp.py \
 
 See [`results/SECOND_DERIVATIVE_GP.md`](results/SECOND_DERIVATIVE_GP.md).
 
+The locally-periodic GP lane checks a four-parameter logarithmic covariance,
+coincident-safe input products, parameter JVP/VJP/HVP products, and exact-GP
+posterior moments against separate vectorized and scalar-loop NumPy oracles.
+The FortML behavioral gate also records the static-operator/CUDA refusal:
+
+```bash
+FO_SCAN_FALLBACK=regex python -B scripts/bench_local_periodic_gp.py \
+  --fortml ../fortml --output results/local_periodic_gp.csv
+```
+
+See [`results/LOCAL_PERIODIC_GP.md`](results/LOCAL_PERIODIC_GP.md).
+
 The production Lion trainer lane checks the stateful CPU recurrence, decoupled
 weight decay, clipping, EMA, validation, and uninterrupted versus checkpointed
 text-resume trajectories against an independent NumPy oracle. Resident Lion
