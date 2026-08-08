@@ -6,7 +6,7 @@ metadata, and a committed raw record.
 
 ## Status and handoff
 
-Last updated 2026-08-08. The scalable-GP study of Liu et al. (IEEE TNNLS <!-- slop-ok -->
+Last updated 2026-08-09. The scalable-GP study of Liu et al. (IEEE TNNLS <!-- slop-ok -->
 31(11):4405-4423, 2020) is complete and is the centrepiece of the GP evidence
 here. Read `results/SCALABLE_GP.md` first: it states what "matching the paper"
 can mean (the review publishes no numeric result tables), which half of each
