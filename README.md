@@ -1639,6 +1639,17 @@ python -B scripts/bench_adafactor.py \
 
 See [`results/ADAFACTOR.md`](results/ADAFACTOR.md).
 
+The layout-aware Adafactor lane adds an independent matrix row/column oracle,
+an unfactored vector-block fallback, MLP integration, and the explicit CUDA
+boundary:
+
+```bash
+python -B scripts/bench_adafactor_factored.py \
+  --fortml ../fortml --output results/adafactor_factored.csv
+```
+
+See [`results/ADAFACTOR_FACTORED.md`](results/ADAFACTOR_FACTORED.md).
+
 ## AMSGrad optimizer and MLP training
 
 The AMSGrad lane checks the deterministic bias-corrected first moment and
