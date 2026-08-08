@@ -453,6 +453,11 @@ a different workload, precision, device, or residency policy.
   oracle, final-inertia gate, release fit/transform timings, and an explicit
   CUDA refusal. The raw record is `results/kmeans.csv`; the protocol is
   documented in `results/KMEANS.md`.
+- [x] Add a dense robust-scaler lane with an independent NumPy
+  linear-interpolation median/IQR oracle, complete transform/inverse/JVP
+  checks, release transform/JVP checksum gates, and an explicit CUDA refusal.
+  The raw record is `results/robust_scaler.csv`; the protocol is documented in
+  `results/ROBUST_SCALER.md`.
 - [x] Add a weighted multi-output ridge lane with an independent NumPy
   closed-form oracle, vector/matrix prediction, and packed coefficient/input
   JVP/VJP checks. The raw record is `results/ridge.csv`; a complete-array

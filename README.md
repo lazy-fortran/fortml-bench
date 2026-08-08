@@ -112,6 +112,18 @@ python -B scripts/bench_kmeans.py --fortml ../fortml \
 
 See [`results/KMEANS.md`](results/KMEANS.md).
 
+The dense robust-scaler lane checks median/IQR fitting, transform, inverse
+transform, and the input JVP against an independent NumPy linear-interpolation
+oracle.  The FortML release app's transform and JVP checksums gate its CPU
+timing, while CUDA remains an explicit typed-unavailable row:
+
+```bash
+python -B scripts/bench_robust_scaler.py --fortml ../fortml \
+  --output results/robust_scaler.csv
+```
+
+See [`results/ROBUST_SCALER.md`](results/ROBUST_SCALER.md).
+
 The ARD-GP lane checks an anisotropic RBF covariance with one length scale per
 feature, input gradients and mixed Hessians, analytic parameter JVP/VJP/HVP
 products, and exact-GP posterior and hyperparameter-gradient products against
