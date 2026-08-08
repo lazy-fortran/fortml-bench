@@ -14,7 +14,7 @@ FO_SCAN_FALLBACK=regex python -B scripts/bench_local_periodic_gp.py \
 
 The committed CSV records the source and benchmark revisions, Python/NumPy,
 compiler flags, and six CPU/refusal rows. The scalar-loop covariance agrees to
-machine precision. The posterior variance is positive (`1.227275432814216e+00`
+machine precision. The posterior variance is positive (`1.227275432322503e+00`
 minimum on this fixture). The FortML public-contract gate passes. No GPU
 timing is reported: `kernel_operator_t` and resident CUDA return
 `FORTNUM_NOT_IMPLEMENTED` until their static ABI carries the four-parameter
