@@ -235,7 +235,10 @@ def main() -> None:
             oracle="independent NumPy cotangent identity")
         add(kernel, phase="public_contract_gate", backend="fortml", seconds_per_operation=elapsed,
             metric="fortml_second_derivative_gp_test", value=1.0,
-            max_abs_error=max(kernel_metrics.values()),
+            max_abs_error=max(kernel_metrics[key] for key in (
+                "prediction_mean_max_abs_error", "prediction_variance_max_abs_error",
+                "joint_covariance_max_abs_error", "input_jvp_fd_max_abs_error",
+                "input_vjp_duality_abs_error")),
             oracle="FortML test_second_derivative_gp behavioral gate", notes=notes)
         add(kernel, phase="device_boundary", backend="fortml", status="refused", device="cuda",
             metric="typed_cuda_prediction_and_covariance", value="nan", max_abs_error=0.0,
