@@ -681,9 +681,9 @@ a different workload, precision, device, or residency policy.
   NumPy oracle reproduces the deterministic hidden MLP feature map and solves
   the augmented kernel-ridge normal equations; the raw record is
   `results/mlp_last_layer_gp.csv`, with a typed CUDA-unavailable row and an
-  explicit finite-width approximation boundary. The protocol is documented in
-  `results/MLP_LAST_LAYER_GP.md`; a release-app CPU row must be regenerated
-  whenever the source checkout changes.
+  explicit finite-width approximation boundary. The clean release-app CPU row
+  matches the NumPy posterior MSE to `2.78e-17` on source `c2d9c4c`; the
+  protocol and provenance are documented in `results/MLP_LAST_LAYER_GP.md`.
 - [ ] Add matched GPyTorch variational-likelihood and calibrated-likelihood
   comparisons. FortML's CPU inducing-point Bernoulli ELBO, packed gradient,
   JVP, and CUDA refusal are covered by
