@@ -300,6 +300,10 @@ a different workload, precision, device, or residency policy.
   sparse categorical/indicator views, and resident kernels remain open.
 - [x] Add a composable polynomial/Fourier basis-pipeline lane with independent
   transform, JVP, and VJP checks and timings.
+- [x] Add the typed device-dispatch lane for the column-selecting basis union.
+  CPU transform/JVP/VJP/HVP calls are compared with the host products and an
+  independent NumPy feature oracle; CUDA remains an explicit refusal with
+  sentinel-preservation checks in `results/column_pipeline_device.csv`.
 - [x] Add the fitted basis-linear regression composition lane with an
   independent NumPy least-squares and chained JVP oracle.
 - [x] Add deterministic CART-stump and residual-stump boosting lanes with an

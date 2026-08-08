@@ -1160,6 +1160,18 @@ python3 -B scripts/bench_bagging_classifier.py \
 
 See [`results/BAGGING_CLASSIFIER.md`](results/BAGGING_CLASSIFIER.md).
 
+The column-basis device lane checks a named Fourier/polynomial feature union
+against an independent NumPy oracle. It records the CPU transform timing and
+the explicit CUDA refusal from the typed device API; no host transform is
+reported as accelerator evidence:
+
+```bash
+python3 -B scripts/bench_column_pipeline_device.py \
+  --fortml ../fortml --output results/column_pipeline_device.csv
+```
+
+See [`results/COLUMN_PIPELINE_DEVICE.md`](results/COLUMN_PIPELINE_DEVICE.md).
+
 The separately named LightGBM-style lane records weighted regression and
 binary-logistic histogram boosting with deterministic globally best-leaf growth
 up to `num_leaves`. The six-sample weighted-Newton fixture is an independent
