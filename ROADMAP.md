@@ -531,6 +531,11 @@ a different workload, precision, device, or residency policy.
   group-mean/path-mask oracle and checks the complete prediction vector,
   diagnostics, and typed CUDA refusal. The raw record is
   `results/xgboost_interaction.csv`; the CPU rows pass with zero error.
+- [x] Add the binary AdaBoost lane. The release app fits a weighted depth-one
+  CART learner, and `scripts/bench_adaboost_classifier.py` independently
+  reconstructs the learner error, alpha, signed margin, probabilities, and
+  labels. The raw record is `results/adaboost_classifier.csv`; the CUDA row is
+  an explicit typed refusal.
 - [ ] Add physics-informed, Hamiltonian, Lagrangian, and symplectic workloads
   with analytic harmonic-oscillator and manufactured-PDE oracles. Record
   trajectory error, energy drift, symplectic Jacobian defect, residual norms,

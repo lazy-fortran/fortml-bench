@@ -1069,6 +1069,18 @@ python3 -B scripts/bench_xgboost_interaction.py \
 
 See [`results/XGBOOST_INTERACTION.md`](results/XGBOOST_INTERACTION.md).
 
+The binary AdaBoost lane uses weighted depth-one CART learners. Its independent
+NumPy oracle reconstructs the one-stump error, learner weight, signed margin,
+probabilities, and labels. The CPU rows are retained only after the complete
+vector check, and CUDA is recorded as a typed refusal:
+
+```bash
+python3 -B scripts/bench_adaboost_classifier.py \
+  --fortml ../fortml --output results/adaboost_classifier.csv
+```
+
+See [`results/ADABOOST_CLASSIFIER.md`](results/ADABOOST_CLASSIFIER.md).
+
 The separately named LightGBM-style lane records weighted regression and
 binary-logistic histogram boosting with deterministic globally best-leaf growth
 up to `num_leaves`. The six-sample weighted-Newton fixture is an independent
