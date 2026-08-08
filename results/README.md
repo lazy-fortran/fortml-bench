@@ -27,6 +27,7 @@ Complete-call studies:
 - [Unfactored Adafactor trainer state](ADAFACTOR.md)
 - [AMSGrad optimizer and MLP training](AMSGRAD.md)
 - [RAdam optimizer and MLP training](RADAM.md)
+- [RAdam trajectory hypergradients](MLP_RADAM_HYPERGRADIENT.md)
 - [RMSprop trajectory hypergradients](RMSPROP_HYPERGRADIENT.md)
 - [Adagrad trajectory hypergradients](ADAGRAD_HYPERGRADIENT.md)
 - [Resident CUDA correctness contracts](DEVICE_CONTRACTS.md)

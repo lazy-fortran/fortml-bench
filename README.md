@@ -1567,8 +1567,11 @@ python -B scripts/bench_radam_training.py \
 ```
 
 See [`results/RADAM.md`](results/RADAM.md). The source test also checks exact
-format-8/text-schema-6 checkpoint resume and the output-preserving CUDA refusal;
-RAdam trajectory hypergradients and FortOpt adapters remain open.
+format-8/text-schema-6 checkpoint resume and the output-preserving CUDA refusal.
+The fixed full-batch trajectory products have a separate correctness gate in
+[`results/MLP_RADAM_HYPERGRADIENT.md`](results/MLP_RADAM_HYPERGRADIENT.md),
+including central differences, scalar adjointness, FortOpt L-BFGS-B, typed
+rho-branch refusals, and the explicit CUDA boundary.
 
 ## Validity boundary
 
