@@ -22,7 +22,7 @@ python -B scripts/bench_mlp_optimizer_group_hypergradient.py \
 The recorded run has 21 rows: seven NumPy-oracle rows (the HVP row is
 not-applicable), seven passing FortML CPU rows, and seven explicit
 CUDA-unavailable rows. The FortML value-gradient timing was
-`9.28311875e-05` seconds per operation on the recorded host. The largest CPU
+`3.461025e-05` seconds per operation on the recorded host. The largest CPU
 oracle discrepancy was `1.24e-11`, below the `4e-10` gate. The clipping
 active-set boundary, overlapping group ranges, malformed HVP products, and
 unsupported devices remain typed validation/refusal paths.
