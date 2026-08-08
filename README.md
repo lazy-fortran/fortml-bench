@@ -778,6 +778,25 @@ See [`results/MLP_ONE_CYCLE_HYPERGRADIENT.md`](results/MLP_ONE_CYCLE_HYPERGRADIE
 The complete-array gate retains CPU products only after an independent affine
 NumPy replay agrees; CUDA and outer-HVP boundaries remain explicit refusals.
 
+The affine constant-schedule HVP lane covers the exact second-order baseline:
+
+```bash
+.venv/bin/python -B scripts/bench_mlp_constant_schedule_hvp.py \
+    --fortml ../fortml \
+    --output results/mlp_constant_schedule_hvp.csv
+```
+
+Its NumPy oracle replays a one-layer affine recurrence with eight constant-rate
+updates, then uses central differences of the complete four-coordinate reverse
+gradient for the outer HVP.  The release app emits value, all gradient and HVP
+components, and the directional JVP before timing.  Rows are retained only
+when the complete arrays agree within `5e-8`; the checked-in run records the
+CPU HVP timing and exact zero inactive schedule coordinates.  CUDA and the
+nonconstant/nonlinear HVP cases remain explicit `unavailable` typed-boundary
+rows, never host fallbacks.
+
+See [`results/MLP_CONSTANT_SCHEDULE_HVP.md`](results/MLP_CONSTANT_SCHEDULE_HVP.md).
+
 Binary probability calibration (positive temperature scaling, Platt sigmoid,
 and weighted PAVA isotonic) is checked against an independent NumPy oracle:
 
