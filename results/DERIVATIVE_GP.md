@@ -9,7 +9,9 @@ packed log-kernel/log-noise coordinates to independently gate the new dense
 posterior `joint_covariance_jvp` and `joint_covariance_vjp` products. The
 FortML release app emits CPU timings only after all checks pass; the current
 CSV has 94 correctness-gated CPU/CUDA-contract rows, including the polynomial
-and ARD-RBF mixed-observation hyperparameter HVPs.
+and ARD-RBF mixed-observation hyperparameter HVPs. The 95th row is the
+FortSym-generated Matérn-5/2 scalar value/JVP/VJP/HVP leaf, timed after an
+independent central-difference-of-gradient oracle passes.
 
 CUDA rows are deliberately recorded as `unavailable`: the derivative-GP
 resident covariance/factorization graph is not linked and FortML returns

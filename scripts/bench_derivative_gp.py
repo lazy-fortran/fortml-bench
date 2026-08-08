@@ -313,6 +313,29 @@ def derivative_hvp_oracle(name: str) -> float:
     return float(np.sum(product))
 
 
+def matern52_leaf_oracle() -> float:
+    """Independent scalar HVP oracle for the FortSym Matérn-5/2 leaf."""
+    distance, distance_d = 0.73, 0.21
+    lv, lv_d = np.log(1.4), -0.17
+    ll, ll_d = np.log(0.82), 0.11
+    cotangent, step = 0.83, 2.0e-6
+    kappa = np.sqrt(5.0)
+
+    def gradient(d: float, log_variance: float, log_lengthscale: float) -> np.ndarray:
+        r = kappa * d * np.exp(-log_lengthscale)
+        value_scale = np.exp(log_variance)
+        dvalue_dr = -value_scale * r * (1.0 + r) * np.exp(-r) / 3.0
+        return cotangent * np.array([
+            dvalue_dr * kappa * np.exp(-log_lengthscale),
+            value_scale * (1.0 + r + r * r / 3.0) * np.exp(-r),
+            dvalue_dr * (-r),
+        ])
+
+    plus = gradient(distance + step * distance_d, lv + step * lv_d, ll + step * ll_d)
+    minus = gradient(distance - step * distance_d, lv - step * lv_d, ll - step * ll_d)
+    return float(np.sum((plus - minus) / (2.0 * step)))
+
+
 def oracle(name: str) -> tuple[float, float, float, float, float]:
     x, y, components, query, direction, query_components, mean_bar, variance_bar = fixture()
     h = 1.0e-5
@@ -450,6 +473,17 @@ def main() -> None:
                         status="unavailable", backend="fortml", seconds_per_operation="",
                         value="", max_abs_error="", oracle="typed_device_contract",
                         notes="FORTNUM_NOT_IMPLEMENTED: resident derivative-GP graph not linked"))
+
+    expected_leaf = matern52_leaf_oracle()
+    if ("matern52", "leaf_hvp") not in records:
+        raise RuntimeError("release app omitted matern52/leaf_hvp")
+    seconds, actual = records[("matern52", "leaf_hvp")]
+    error = abs(actual - expected_leaf)
+    if error > 5.0e-8 * max(1.0, abs(expected_leaf)):
+        raise RuntimeError(f"matern52/leaf_hvp oracle mismatch: {error:.3e}")
+    rows.append(row(kernel="matern52", operation="leaf_hvp", seconds_per_operation=seconds,
+                    value=actual, max_abs_error=error,
+                    notes="FortSym-generated value/JVP/VJP/HVP leaf; independent central-difference oracle passed"))
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", newline="") as stream:
