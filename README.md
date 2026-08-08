@@ -172,6 +172,20 @@ FO_SCAN_FALLBACK=regex python -B scripts/bench_student_t_process.py \
 
 See [`results/STUDENT_T_PROCESS.md`](results/STUDENT_T_PROCESS.md).
 
+The RBF order-three derivative-observation lane checks mixed value and
+derivative observations through third order, query input JVP/VJP products,
+and the packed log-variance/log-lengthscale/log-noise likelihood HVP.  A
+separate NumPy covariance and finite-difference oracle runs before the
+correctness-gated FortML release app.  CUDA is retained as a typed refusal
+until resident derivative covariance and factorization kernels are linked:
+
+```bash
+python -B scripts/bench_second_derivative_gp_rbf_order3.py \
+  --fortml ../fortml --output results/second_derivative_gp_rbf_order3.csv
+```
+
+See [`results/SECOND_DERIVATIVE_GP_RBF_ORDER3.md`](results/SECOND_DERIVATIVE_GP_RBF_ORDER3.md).
+
 The supplied-noise heteroskedastic GP lane checks the constant-noise reduction
 to an ordinary GP, the quiet/noisy posterior contrast, and positive log-noise
 interpolation against an independent NumPy diagonal-noise oracle. A zero

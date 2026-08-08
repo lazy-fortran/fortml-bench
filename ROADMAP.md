@@ -144,6 +144,12 @@ not completion gates.
   independent NumPy likelihood-gradient finite difference checks all four
   packed log-kernel coordinates and log noise, including the degree-one limit;
   the release record has CPU timings and an explicit resident-CUDA refusal.
+- [x] Add the RBF mixed-observation order-three lane. The independent dense
+  NumPy oracle covers derivative covariance blocks through total order six,
+  posterior moments, query input JVP/VJP products, and the packed likelihood
+  HVP. The correctness-gated release app records CPU rows and a typed CUDA
+  refusal in `results/second_derivative_gp_rbf_order3.csv`; the protocol is
+  documented in [`results/SECOND_DERIVATIVE_GP_RBF_ORDER3.md`](results/SECOND_DERIVATIVE_GP_RBF_ORDER3.md).
 
 ## Evidence
 
