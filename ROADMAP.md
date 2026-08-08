@@ -489,6 +489,11 @@ a different workload, precision, device, or residency policy.
   while the release app records exact CPU fit/predict, weighted-histogram
   diagnostics, and a typed CUDA refusal in
   `results/xgboost_squared_log.csv`.
+- [x] Add a fixed-shape Gamma log-link XGBoost lane. The independent NumPy
+  oracle checks the positive-target one-split gradient/Hessian and inverse-link
+  prediction, while the release app records exact CPU fit/predict,
+  weighted-histogram diagnostics, and an explicit CUDA refusal in
+  `results/xgboost_gamma.csv`.
 - [x] Add the `rank:pairwise` XGBoost lane. An independent pairwise logistic
   loss/gradient/Hessian oracle is paired with FortML fit ordering, query
   isolation, and singleton-query refusal in `results/xgboost_ranking.csv`.

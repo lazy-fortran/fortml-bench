@@ -1356,6 +1356,18 @@ histogram timings on a larger deterministic count workload:
 See [`results/XGBOOST_POISSON.md`](results/XGBOOST_POISSON.md). Its CUDA row
 is an explicit unavailable refusal until a resident tree kernel is linked.
 
+The fixed-shape Gamma objective lane independently reconstructs the positive
+log-link one-tree Newton update, then records exact CPU fit/predict and
+weighted-histogram timings on a strictly positive workload:
+
+```bash
+python -B scripts/bench_xgboost_gamma.py \
+  --fortml ../fortml --output results/xgboost_gamma.csv
+```
+
+See [`results/XGBOOST_GAMMA.md`](results/XGBOOST_GAMMA.md). Its CUDA row is
+an explicit unavailable refusal until a resident tree kernel is linked.
+
 The squared-log (RMSLE) objective lane independently reconstructs a one-tree
 Newton update in the `log1p(target)` coordinate, then records exact CPU
 fit/predict and a weighted-histogram diagnostic on a deterministic
