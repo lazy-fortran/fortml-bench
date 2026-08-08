@@ -1145,6 +1145,17 @@ python3 -B scripts/bench_gp_variational_classification_weights.py \
 
 See [`results/GP_VARIATIONAL_CLASSIFICATION_WEIGHTS.md`](results/GP_VARIATIONAL_CLASSIFICATION_WEIGHTS.md).
 
+The coupled categorical variational-GP lane checks the variance-corrected
+shared-softmax ELBO, packed and query products, FortOpt fitting, and typed CUDA
+refusal against independent NumPy and finite-difference oracles:
+
+```bash
+python3 -B scripts/bench_gp_variational_categorical.py \
+  --fortml ../fortml --output results/gp_variational_categorical.csv
+```
+
+See [`results/GP_VARIATIONAL_CATEGORICAL.md`](results/GP_VARIATIONAL_CATEGORICAL.md).
+
 The XGBoost-style lane has its own workload and raw record. It checks squared,
 binary logistic, one-vs-rest multiclass, and learned-NaN default-direction
 depth-two boosting against independent recursive NumPy gradient/Hessian
