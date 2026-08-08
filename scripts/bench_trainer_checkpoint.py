@@ -3,7 +3,7 @@
 
 The independent NumPy oracle serialises the *optimizer state* (parameters,
 first/second moments, step counter, EMA, and value history), resumes from the
-split point, and compares it with an uninterrupted Adam trajectory.  The
+split point, and compares it with uninterrupted Adam and Lion trajectories.  The
 FortML release test additionally checks the portable text parser's refusal of
 truncated and extra records and verifies transactional failure behavior.
 """
@@ -77,6 +77,34 @@ def oracle() -> tuple[float, float, int]:
     return float(np.linalg.norm(full)), error, split
 
 
+def lion_oracle() -> tuple[float, float, int]:
+    """Return an independent Lion norm, continuation error, and split step."""
+    target = np.array([1.5, -0.5], dtype=np.float64)
+    curvature = np.array([2.0, 4.0], dtype=np.float64)
+    initial = np.array([0.0, 1.0], dtype=np.float64)
+    learning_rate, beta1, beta2, weight_decay = 0.1, 0.5, 0.8, 0.2
+    steps, split = 4, 2
+
+    def advance(parameters: np.ndarray, momentum: np.ndarray,
+                count: int) -> tuple[np.ndarray, np.ndarray]:
+        for _ in range(count):
+            gradient = curvature * (parameters - target)
+            interpolated = beta1 * momentum + (1.0 - beta1) * gradient
+            parameters = parameters - learning_rate * (
+                np.sign(interpolated) + weight_decay * parameters)
+            momentum = beta2 * momentum + (1.0 - beta2) * gradient
+        return parameters, momentum
+
+    full, full_momentum = advance(initial.copy(), np.zeros(2), steps)
+    split_parameters, split_momentum = advance(initial.copy(), np.zeros(2), split)
+    resumed, resumed_momentum = advance(split_parameters, split_momentum, steps - split)
+    error = max(float(np.max(np.abs(full - resumed))),
+                float(np.max(np.abs(full_momentum - resumed_momentum))))
+    if error > 1.0e-14:
+        raise RuntimeError(f"Lion continuation oracle failed: {error:.3e}")
+    return float(np.linalg.norm(full)), error, split
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--fortml", type=Path, default=Path("../fortml"))
@@ -88,13 +116,14 @@ def main() -> None:
     fortml = args.fortml.resolve()
     output = args.output.resolve()
     expected_norm, continuation_error, split = oracle()
+    lion_norm, lion_error, lion_split = lion_oracle()
     started = time.perf_counter()
     if args.skip_fortml:
         status, notes = "skipped", "--skip-fortml"
     else:
         subprocess.run(["fo", "test", "test_trainer"], cwd=fortml, check=True)
         status = "pass"
-        notes = "test_trainer checks Adam continuation, malformed/truncated/extra refusal"
+        notes = "test_trainer checks Adam/Lion continuation, malformed/truncated/extra refusal"
     elapsed = time.perf_counter() - started
     details = {
         "python_version": platform.python_version(), "numpy_version": np.__version__,
@@ -120,6 +149,16 @@ def main() -> None:
         seconds_per_operation=elapsed, metric="continuation_max_abs_error",
         value=continuation_error, max_abs_error=continuation_error,
         oracle="FortML test_trainer independent quadratic and parser oracle",
+        notes=notes)
+    add(workload="trainer_lion", phase="independent_oracle", backend="numpy_oracle",
+        status="pass", metric="final_parameter_l2_norm", value=lion_norm,
+        max_abs_error=lion_error,
+        oracle="independent NumPy Lion sign/interpolation continuation",
+        notes=f"split_step={lion_split}; parameters/momentum/step all compared")
+    add(workload="trainer_lion", phase="public_contract_gate", status=status,
+        seconds_per_operation=elapsed, metric="continuation_max_abs_error",
+        value=lion_error, max_abs_error=lion_error,
+        oracle="FortML test_trainer independent Lion and parser oracle",
         notes=notes)
     add(phase="device_contract", device="cuda", status="unavailable",
         metric="resident_optimizer", value="nan", max_abs_error="nan",

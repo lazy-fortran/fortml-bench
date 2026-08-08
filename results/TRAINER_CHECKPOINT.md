@@ -1,10 +1,10 @@
 # Generic trainer checkpoint benchmark
 
-`bench_trainer_checkpoint.py` uses a three-parameter quadratic and an
-independent NumPy Adam recurrence.  It compares the uninterrupted trajectory
-with a split-at-step-3 continuation, including parameters, first/second
-moments, and the step counter.  `test_trainer` also checks EMA/history state
-and rejects truncated or extra text records transactionally.
+`bench_trainer_checkpoint.py` uses an independent NumPy Adam recurrence and a
+separate weighted quadratic Lion recurrence. It compares uninterrupted and
+split continuations, including parameters, optimizer state, and step counts.
+`test_trainer` also checks EMA/history state and rejects truncated or extra
+text records transactionally for the generic trainer.
 
 Run:
 
