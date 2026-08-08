@@ -1540,8 +1540,8 @@ See [`results/GP_VARIATIONAL_CATEGORICAL.md`](results/GP_VARIATIONAL_CATEGORICAL
 The categorical likelihood-temperature lane keeps the inducing posterior
 fixed, fits the positive softmax temperature through FortOpt, and independently
 recomputes the variance-corrected softmax, probability JVP, and ELBO derivative
-from the emitted latent moments.  It also records the typed CUDA likelihood
-product refusal:
+from the emitted latent moments, plus fixed-cotangent probability and ELBO
+directional HVPs. It also records typed CUDA JVP/HVP likelihood refusals:
 
 ```bash
 python3 -B scripts/bench_gp_categorical_likelihood.py \

@@ -56,7 +56,8 @@ def parse_probe(output: str) -> dict[str, list[list[str]]]:
 
 
 def oracle(means: np.ndarray, variances: np.ndarray, log_scale: float,
-           labels: np.ndarray) -> tuple[np.ndarray, np.ndarray, float]:
+           labels: np.ndarray, probabilities_bar: np.ndarray) -> tuple[
+               np.ndarray, np.ndarray, float, float, float]:
     correction = np.sqrt(1.0 + np.pi * variances / 8.0)
     logits = np.exp(log_scale) * means / correction
     shifted = logits - np.max(logits, axis=1, keepdims=True)
@@ -65,12 +66,19 @@ def oracle(means: np.ndarray, variances: np.ndarray, log_scale: float,
     logits_dot = logits
     mean_tangent = np.sum(probabilities * logits_dot, axis=1, keepdims=True)
     probability_jvp = probabilities * (logits_dot - mean_tangent)
+    probability_bar_mean = np.sum(probabilities * probabilities_bar, axis=1, keepdims=True)
+    logits_bar = probabilities * (probabilities_bar - probability_bar_mean)
+    probability_bar_mean_dot = np.sum(probability_jvp * probabilities_bar, axis=1, keepdims=True)
+    logits_bar_dot = probability_jvp * (probabilities_bar - probability_bar_mean) - \
+        probabilities * probability_bar_mean_dot
+    probability_hvp = float(np.sum(logits_bar_dot * logits + logits_bar * logits_dot))
     class_indices = np.searchsorted(np.array([10, 20, 30]), labels)
-    elbo_gradient = float(np.sum(
-        logits[np.arange(labels.size), class_indices]
-        - np.sum(probabilities * logits, axis=1),
-    ))
-    return probabilities, probability_jvp, elbo_gradient
+    elbo_gradient = float(np.sum(logits[np.arange(labels.size), class_indices] -
+        np.sum(probabilities * logits, axis=1)))
+    mean_logit_dot = np.sum(probability_jvp * logits, axis=1) + \
+        np.sum(probabilities * logits_dot, axis=1)
+    elbo_hvp = float(np.sum(logits_dot[np.arange(labels.size), class_indices] - mean_logit_dot))
+    return probabilities, probability_jvp, elbo_gradient, elbo_hvp, probability_hvp
 
 
 def main() -> None:
@@ -127,14 +135,24 @@ def main() -> None:
             i, j = int(fields[0]) - 1, int(fields[1]) - 1
             observed[i, j], observed_jvp[i, j] = float(fields[2]), float(fields[3])
         labels = np.array([30, 10, 20, 10, 30, 20], dtype=np.int64)
-        expected, expected_jvp, expected_gradient = oracle(means, variances, log_scale, labels)
+        probabilities_bar = np.array([
+            [0.17, -0.05, 0.02], [-0.09, 0.11, 0.06], [0.04, -0.08, 0.09],
+            [0.12, 0.07, -0.04], [-0.06, 0.03, 0.05], [0.08, -0.02, 0.01],
+        ], dtype=np.float64)
+        expected, expected_jvp, expected_gradient, expected_elbo_hvp, expected_probability_hvp = oracle(
+            means, variances, log_scale, labels, probabilities_bar)
         probability_error = float(np.max(np.abs(observed - expected)))
         jvp_error = float(np.max(np.abs(observed_jvp - expected_jvp)))
         gradient_observed = float(records["gp_categorical_likelihood_gradient"][0][0])
         gradient_error = abs(gradient_observed - expected_gradient)
         tangent = float(records["gp_categorical_likelihood_jvp"][0][0])
         tangent_error = abs(tangent - expected_gradient)
-        error = max(probability_error, jvp_error, gradient_error, tangent_error)
+        observed_elbo_hvp = float(records["gp_categorical_likelihood_elbo_hvp"][0][0])
+        elbo_hvp_error = abs(observed_elbo_hvp - expected_elbo_hvp)
+        observed_probability_hvp = float(records["gp_categorical_likelihood_probability_hvp"][0][0])
+        probability_hvp_error = abs(observed_probability_hvp - expected_probability_hvp)
+        error = max(probability_error, jvp_error, gradient_error, tangent_error,
+                    elbo_hvp_error, probability_hvp_error)
         if error > 3.0e-9:
             raise RuntimeError(f"categorical likelihood oracle mismatch: {error:.3e}")
         iterations = int(records["gp_categorical_likelihood_iterations"][0][0])
@@ -143,8 +161,9 @@ def main() -> None:
             raise RuntimeError(f"categorical ELBO JVP mismatch: {tangent_error:.3e}")
     else:
         probability_error = jvp_error = gradient_error = error = float("nan")
+        tangent_error = elbo_hvp_error = probability_hvp_error = float("nan")
         iterations = 0
-        fit_seconds = tangent = float("nan")
+        fit_seconds = tangent = observed_elbo_hvp = observed_probability_hvp = float("nan")
     add(phase="independent_oracle", backend="numpy_oracle", status="pass",
         metric="softmax_temperature_formula", value="nan", max_abs_error=0.0,
         oracle="independent NumPy variance-corrected softmax and log-temperature JVP",
@@ -157,19 +176,34 @@ def main() -> None:
         metric="probability_and_jvp_max_abs", value=error, max_abs_error=error,
         oracle="NumPy variance-corrected softmax and exact log-temperature JVP",
         notes=f"probability_error={probability_error:.3e}; jvp_error={jvp_error:.3e}; "
-        f"elbo_jvp_error={tangent_error:.3e}; {notes}")
+        f"elbo_jvp_error={tangent_error:.3e}; probability_hvp_error={probability_hvp_error:.3e}; {notes}")
+    add(phase="probability_products", status=status, metric="probability_hvp", value=observed_probability_hvp,
+        max_abs_error=probability_hvp_error,
+        oracle="NumPy fixed-cotangent probability VJP directional derivative",
+        notes=notes)
     add(phase="elbo_products", status=status, metric="elbo_jvp", value=tangent,
         max_abs_error=gradient_error, oracle="NumPy categorical ELBO log-temperature derivative",
         notes=notes)
+    add(phase="elbo_products", status=status, metric="elbo_hvp", value=observed_elbo_hvp,
+        max_abs_error=elbo_hvp_error,
+        oracle="NumPy fixed-state categorical ELBO directional Hessian",
+        notes=notes)
     cuda_code = 3
+    cuda_probability_hvp_code = 3
+    cuda_elbo_hvp_code = 3
     if status == "pass":
         cuda_code = int(records["gp_categorical_likelihood_cuda_jvp"][0][0])
         if cuda_code != 3:
             raise RuntimeError(f"unexpected CUDA status code {cuda_code}")
+        cuda_probability_hvp_code = int(records["gp_categorical_likelihood_cuda_probability_hvp"][0][0])
+        cuda_elbo_hvp_code = int(records["gp_categorical_likelihood_cuda_elbo_hvp"][0][0])
+        if cuda_probability_hvp_code != 3 or cuda_elbo_hvp_code != 3:
+            raise RuntimeError("unexpected CUDA categorical HVP status")
     add(phase="device_contract", device="cuda", status="unavailable",
         metric="resident_categorical_likelihood_graph", value="nan", max_abs_error="nan",
         oracle="typed FORTNUM_NOT_IMPLEMENTED refusal",
-        notes=f"status_code={cuda_code}; no host fallback")
+        notes=f"JVP status_code={cuda_code}; probability HVP status_code={cuda_probability_hvp_code}; "
+        f"ELBO HVP status_code={cuda_elbo_hvp_code}; no host fallback")
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")

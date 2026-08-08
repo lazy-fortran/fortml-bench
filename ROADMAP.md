@@ -541,11 +541,11 @@ a different workload, precision, device, or residency policy.
   inducing solves remain unavailable.
 - [x] Add the coupled categorical variational-GP likelihood-temperature lane.
   The independent NumPy oracle recomputes the positive softmax temperature,
-  probability JVP, and ELBO derivative from emitted latent moments; the raw
-  record is `results/gp_categorical_likelihood.csv` and the protocol is
-  documented in `results/GP_CATEGORICAL_LIKELIHOOD.md`. The CUDA likelihood
-  product row remains an explicit typed refusal until the inducing reduction is
-  resident.
+  probability JVP, fixed-cotangent probability HVP, and ELBO derivative/HVP
+  from emitted latent moments; the raw record is
+  `results/gp_categorical_likelihood.csv` and the protocol is documented in
+  `results/GP_CATEGORICAL_LIKELIHOOD.md`. The CUDA JVP/HVP product rows remain
+  explicit typed refusals until the inducing reduction is resident.
 - [x] Add the sparse-GP Gaussian-likelihood log-noise product lane. The
   independent dense NumPy oracle assembles the inducing ELBO and checks the
   transformed log-noise gradient and HVP against central differences. The

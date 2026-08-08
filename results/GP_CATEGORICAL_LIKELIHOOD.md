@@ -14,8 +14,11 @@ z = exp(log_temperature) * mean / sqrt(1 + pi * variance / 8),
 ```
 
 then evaluates a stable row-wise softmax, its exact log-temperature JVP, and
-the weighted categorical ELBO derivative.  The clean run recorded zero maximum
-absolute error for probabilities, probability JVPs, and the ELBO derivative;
+the weighted categorical ELBO derivative.  The HVP extension independently
+replays the fixed-cotangent probability VJP and the fixed-state ELBO curvature
+in the same log-temperature direction.  The clean run recorded zero maximum
+absolute error for probabilities, probability JVPs, probability VJPs/HVPs, and
+the ELBO derivative/HVP;
 the fitted scale was `3.3546262790251185e-4` after 14 iterations.  The ELBO
 JVP was `-1.2492061083302581e-4`.
 
@@ -26,8 +29,9 @@ python -B scripts/bench_gp_categorical_likelihood.py \
   --fortml ../fortml --output results/gp_categorical_likelihood.csv
 ```
 
-The CSV has five rows: the independent oracle, FortML likelihood-only fit,
-probability products, ELBO products, and the CUDA device contract.  CUDA is
-reported as unavailable with `FORTNUM_NOT_IMPLEMENTED` (status code `3`): the
-inducing solve and categorical reduction are not resident, and no host
-fallback is counted as GPU support.
+The CSV has seven rows: the independent oracle, FortML likelihood-only fit,
+probability products plus probability HVP, ELBO products plus ELBO HVP, and the
+CUDA device contract.  CUDA is reported as unavailable with
+`FORTNUM_NOT_IMPLEMENTED` (status code `3`) for JVP and both HVP wrappers: the
+inducing solve and categorical reduction are not resident, and no host fallback
+is counted as GPU support.
