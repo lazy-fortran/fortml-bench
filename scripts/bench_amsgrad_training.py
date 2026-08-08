@@ -8,6 +8,7 @@ import csv
 import os
 import platform
 import subprocess
+import time
 from pathlib import Path
 from typing import Any
 
@@ -57,7 +58,7 @@ def direct_oracle() -> tuple[float, float]:
     first = np.zeros_like(theta)
     second = np.zeros_like(theta)
     maximum = np.zeros_like(theta)
-    started = __import__("time").perf_counter()
+    started = time.perf_counter()
     for _ in range(STEPS):
         gradient = theta - target
         first = 0.9 * first + 0.1 * gradient
@@ -67,7 +68,7 @@ def direct_oracle() -> tuple[float, float]:
         theta -= 1.0e-2 * (first / (1.0 - 0.9**step)) / (
             np.sqrt(maximum / (1.0 - 0.99**step)) + 1.0e-8
         )
-    elapsed = (__import__("time").perf_counter() - started) / REPETITIONS
+    elapsed = (time.perf_counter() - started) / REPETITIONS
     return float(np.linalg.norm(theta)), elapsed
 
 
