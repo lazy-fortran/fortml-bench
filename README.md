@@ -846,8 +846,19 @@ python3 -B scripts/bench_multiclass_isotonic_calibration.py \
 ```
 
 See [`results/MULTICLASS_ISOTONIC_CALIBRATION.md`](results/MULTICLASS_ISOTONIC_CALIBRATION.md).
-Multiclass Platt scaling and resident isotonic kernels remain explicit
-unavailable boundaries.
+The weighted multiclass Platt lane fits a smooth one-vs-rest sigmoid to every
+raw softmax column, renormalizes the maps to a simplex, and checks interleaved
+slope/intercept parameters plus all four smooth JVP/VJP products against an
+independent NumPy Newton oracle:
+
+```bash
+FO_SCAN_FALLBACK=regex python -B scripts/bench_multiclass_platt_calibration.py \
+    --fortml ../fortml --output results/multiclass_platt_calibration.csv
+```
+
+See [`results/MULTICLASS_PLATT_CALIBRATION.md`](results/MULTICLASS_PLATT_CALIBRATION.md).
+The CUDA row is an explicit typed refusal until a resident calibration kernel
+is linked; isotonic active-set products remain typed refusals.
 
 The reliability-diagram lane checks weighted equal-width confidence bins,
 including empty-bin zero conventions and deterministic first-maximum ties,
