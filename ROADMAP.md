@@ -387,6 +387,12 @@ a different workload, precision, device, or residency policy.
   hyperparameter-training rows with an independent NumPy mode/envelope-gradient
   oracle. This records the mode-log-posterior adapter, not full Laplace
   evidence; the raw record is `results/gp_classification_training.csv`.
+- [x] Add weighted binary and one-vs-rest Laplace-GP fitting with finite,
+  nonnegative row weights, zero-weight curvature suppression, weighted mode
+  log posteriors, and weighted kernel envelope gradients. The independent
+  NumPy recurrence and refitted-gradient gate are in
+  `results/gp_classification_sample_weights.csv`; resident CUDA remains an
+  explicit unavailable row.
 - [x] Add an inducing-point Bernoulli variational-GP classification lane with
   an independent NumPy ELBO/packed-gradient finite-difference fixture and the
   FortML seeded-Monte-Carlo/parameter-and-query-JVP-VJP/minibatch/L-BFGS-B/refusal test gate. The raw record is
