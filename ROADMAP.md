@@ -721,6 +721,13 @@ a different workload, precision, device, or residency policy.
   `results/tree_leaf_products.csv` records zero CPU error and explicit
   unavailable resident-CUDA rows. Split routing and fit-time derivatives stay
   separate discrete boundaries.
+- [x] Add transactional multi-output XGBoost and LightGBM regression adapters.
+  `scripts/bench_xgboost_multioutput.py` computes an independent NumPy
+  two-output one-tree Newton-stump oracle and checks matrix predictions,
+  staged margins, concatenated fixed-leaf JVP/VJP products, metadata,
+  malformed-fit transactionality, and typed CUDA refusals in
+  `results/xgboost_multioutput.csv`. Resident multi-output GPU kernels and
+  distributed output sharding remain open.
 - [x] Add bounded seeded XGBoost DART/dropout boosting. `booster="dart"`
   selects prior trees through a compiler-independent hash stream and persists
   per-tree `1/(k+1)` normalisation in schema-5 snapshots. The release app and

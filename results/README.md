@@ -107,6 +107,7 @@ Complete-call studies:
 - [LightGBM-style leaf-wise histogram boosting](LIGHTGBM_LEAFWISE.md)
 - [LightGBM validation and early stopping](LIGHTGBM_EARLY_STOPPING.md)
 - [LightGBM bounded DART/dropout](LIGHTGBM_DART.md)
+- [Multi-output XGBoost/LightGBM regression adapters](MULTIOUTPUT_BOOSTING.md)
 - [Hyperparameter grid, seeded random, and L-BFGS-B search](HYPERPARAMETER_SEARCH.md)
 - [Large-GP review comparison](SCALABLE_GP.md)
 

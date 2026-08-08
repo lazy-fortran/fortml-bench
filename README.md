@@ -1581,6 +1581,19 @@ weighted-histogram fixture, oracle boundary, and recorded timings. The
 optional package row never turns a different histogram or tree-growth policy
 into a bitwise comparison.
 
+The multi-output XGBoost/LightGBM adapter lane fits one deterministic
+regression child per target and checks matrix predictions, staged margins,
+fixed-leaf JVP/VJP products, metadata, transactional malformed fit, and typed
+CUDA refusals against an independent two-output NumPy Newton-stump oracle:
+
+```bash
+python3 -B scripts/bench_xgboost_multioutput.py \
+  --fortml ../fortml --output results/xgboost_multioutput.csv
+```
+
+See [`results/MULTIOUTPUT_BOOSTING.md`](results/MULTIOUTPUT_BOOSTING.md) for
+the contract and raw rows.
+
 The interaction-constraint lane fits an unconstrained and a separated-group
 depth-two tree. Its NumPy oracle replays the group-mean split and path mask,
 checks the complete prediction vector and fitted diagnostics, and records a
