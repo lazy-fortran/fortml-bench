@@ -78,6 +78,7 @@ Complete-call studies:
 - [XGBoost row and feature sampling](XGBOOST_SAMPLING.md)
 - [XGBoost text persistence](XGBOOST_SERIALIZATION.md)
 - [XGBoost pairwise ranking](XGBOOST_RANKING.md)
+- [Bounded categorical XGBoost partitions](XGBOOST_CATEGORICAL.md)
 - [LightGBM-style leaf-wise histogram boosting](LIGHTGBM_LEAFWISE.md)
 - [LightGBM validation and early stopping](LIGHTGBM_EARLY_STOPPING.md)
 - [Hyperparameter grid, seeded random, and L-BFGS-B search](HYPERPARAMETER_SEARCH.md)

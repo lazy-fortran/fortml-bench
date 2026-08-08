@@ -585,6 +585,13 @@ a different workload, precision, device, or residency policy.
   group-mean/path-mask oracle and checks the complete prediction vector,
   diagnostics, and typed CUDA refusal. The raw record is
   `results/xgboost_interaction.csv`; the CPU rows pass with zero error.
+- [x] Add the bounded ordered-gradient categorical XGBoost lane. The release
+  app fits one integer-coded four-category feature with an independent
+  two-group NumPy partition oracle; `scripts/bench_xgboost_categorical.py`
+  checks the complete prediction vector and fit diagnostic, records repeated
+  CPU prediction timing, and emits an explicit CUDA-unavailable row. Raw
+  evidence is in `results/xgboost_categorical.csv` and the protocol is
+  documented in [`results/XGBOOST_CATEGORICAL.md`](results/XGBOOST_CATEGORICAL.md).
 - [x] Add the binary AdaBoost lane. The release app fits a weighted depth-one
   CART learner, and `scripts/bench_adaboost_classifier.py` independently
   reconstructs the learner error, alpha, signed margin, probabilities, and
