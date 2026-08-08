@@ -8,8 +8,10 @@ intercept, and fixed gamma before retaining fit and prediction timings.
 
 The finite RBF Gram matrix can be mildly ill-conditioned, so equivalent
 coefficient vectors are not compared coordinate by coordinate; the behavioral
-score map and labels are the oracle. The CUDA row is an explicit unavailable
-capability record until a resident RBF-SVM kernel is linked.
+score map and labels are the oracle. The Fortran behavioral test additionally
+checks fixed-state JVP/VJP CPU dispatch and all four typed CUDA derivative
+refusals. The CUDA row is an explicit unavailable capability record until
+resident RBF-SVM value/derivative kernels are linked.
 
 Run:
 

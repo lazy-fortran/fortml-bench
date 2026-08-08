@@ -202,6 +202,11 @@ a different workload, precision, device, or residency policy.
   checks, and a typed CUDA refusal. The raw record is
   `results/linear_svm.csv`; kernel, one-class, ranking, and SVR variants remain
   separate work packages.
+- [x] Add the dense finite-basis RBF-SVM workload with weighted squared-hinge
+  SciPy/NumPy score and label checks, arbitrary class ordering, and explicit
+  CUDA capability refusal. Its FortML behavioral gate also checks fixed-state
+  input/parameter JVP/VJP products, CPU dispatch, and typed CUDA derivative
+  refusals. The raw record is `results/rbf_svm.csv`.
 - [x] Add a bounded dense RBF one-class SVM correctness lane with an independent
   NumPy capped-simplex dual/score/label oracle and CPU oracle fit/predict
   timings. The release app is checked against every support weight, offset,

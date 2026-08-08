@@ -391,6 +391,19 @@ python -B scripts/bench_linear_svm.py \
 See [`results/LINEAR_SVM.md`](results/LINEAR_SVM.md). CUDA is an explicit
 unavailable capability row until a resident linear-SVM kernel is linked.
 
+The dense finite-basis RBF-SVM lane checks the weighted squared-hinge RKHS
+score/label map against an independent SciPy L-BFGS-B solve with arbitrary
+integer classes. Its FortML gate also checks fixed-state input/parameter JVPs
+and VJPs, CPU dispatch, and typed CUDA derivative refusals:
+
+```bash
+python -B scripts/bench_rbf_svm.py \
+    --fortml ../fortml --output results/rbf_svm.csv
+```
+
+See [`results/RBF_SVM.md`](results/RBF_SVM.md). CUDA value and derivative rows
+remain explicit unavailable capability records until resident kernels are linked.
+
 The linear-regression margin lane checks weighted dense primal SVR fitting for
 arbitrary real targets, epsilon-insensitive prediction, packed affine
 parameters, and an independent NumPy/SciPy L-BFGS-B oracle:

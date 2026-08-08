@@ -210,6 +210,8 @@ def fortml_rows(root: Path, fortml: Path, details: dict[str, str],
     if not no_build:
         subprocess.run(["fo", "build", "--flag", "-O3"], cwd=fortml,
                        env=environment, check=True)
+    subprocess.run(["fo", "test", "test_rbf_svm_classifier"], cwd=fortml,
+                   env=environment, check=True)
     with tempfile.TemporaryDirectory(dir="/mnt/storage/code/lazy-fortran/fortml/build") as directory:
         output = Path(directory) / "rbf_svm_oracle.csv"
         environment["FORTML_BENCH_RBF_SVM_ORACLE"] = str(output)
@@ -239,14 +241,14 @@ def fortml_rows(root: Path, fortml: Path, details: dict[str, str],
                  seconds_per_operation=timing.get("rbf_svm_fit", ""), accuracy=accuracy,
                  max_abs_error=error,
                  oracle="SciPy complete coefficient/intercept/RBF score/label oracle",
-                 notes="FortOpt L-BFGS-B weighted squared-hinge RKHS basis; score oracle (dual coordinates may be ill-conditioned)"),
+                 notes="FortOpt L-BFGS-B weighted squared-hinge RKHS basis; score oracle (dual coordinates may be ill-conditioned); derivative CPU/CUDA contract gated by test_rbf_svm_classifier"),
         make_row(details, phase="predict", backend="fortml_cpu", status="pass",
                  seconds_per_operation=timing.get("rbf_svm_predict", ""), accuracy=accuracy,
                  max_abs_error=error, oracle="SciPy complete RBF score/label oracle",
-                 notes="fixed-state dense RBF prediction"),
+                 notes="fixed-state dense RBF prediction; fixed-state JVP/VJP products are independently checked"),
         make_row(details, phase="predict", backend="fortml_cuda", device="cuda",
                  status="unavailable", oracle="typed_device_contract",
-                 notes="resident CUDA RBF-SVM kernel absent; FORTNUM_NOT_IMPLEMENTED"),
+                 notes="resident CUDA RBF-SVM value/derivative kernels absent; FORTNUM_NOT_IMPLEMENTED"),
     ]
 
 
