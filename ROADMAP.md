@@ -213,6 +213,13 @@ a different workload, precision, device, or residency policy.
   each mode before timing, and the CSV records two explicit CUDA capability
   refusals in `results/mlp_plateau_schedule.csv`; the protocol is documented
   in `results/MLP_PLATEAU_SCHEDULE.md`.
+- [x] Add the metric-aware plateau trainer lane. An independent NumPy
+  recurrence checks the final learning rate and update count, while the
+  Fortran trainer test also covers minimizing/maximizing transitions,
+  malformed state, checkpoint round trips, diagnostics, and interrupted versus
+  uninterrupted trajectories. `results/mlp_plateau_training.csv` records
+  zero oracle error and an explicit typed CUDA-unavailable row; the protocol is
+  documented in `results/MLP_PLATEAU_TRAINING.md`.
 - [x] Add a dense MLP activation lane for linear, `tanh`, ReLU, GELU, SiLU,
   ELU, softplus, leaky ReLU, sigmoid, and Mish. Ten independent NumPy checksum
   rows and ten FortML CPU timings are retained alongside ten explicit CUDA
@@ -487,6 +494,12 @@ a different workload, precision, device, or residency policy.
   and one-vs-rest multiclass Laplace-GP lanes with independent NumPy transform
   and Newton posterior oracles. The raw record is
   `results/classification_extensions.csv`.
+- [x] Add binary Laplace-GP log-probability products. The independent NumPy
+  fixture checks stable log/probability round trips and central-difference
+  input/parameter products, while the release app checks the public contract
+  and typed CUDA refusal. The raw record is
+  `results/gp_classification_log_proba.csv`, with protocol in
+  `results/GP_CLASSIFICATION_LOG_PROBA.md`.
 - [x] Add a generic hyperparameter-search lane for deterministic bounded
   Cartesian grids, seeded random candidates, and FortOpt L-BFGS-B over one
   analytic quadratic objective. The 125-grid and 128-sample random lanes have
