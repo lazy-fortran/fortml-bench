@@ -38,7 +38,6 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent
 FORTML = ROOT.parent / "fortml"
-BINARY = FORTML / "build" / "fo" / "bin" / "fortml_bench_gp_reference"
 
 LENGTHSCALE = 0.8
 SIGNAL_VARIANCE = 1.4
@@ -61,10 +60,11 @@ def inputs(n_train: int, n_query: int, dimension: int):
     return x, y, q
 
 
-def run_fortml(n_train: int, n_query: int, dimension: int) -> dict:
+def run_fortml(fortml: Path, n_train: int, n_query: int, dimension: int) -> dict:
+    binary = fortml / "build" / "fo" / "bin" / "fortml_bench_gp_reference"
     completed = subprocess.run(
-        [str(BINARY), str(n_train), str(n_query), str(dimension)],
-        capture_output=True, text=True, timeout=20000, cwd=FORTML,
+        [str(binary), str(n_train), str(n_query), str(dimension)],
+        capture_output=True, text=True, timeout=20000, cwd=fortml,
     )
     if completed.returncode != 0:
         raise RuntimeError(f"fortml gp bench failed:\n{completed.stdout[-800:]}")
@@ -154,18 +154,22 @@ def main() -> int:
     parser.add_argument("--n-train", type=int, default=400)
     parser.add_argument("--n-query", type=int, default=4000)
     parser.add_argument("--dimension", type=int, default=8)
+    parser.add_argument("--fortml", type=Path, default=FORTML)
     parser.add_argument("--output", type=Path,
                         default=ROOT / "fixtures" / "gp_vs_reference.json")
     args = parser.parse_args()
 
-    if not BINARY.exists():
-        print(f"{BINARY} missing; run 'fo build --profile release' in fortml")
+    fortml = args.fortml.resolve()
+    binary = fortml / "build" / "fo" / "bin" / "fortml_bench_gp_reference"
+    if not binary.exists():
+        print(f"{binary} missing; run 'fo build --profile release' in fortml")
         return 1
 
     x, y, q = inputs(args.n_train, args.n_query, args.dimension)
     print(f"n_train={args.n_train} n_query={args.n_query} d={args.dimension}")
 
-    results = {"fortml": run_fortml(args.n_train, args.n_query, args.dimension)}
+    results = {"fortml": run_fortml(fortml, args.n_train, args.n_query,
+                                     args.dimension)}
     for name, runner in (("sklearn", run_sklearn), ("gpytorch", run_gpytorch)):
         try:
             results[name] = runner(x, y, q)

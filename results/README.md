@@ -73,6 +73,7 @@ Complete-call studies:
 - [Categorical Naive Bayes](CATEGORICAL_NB.md)
 - [Integer one-hot encoder](ONE_HOT_ENCODER.md)
 - [Stochastic, derivative, multi-output, and variational GP features](GP_FEATURES.md)
+- [Pinned exact-GP comparison with scikit-learn and optional GPyTorch](GP_REFERENCE.md)
 - [Derivative-observation GP query products](DERIVATIVE_GP.md)
 - [GPyTorch-compatible spectral-mixture kernel](SPECTRAL_MIXTURE.md)
 - [Multilabel classification metrics](MULTILABEL_METRICS.md)

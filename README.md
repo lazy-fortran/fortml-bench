@@ -187,6 +187,22 @@ FO_SCAN_FALLBACK=regex python -B scripts/bench_change_point_gp.py \
 
 See [`results/CHANGE_POINT_GP.md`](results/CHANGE_POINT_GP.md).
 
+The pinned exact-GP reference lane compares FortML with scikit-learn and,
+when installed, GPyTorch on the identical closed-form RBF fixture. It checks
+the predictive mean and variance against the independent reference before
+reporting fit and prediction timings. Hyperparameters are fixed, so the lane
+measures the linear algebra rather than three different optimizers:
+
+```bash
+python -B scripts/bench_gp_vs_reference.py \
+  --fortml ../fortml --output fixtures/gp_vs_reference.json
+```
+
+The raw JSON fixture and protocol are documented in
+[`results/GP_REFERENCE.md`](results/GP_REFERENCE.md). Missing optional
+GPyTorch dependencies are recorded as typed unavailable rows; they are never
+silently treated as passing timings.
+
 The production Lion trainer lane checks the stateful CPU recurrence, decoupled
 weight decay, clipping, EMA, validation, and uninterrupted versus checkpointed
 text-resume trajectories against an independent NumPy oracle. Resident Lion

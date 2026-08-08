@@ -89,6 +89,11 @@ not completion gates.
   FortML.
 - [x] Add stochastic log-determinant and predictive-variance products.
 - [x] Add exact small-GP training and prediction comparisons.
+- [x] Add a pinned exact-GP reference lane against scikit-learn and optional
+  GPyTorch. The shared closed-form fixture checks predictive mean and variance
+  before timing fit and prediction; unavailable optional dependencies are
+  recorded explicitly in `fixtures/gp_vs_reference.json`, with the protocol
+  in `results/GP_REFERENCE.md`.
 - [x] Add regular-grid Toeplitz/Kronecker evidence with independent dense or
   structured oracles and resident OpenACC scaling records.
 - [x] Add compact-support sparse workloads using `fortsparse`, with stored
