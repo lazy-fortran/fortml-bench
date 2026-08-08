@@ -207,6 +207,9 @@ def main() -> None:
     }, {
         "workload": "mlp_adamw_schedule_hypergradient", "phase": "outer_hvp_refusal",
         "metric": "typed_refusal", "value": "", "max_abs_error": 0.0, **metadata,
+    }, {
+        "workload": "mlp_adamw_schedule_hypergradient", "phase": "mixed_precision_refusal",
+        "metric": "typed_refusal", "value": "", "max_abs_error": 0.0, **metadata,
     }]
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:

@@ -12,8 +12,9 @@ boundary.
 The benchmark script independently reconstructs the affine AdamW recurrence in
 NumPy, including bias correction and decoupled shrinkage. It compares the
 complete release-app value, eight gradients, and JVP before writing the CSV.
-The recorded CPU row has maximum absolute error `1.227e-11`; CUDA and outer
-HVP remain explicit typed-refusal rows rather than host timings.
+The recorded CPU row has maximum absolute error `1.227e-11`; CUDA, mixed
+precision, and outer HVP remain explicit typed-refusal rows rather than host
+timings.
 
 Run it with:
 
