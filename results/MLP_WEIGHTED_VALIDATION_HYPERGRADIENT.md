@@ -12,8 +12,9 @@ packed weighted hypergradient
 directional JVP for `[0.23, -0.17, 0.11]` is `-0.0231440501021786`.
 
 The affine outer HVP is independently checked on the uniform validation path;
-the oracle components are `[0.0379430071650692, -0.000846766233519869,
-0.0337074129459075]`.  A non-uniform HVP request is recorded as a typed
+the NumPy oracle components are `[0.0379430091946437, -0.000846766233519869,
+0.0337074129459075]`; the FortML components differ by at most `2.61e-8`.
+A non-uniform HVP request is recorded as a typed
 `FORTNUM_NOT_IMPLEMENTED` boundary, as is the resident CUDA path.  This is a
 capability record, not a claim that weighted HVPs are silently available.
 
