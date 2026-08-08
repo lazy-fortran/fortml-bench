@@ -952,8 +952,9 @@ See [`results/GP_CLASSIFICATION_TRAINING.md`](results/GP_CLASSIFICATION_TRAINING
 
 The inducing-point Bernoulli variational-GP lane checks a dense two-inducing
 point ELBO and packed variational-parameter gradient against an independent
-NumPy finite-difference oracle, then runs FortML's seeded Monte Carlo, JVP,
-minibatch, and malformed-label tests. CUDA is an explicit typed refusal until
+NumPy finite-difference oracle, then runs FortML's seeded Monte Carlo,
+parameter/query JVP and VJP, minibatch, and malformed-label tests. CUDA is an
+explicit typed refusal until
 the inducing solve, likelihood table, and reduction are resident:
 
 ```bash
@@ -1096,6 +1097,18 @@ CUDA capability refusal:
 ```
 
 See [`results/XGBOOST_DERIVATIVES.md`](results/XGBOOST_DERIVATIVES.md).
+
+The fitted-ensemble slicing lane independently replays a deterministic
+three-stump fixture in NumPy and checks that a two-tree prefix equals the
+source's staged prediction while remaining distinct from the full model. It
+also checks the typed invalid-prefix refusal:
+
+```bash
+python -B scripts/bench_xgboost_slice.py \
+  --fortml ../fortml --output results/xgboost_slice.csv
+```
+
+See [`results/XGBOOST_SLICE.md`](results/XGBOOST_SLICE.md).
 
 The generic hyperparameter-search lane uses an independent three-parameter
 quadratic oracle to gate Cartesian grid, seeded random, single-start FortOpt

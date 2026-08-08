@@ -4,10 +4,10 @@
 The NumPy fixture is deliberately independent of FortML's random-number
 generator: it evaluates a small RBF inducing-point ELBO with a fixed standard
 normal table and checks its analytic packed-parameter gradient by central
-finite differences.  The Fortran release test then checks the same public
-contract with its own seeded Monte Carlo table, JVP, minibatch, and CUDA
-refusal oracles.  The recorded wall time is a correctness-gate duration, not a
-model or accelerator throughput measurement.
+finite differences.  The Fortran release tests then check the same public
+contract with their own seeded Monte Carlo table, parameter/query JVPs and
+VJPs, minibatch, and CUDA refusal oracles.  The recorded wall time is a
+correctness-gate duration, not a model or accelerator throughput measurement.
 """
 
 from __future__ import annotations
@@ -180,8 +180,11 @@ def main() -> None:
     else:
         subprocess.run(["fo", "test", "test_gp_variational_classification"],
                        cwd=fortml, check=True)
+        subprocess.run(["fo", "test", "test_gp_variational_classification_input"],
+                       cwd=fortml, check=True)
         status = "pass"
-        notes = "Fortran test supplies seeded MC, JVP, minibatch, and refusal oracles"
+        notes = ("Fortran tests supply seeded MC, parameter/query JVP/VJP, "
+                 "minibatch, and refusal oracles")
     elapsed = time.perf_counter() - started
     add(workload="gp_variational_classification", phase="independent_oracle_gate",
         status=status, seconds_per_operation=elapsed, metric="elbo",

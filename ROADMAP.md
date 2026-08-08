@@ -344,7 +344,7 @@ a different workload, precision, device, or residency policy.
   evidence; the raw record is `results/gp_classification_training.csv`.
 - [x] Add an inducing-point Bernoulli variational-GP classification lane with
   an independent NumPy ELBO/packed-gradient finite-difference fixture and the
-  FortML seeded-Monte-Carlo/JVP/minibatch/refusal test gate. The raw record is
+  FortML seeded-Monte-Carlo/parameter-and-query-JVP-VJP/minibatch/refusal test gate. The raw record is
   `results/gp_variational_classification.csv`; CUDA remains a typed refusal
   until the inducing solve and likelihood reduction are resident.
 - [x] Add one-vs-rest multiclass variational-GP prediction and parameter-JVP
