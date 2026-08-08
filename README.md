@@ -1211,6 +1211,17 @@ See [`results/XGBOOST_WARM_START.md`](results/XGBOOST_WARM_START.md). The CUDA
 row is an explicit unavailable capability record because warm-start
 continuation has no resident CUDA entry point.
 
+The classifier-chain lane checks sequential logistic heads, packed-parameter
+NumPy replay, integer-label predictions, fit/predict timings, and an explicit
+CUDA refusal:
+
+```bash
+python -B scripts/bench_classifier_chain.py \
+  --fortml ../fortml --output results/classifier_chain.csv
+```
+
+See [`results/CLASSIFIER_CHAIN.md`](results/CLASSIFIER_CHAIN.md).
+
 The generic hyperparameter-search lane uses an independent three-parameter
 quadratic oracle to gate Cartesian grid, seeded random, single-start FortOpt
 L-BFGS-B, and eight-start bounded L-BFGS-B timings. The random and multistart

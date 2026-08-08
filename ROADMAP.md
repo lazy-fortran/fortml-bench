@@ -226,6 +226,11 @@ a different workload, precision, device, or residency policy.
   indicator outputs, contextual scikit-learn timing, and explicit CUDA
   capability-refusal rows. Sparse targets, ordinal outcomes, and resident
   multi-head CUDA kernels remain separate work packages.
+- [x] Add a sequential classifier-chain logistic lane with arbitrary integer
+  labels, observed-label training features, smooth probability-chain
+  prediction, and an independent NumPy replay of the packed fitted heads. The
+  raw record is `results/classifier_chain.csv`; resident CUDA remains an
+  explicit typed refusal.
 - [x] Add a fixed full-batch MLP SGD hypergradient workload over log learning
   rate and log L2, including a central finite-difference value/gradient/JVP
   oracle and explicit FortML release-target refusal rows.  The raw record is
