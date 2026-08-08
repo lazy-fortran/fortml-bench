@@ -13,3 +13,5 @@ results/profiles/
 *.a
 *.so
 .provenance/
+literature/
+.provenance/
