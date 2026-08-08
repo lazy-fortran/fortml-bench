@@ -21,6 +21,7 @@ Complete-call studies:
 - [Named MLP parameter layout](MLP_PARAMETER_LAYOUT.md)
 - [Differentiable binary MLP classifier](MLP_BINARY_CLASSIFIER.md)
 - [Weighted binary MLP objective and bounded L-BFGS-B](MLP_BINARY_OBJECTIVE.md)
+- [Multiclass MLP probability parameter products](MLP_CLASSIFIER_PARAMETER_PRODUCTS.md)
 - [Differentiable multilabel MLP classifier](MLP_MULTILABEL_CLASSIFIER.md)
 - [Differentiable neural losses and weighted MLP objective](NEURAL_LOSSES.md)
 - [Weighted ridge regression and derivative products](RIDGE.md)
