@@ -327,6 +327,10 @@ a different workload, precision, device, or residency policy.
   The independent value/JVP/HVP finite-difference oracle and FortOpt contract
   are recorded in `results/mlp_binary_objective.csv`; no resident CUDA graph is
   implied.
+- [x] Add the weighted multiclass MLP objective adapter and bounded L-BFGS-B
+  lane. The independent softmax value/JVP/HVP oracle and FortOpt contract are
+  recorded in `results/mlp_classifier_objective.csv`; no resident CUDA graph
+  is implied.
 - [x] Add the composable physics-residual objective lane. Four weighted
   affine residual slots and a nonlinear reverse-over-forward HVP are checked
   with independent value/gradient/JVP/VJP products; providers without an HVP

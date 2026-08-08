@@ -263,6 +263,19 @@ python -B scripts/bench_mlp_binary_classifier.py \
 
 See [`results/MLP_BINARY_CLASSIFIER.md`](results/MLP_BINARY_CLASSIFIER.md).
 
+The multiclass MLP objective lane checks weighted softmax cross-entropy,
+parameter/L2 value and gradient products, exact nonlinear HVPs, FortOpt
+callback routing, and bounded L-BFGS-B against an independent NumPy affine
+logits oracle. CUDA remains an explicit typed refusal until resident
+multiclass objective state is linked:
+
+```bash
+python3 -B scripts/bench_mlp_classifier_objective.py \
+  --fortml ../fortml --output results/mlp_classifier_objective.csv
+```
+
+See [`results/MLP_CLASSIFIER_OBJECTIVE.md`](results/MLP_CLASSIFIER_OBJECTIVE.md).
+
 The multilabel MLP lane checks two independent sigmoid heads, concatenated
 parameters, multilabel probabilities and indicators, BCE gradients, parameter
 HVPs, and probability JVPs against an independent NumPy oracle. CUDA remains
