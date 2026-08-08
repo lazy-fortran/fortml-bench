@@ -21,12 +21,12 @@ fixture. The Python harness checks this before recording timings.
 | --- | --- | ---: | ---: |
 | contract oracle | NumPy/CPU | 0 | maximum error 0 |
 | oracle | FortML/CPU | 0 | maximum error 0 |
-| fit | FortML/CPU | 7.550000e-4 | weighted fit wall time |
-| predict | FortML/CPU | 1.200000e-5 | weighted MSE 5.126846e-2 |
-| staged | FortML/CPU | 1.300000e-5 | final stage max error 0 |
+| fit | FortML/CPU | 8.190000e-4 | weighted fit wall time |
+| predict | FortML/CPU | 1.300000e-5 | weighted MSE 5.126846e-2 |
+| staged | FortML/CPU | 1.500000e-5 | final stage max error 0 |
 | contributions | FortML/CPU | 1.300000e-5 | margin reconstruction max error 0 |
-| slice | FortML/CPU | 6.000000e-6 | four-tree prefix max error 0 |
-| persistence | FortML/CPU | 6.280000e-4 | text round-trip max error 0 |
+| slice | FortML/CPU | 9.000000e-6 | four-tree prefix max error 0 |
+| persistence | FortML/CPU | 6.730000e-4 | text round-trip max error 0 |
 | persistence refusal | FortML/CPU | not timed | trailing record status 3 |
 | binary | FortML/CPU | not timed | accuracy 0.994792 |
 | predict | FortML/CUDA | unavailable | typed `FORTNUM_NOT_IMPLEMENTED` |
