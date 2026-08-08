@@ -1252,6 +1252,20 @@ JVP against an independent central-finite-difference NumPy oracle:
 
 See [`results/SGD_MOMENTUM_HYPERGRADIENT.md`](results/SGD_MOMENTUM_HYPERGRADIENT.md).
 
+The weighted-validation SGD lane extends that recurrence with a copied
+positive-support validation measure `[1, 2, 4]`. It checks weighted value,
+all three hypergradient components, and a directional JVP against an
+independent NumPy central-difference oracle. Uniform validation retains the
+certified affine outer HVP; non-uniform HVP and CUDA requests are recorded as
+typed capability boundaries:
+
+```bash
+.venv/bin/python -B scripts/bench_mlp_weighted_validation_hypergradient.py \
+    --fortml ../fortml --output results/mlp_weighted_validation_hypergradient.csv
+```
+
+See [`results/MLP_WEIGHTED_VALIDATION_HYPERGRADIENT.md`](results/MLP_WEIGHTED_VALIDATION_HYPERGRADIENT.md).
+
 The fixed full-batch Lion hypergradient lane checks the piecewise-smooth
 momentum/sign recurrence, all four packed `[log_learning_rate, log_l2,
 logit(beta1), logit(beta2)]` components, and a directional JVP against an
