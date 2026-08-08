@@ -640,6 +640,21 @@ See [`results/PROBABILITY_CALIBRATION.md`](results/PROBABILITY_CALIBRATION.md).
 CUDA capability rows are explicit refusals because no resident calibration
 kernel is linked.
 
+The calibration-aware binary cross-validation lane fits independent logistic
+models on three stratified folds, calibrates held-out margins with positive
+temperature scaling, then refits the deployment model on all rows. Its
+independent NumPy oracle replays the packed deployment vector and checks the
+out-of-fold diagnostics:
+
+```bash
+python3 -B scripts/bench_calibrated_logistic_cv.py \
+    --fortml ../fortml --output results/calibrated_logistic_cv.csv
+```
+
+See [`results/CALIBRATED_LOGISTIC_CV.md`](results/CALIBRATED_LOGISTIC_CV.md).
+The CUDA row is an explicit typed refusal until a resident logistic and
+calibration graph is linked.
+
 The multiclass calibration lane fits one positive softmax temperature on a
 192-row, three-class logit fixture. It checks sorted integer classes, every
 probability and prediction row, and the fitted temperature against an
