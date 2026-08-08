@@ -26,6 +26,12 @@ The checked CSV records the source and benchmark revisions, compiler, timing
 of the correctness gate, oracle description, and the explicit device boundary.
 The timing is a test/build gate rather than a model-training throughput claim.
 
+The canonical map residual has a dedicated report in
+[`SYMPLECTIC_RESIDUAL.md`](SYMPLECTIC_RESIDUAL.md) and
+[`symplectic_residual.csv`](symplectic_residual.csv). That lane checks the
+independent Verlet form, residual JVP/VJP and value products, the
+`physics_constraint_t` bridge, and the typed CUDA refusal.
+
 ## Current contract
 
 | Lane | Evidence | State |
