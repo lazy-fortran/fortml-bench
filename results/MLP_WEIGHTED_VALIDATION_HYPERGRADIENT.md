@@ -19,4 +19,8 @@ capability record, not a claim that weighted HVPs are silently available.
 
 The machine-readable companion is
 `results/mlp_weighted_validation_hypergradient.csv`; its provenance columns
-pin both repository revisions and reject dirty source pins.
+pin FortML `4338704ea6f2c918480252fc562c80daa7d5e7ca` and benchmark
+`59399f67984fe8cd5a8211fa232a270942244a1d` without dirty markers.  The release
+run used the clean FortAD `origin/main` checkout at `5f77c47`; all temporary
+dependency worktrees were kept under `/mnt/storage` and are removed after the
+run.
