@@ -65,6 +65,7 @@ Complete-call studies:
 - [Binary GP likelihood value/JVP/VJP primitive](GP_LIKELIHOOD.md)
 - [Probability calibration](PROBABILITY_CALIBRATION.md)
 - [Multiclass softmax-temperature calibration](MULTICLASS_CALIBRATION.md)
+- [Leakage-safe multiclass calibrated softmax CV](CALIBRATED_SOFTMAX_CV.md)
 - [Monotonic XGBoost constraints](XGBOOST_MONOTONIC_CONSTRAINTS.md)
 - [Multinomial and neural classification](CLASSIFICATION_MODELS.md)
 - [Differentiable Multinomial Naive Bayes](MULTINOMIAL_NB.md)

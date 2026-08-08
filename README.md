@@ -680,6 +680,21 @@ See [`results/CALIBRATED_LOGISTIC_CV.md`](results/CALIBRATED_LOGISTIC_CV.md).
 The CUDA row is an explicit typed refusal until a resident logistic and
 calibration graph is linked.
 
+The multiclass calibration-aware cross-validation lane fits independent
+softmax models on three stratified folds, calibrates held-out logits with one
+positive temperature, then refits the deployment model.  A NumPy oracle
+replays the packed coefficient/intercept/temperature vector and checks every
+probability, prediction, and OOF diagnostic:
+
+```bash
+python3 -B scripts/bench_calibrated_softmax_cv.py \
+    --fortml ../fortml --output results/calibrated_softmax_cv.csv
+```
+
+See [`results/CALIBRATED_SOFTMAX_CV.md`](results/CALIBRATED_SOFTMAX_CV.md).
+The CUDA row remains an explicit typed refusal until the complete resident
+softmax-plus-calibration graph is linked.
+
 The multiclass calibration lane fits one positive softmax temperature on a
 192-row, three-class logit fixture. It checks sorted integer classes, every
 probability and prediction row, and the fitted temperature against an
