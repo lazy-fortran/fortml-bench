@@ -21,6 +21,6 @@ record the exact source and benchmark revisions used for the run.
 | FortML public contract | pass |
 | CUDA validation callback | unavailable, host-owned callback and data |
 
-The measured public test lane took approximately 10.6 seconds in the recorded
+The measured public test lane took approximately 5.7 seconds in the recorded
 environment. It includes compilation and the focused behavioral test. The
 validation callback remains host-owned, so no resident GPU timing is claimed.
