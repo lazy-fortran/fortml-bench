@@ -2056,6 +2056,20 @@ The fixed full-batch trajectory products have a separate correctness gate in
 including central differences, scalar adjointness, FortOpt L-BFGS-B, typed
 rho-branch refusals, and the explicit CUDA boundary.
 
+## Scheduled AdamW trajectory hypergradients
+
+The scheduled AdamW lane independently replays the full-batch moment,
+bias-correction, cosine-rate, and decoupled-weight-decay trajectory in NumPy
+before accepting FortML value/gradient/JVP/VJP products:
+
+```bash
+python -B scripts/bench_mlp_adamw_schedule_hypergradient.py \
+  --fortml ../fortml \
+  --output results/mlp_adamw_schedule_hypergradient.csv
+```
+
+See [`results/MLP_ADAMW_SCHEDULE_HYPERGRADIENT.md`](results/MLP_ADAMW_SCHEDULE_HYPERGRADIENT.md).
+
 ## Validity boundary
 
 The first comparison is a kernel-product comparison. It does not claim that a
