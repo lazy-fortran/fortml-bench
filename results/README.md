@@ -11,6 +11,7 @@ Complete-call studies:
 - [Total-degree polynomial interaction basis](POLYNOMIAL_INTERACTIONS.md)
 - [Random Fourier feature basis](RANDOM_FOURIER.md)
 - [SGD/Nesterov training and differentiable imputation](TRAINING_IMPUTER.md)
+- [Affine SGD momentum outer hyper-HVP](MLP_SGD_MOMENTUM_HYPERGRADIENT_HVP.md)
 - [AdamW training and MLP hypergradients](ADAMW_HYPERGRADIENT.md)
 - [AdamW beta-logit hypergradients](ADAMW_BETA_HYPERGRADIENT.md)
 - [Typed MLP learning-rate schedules](MLP_SCHEDULES.md)

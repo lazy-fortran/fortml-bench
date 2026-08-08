@@ -292,6 +292,12 @@ a different workload, precision, device, or residency policy.
   before retaining the FortML timing; the raw record is
   `results/sgd_momentum_hypergradient.csv`, with compiler/source provenance and
   typed CUDA refusals.
+- [x] Extend the fixed full-batch SGD momentum lane with exact outer HVP
+  products on the one-layer affine branch. A nested central-difference NumPy
+  oracle checks all three mixed hyperparameter components, and the release app
+  checks value/gradient/JVP/HVP arrays before timing both CPU products. The raw
+  record is `results/sgd_momentum_hypergradient_hvp.csv`; nonlinear/multilayer
+  and CUDA paths remain explicit typed refusals.
 - [x] Add a fixed seeded mini-batch SGD hypergradient workload over log
   learning rate and log regularization. The independent NumPy lane reproduces
   the Park–Miller shuffle cursor and checks value, both gradient components,
