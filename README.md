@@ -643,10 +643,11 @@ python -B scripts/bench_linear_svr.py \
 See [`results/LINEAR_SVR.md`](results/LINEAR_SVR.md). CUDA is an explicit
 unavailable capability row until a resident linear-SVR kernel is linked.
 
-The differentiable neural-loss lane checks BCE/logistic, softmax
-cross-entropy, weighted MSE, Huber, MAE, focal BCE-with-logits, Gaussian NLL,
-and Poisson/count NLL products against independent NumPy value/derivative
-formulas, and checks the weighted-MSE path used by the MLP objective:
+The differentiable neural-loss lane checks BCE/logistic, stable softmax and
+log-softmax HVPs, weighted softmax cross-entropy, weighted MSE, Huber, MAE,
+focal BCE-with-logits value/JVP/HVP products, Gaussian NLL, and Poisson/count
+NLL products against independent NumPy value/derivative formulas, and checks
+the weighted-MSE path used by the MLP objective:
 
 ```bash
 python -B scripts/bench_neural_losses.py \
@@ -655,7 +656,8 @@ python -B scripts/bench_neural_losses.py \
 
 See [`results/NEURAL_LOSSES.md`](results/NEURAL_LOSSES.md). CUDA is recorded
 as an explicit unavailable capability until resident loss and MLP objective
-kernels exist; no host fallback is timed.
+kernels exist; no host fallback is timed. The corresponding FortML value
+dispatch wrappers return typed CUDA refusals.
 
 The ordered-label lane fits a weighted cumulative-logit classifier with
 strictly increasing cut points. It checks the complete probability matrix and

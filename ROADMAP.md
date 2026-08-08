@@ -265,10 +265,12 @@ a different workload, precision, device, or residency policy.
   score, and label before retaining FortML CPU timings; typed CUDA refusal is
   recorded explicitly in `results/one_class_svm.csv`. Active-set/hyperparameter
   derivatives and resident CUDA remain separate FortML work packages.
-- [x] Add independent BCE, softmax cross-entropy, weighted-MSE, and Huber HVP
-  workloads, including the weighted-MSE MLP objective path. Exact Huber kinks
-  and resident CUDA loss/MLP kernels remain explicit refusal boundaries. The
-  raw record is `results/neural_losses.csv`.
+- [x] Add independent BCE, stable softmax/log-softmax, weighted softmax
+  cross-entropy, weighted-MSE, Huber, and focal BCE value/JVP/HVP workloads,
+  including the weighted-MSE MLP objective path. NumPy value, central-
+  difference, and adjoint checks cover the new rows; exact Huber kinks and
+  resident CUDA loss/MLP kernels remain explicit refusal boundaries. The raw
+  record is `results/neural_losses.csv`.
 - [x] Add a dense multilabel-indicator logistic lane with independent
   per-output Newton oracle checks, complete positive-probability and hard
   indicator outputs, contextual scikit-learn timing, and explicit CUDA

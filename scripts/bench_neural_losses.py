@@ -50,6 +50,9 @@ def fixture() -> tuple[np.ndarray, ...]:
     indices = np.arange(1, N + 1, dtype=np.float64)
     logits = np.column_stack((np.sin(0.13 * indices), np.cos(0.07 * indices),
                                0.2 * np.sin(0.19 * indices)))
+    cotangent = np.column_stack((0.7 * np.sin(0.08 * indices),
+                                 -0.5 * np.cos(0.06 * indices),
+                                 0.2 + 0.3 * np.sin(0.04 * indices)))
     targets = np.column_stack((np.where((indices.astype(int) % 3) == 0, 1.0, 0.0),
                                np.where((indices.astype(int) % 3) == 1, 1.0, 0.0),
                                np.where((indices.astype(int) % 3) == 2, 1.0, 0.0)))
@@ -68,12 +71,12 @@ def fixture() -> tuple[np.ndarray, ...]:
     variance_direction = np.column_stack((0.02 * np.cos(0.09 * indices),
                                           -0.01 * np.sin(0.08 * indices),
                                           np.full(N, 0.015)))
-    return (logits, targets, direction, prediction, target, weights,
+    return (logits, targets, direction, cotangent, prediction, target, weights,
             log_variance, count_targets, variance_direction)
 
 
 def oracle() -> dict[str, float]:
-    (logits, targets, direction, prediction, target, weights, log_variance,
+    (logits, targets, direction, cotangent, prediction, target, weights, log_variance,
      count_targets, variance_direction) = fixture()
     probabilities = 1.0 / (1.0 + np.exp(-logits))
     bce_hvp = probabilities * (1.0 - probabilities) * direction / logits.size
@@ -81,6 +84,18 @@ def oracle() -> dict[str, float]:
     softmax = exponent / exponent.sum(axis=1, keepdims=True)
     softmax_hvp = softmax * (direction -
                              (softmax * direction).sum(axis=1, keepdims=True)) / N
+    softmax_direction = softmax * (direction -
+                                   (softmax * direction).sum(axis=1, keepdims=True))
+    softmax_hvp_vector = (softmax_direction *
+                          (cotangent - (softmax * cotangent).sum(axis=1,
+                                                                   keepdims=True)) -
+                          softmax * (softmax_direction * cotangent).sum(axis=1,
+                                                                         keepdims=True))
+    log_softmax_hvp = -softmax * (direction -
+                                  (softmax * direction).sum(axis=1, keepdims=True)) * \
+        cotangent.sum(axis=1, keepdims=True)
+    weighted_softmax_hvp = weights[:, None] * softmax * (direction -
+        (softmax * direction).sum(axis=1, keepdims=True)) / weights.sum()
     weighted = weights[:, None] * direction[:, :1] / weights.sum()
     residual = prediction - target
     huber = np.where(np.abs(residual) < 0.75, direction[:, :1], 0.0) / N
@@ -93,6 +108,17 @@ def oracle() -> dict[str, float]:
     focal_factor_dot = -2.0 * (1.0 - pt) * (2.0 * targets - 1.0) * p * (1.0 - p)
     focal_derivative = alpha_t * (focal_factor_dot * bce + focal_factor * (p - targets))
     focal_bce = (weights[:, None] * focal_derivative * direction).sum() / weights.sum()
+    one_minus_pt = targets * (1.0 - p) + (1.0 - targets) * p
+    bce_second = p * (1.0 - p)
+    pt_prime = (2.0 * targets - 1.0) * bce_second
+    pt_second = (2.0 * targets - 1.0) * bce_second * (1.0 - 2.0 * p)
+    focal = one_minus_pt ** 2.0
+    focal_first = -2.0 * one_minus_pt * pt_prime
+    focal_second = 2.0 * pt_prime ** 2.0 - 2.0 * one_minus_pt * pt_second
+    focal_hessian = alpha_t * (focal_second * bce +
+                               2.0 * focal_first * (p - targets) +
+                               focal * bce_second)
+    focal_hvp = (weights[:, None] * focal_hessian * direction).sum() / weights.sum()
     residual = logits - targets
     inverse_variance = np.exp(-log_variance)
     gaussian_hvp = (weights[:, None] * inverse_variance *
@@ -136,10 +162,14 @@ def oracle() -> dict[str, float]:
         "multilabel_bce_hvp": float(multilabel_bce_hvp.sum()),
         "ordinal_cumulative_logit_hvp": float(ordinal_hvp.sum()),
         "softmax_cross_entropy_hvp": float(softmax_hvp.sum()),
+        "softmax_hvp": float(softmax_hvp_vector.sum()),
+        "log_softmax_hvp": float(log_softmax_hvp.sum()),
+        "weighted_softmax_cross_entropy_hvp": float(weighted_softmax_hvp.sum()),
         "weighted_mse_hvp": float(weighted.sum()),
         "huber_hvp": float(huber.sum()),
         "mae_jvp": float(mae),
         "focal_bce_jvp": float(focal_bce),
+        "focal_bce_hvp": float(focal_hvp),
         "gaussian_nll_hvp": float(gaussian_hvp.sum() + gaussian_variance_hvp.sum()),
         "poisson_nll_hvp": float(poisson_hvp.sum()),
     }
