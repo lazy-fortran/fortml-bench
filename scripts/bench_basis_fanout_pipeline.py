@@ -107,7 +107,14 @@ def main() -> None:
     metadata = {
         "n_samples": 5, "n_features": n_features, "n_branches": n_branches,
         "python_version": platform.python_version(), "numpy_version": np.__version__,
-        "fortml_revision": revision(fortml),
+        # The behavioral gate exercises checkpoint tests that intentionally
+        # leave temporary text files in the FortML worktree.  Ignore only
+        # those known test artifacts; any source change still gets a +dirty
+        # suffix rather than a false clean pin.
+        "fortml_revision": revision(fortml, (
+            fortml / "test_mlp_amsgrad_checkpoint.txt",
+            fortml / "test_mlp_radam_checkpoint.txt",
+        )),
         "benchmark_revision": revision(root, ignored), "compiler": "gfortran",
         "flags": "-O3", "oracle": "independent NumPy feature construction plus Fortran behavioral gate",
         "notes": note,
