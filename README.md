@@ -1058,6 +1058,18 @@ oracle; CPU timing and the typed CUDA refusal are kept in a dedicated CSV:
 See [`results/LIGHTGBM_LEAFWISE.md`](results/LIGHTGBM_LEAFWISE.md). GOSS,
 EFB, categorical statistics, distributed workers, and resident GPU histograms
 remain explicit follow-up gaps.
+
+The LightGBM validation lane independently replays the one-feature Newton
+recurrence for regression and binary logistic objectives. It checks patience,
+best-round metadata, restore-best versus retain-all ensembles, malformed
+validation refusal, and the explicit CUDA refusal:
+
+```bash
+python -B scripts/bench_lightgbm_early_stopping.py \
+  --fortml ../fortml --output results/LIGHTGBM_EARLY_STOPPING.md
+```
+
+See [`results/LIGHTGBM_EARLY_STOPPING.md`](results/LIGHTGBM_EARLY_STOPPING.md).
 The same release protocol now checks regression margins, binary positive-class
 probabilities, multiclass simplex probabilities, staged raw margins, and
 normalized gain feature importance after every boosting stage.

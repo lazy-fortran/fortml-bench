@@ -76,6 +76,7 @@ Complete-call studies:
 - [XGBoost text persistence](XGBOOST_SERIALIZATION.md)
 - [XGBoost pairwise ranking](XGBOOST_RANKING.md)
 - [LightGBM-style leaf-wise histogram boosting](LIGHTGBM_LEAFWISE.md)
+- [LightGBM validation and early stopping](LIGHTGBM_EARLY_STOPPING.md)
 - [Hyperparameter grid, seeded random, and L-BFGS-B search](HYPERPARAMETER_SEARCH.md)
 - [Large-GP review comparison](SCALABLE_GP.md)
 
