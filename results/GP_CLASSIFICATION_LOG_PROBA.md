@@ -17,7 +17,7 @@ python3 -B scripts/bench_gp_classification_log_proba.py \
 ```
 
 The recorded run used Python 3.14.6, NumPy 2.5.1, gfortran `-O3`, and source
-revision `403c7815c892a75bdabe6ad827e9d1afbe6bd706` (the source worktree was
+revision `96dc11d55544acf203b8ebf59912fe9fd446f3cb` (the source worktree was
 clean apart from its generated `fo` build cache).  The independent value/JVP
 oracle's maximum absolute error was `1.998719523221837e-10`; the fitted
 public-contract gate passed.
