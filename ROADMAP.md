@@ -348,6 +348,11 @@ a different workload, precision, device, or residency policy.
   contraction HVP reductions for a 4,096-by-3 degree-eight fixture; the raw
   rows are `results/chebyshev_basis.csv`, with CPU timings and a typed CUDA
   refusal documented in `results/CHEBYSHEV_BASIS.md`.
+- [x] Add the dense pipeline input-schema lane. The independent names/count
+  oracle checks matching validation plus transactional duplicate/mismatch
+  refusal, while the Fortran app records repeated CPU validation and an
+  explicit CUDA metadata refusal in `results/pipeline_schema.csv` and
+  `results/PIPELINE_SCHEMA.md`.
 - [x] Add the typed device-dispatch lane for the column-selecting basis union.
   CPU transform/JVP/VJP/HVP calls are compared with the host products and an
   independent NumPy feature oracle; CUDA remains an explicit refusal with

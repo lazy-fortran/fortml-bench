@@ -1268,6 +1268,19 @@ python -B scripts/bench_basis_pipeline_training.py \
   --fortml ../fortml --output results/basis_pipeline_training.csv
 ```
 
+The pipeline-schema lane checks the dense input metadata contract independently:
+three unique names are installed, matching names validate, duplicate and
+mismatched names are refused transactionally, and repeated CPU validation is
+timed before a polynomial/Fourier transform. Resident CUDA metadata validation
+is recorded as a typed refusal:
+
+```bash
+python -B scripts/bench_pipeline_schema.py \
+  --fortml ../fortml --output results/pipeline_schema.csv
+```
+
+See [`results/PIPELINE_SCHEMA.md`](results/PIPELINE_SCHEMA.md).
+
 See [`results/BASIS_PIPELINE_TRAINING.md`](results/BASIS_PIPELINE_TRAINING.md).
 
 The named fan-out/fan-in basis-DAG lane checks an independent two-branch

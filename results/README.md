@@ -10,6 +10,7 @@ Complete-call studies:
 - [MLP training, basis pipeline, and tree workloads](FEATURES.md)
 - [Total-degree polynomial interaction basis](POLYNOMIAL_INTERACTIONS.md)
 - [Random Fourier feature basis](RANDOM_FOURIER.md)
+- [Transactional pipeline input schemas](PIPELINE_SCHEMA.md)
 - [Differentiable Chebyshev basis](CHEBYSHEV_BASIS.md)
 - [SGD/Nesterov training and differentiable imputation](TRAINING_IMPUTER.md)
 - [Affine SGD momentum outer hyper-HVP](MLP_SGD_MOMENTUM_HYPERGRADIENT_HVP.md)
