@@ -151,11 +151,11 @@ def main() -> None:
         oracle="FortML test_trainer independent quadratic and parser oracle",
         notes=notes)
     add(workload="trainer_lion", phase="independent_oracle", backend="numpy_oracle",
-        status="pass", metric="final_parameter_l2_norm", value=lion_norm,
+        steps=4, status="pass", metric="final_parameter_l2_norm", value=lion_norm,
         max_abs_error=lion_error,
         oracle="independent NumPy Lion sign/interpolation continuation",
         notes=f"split_step={lion_split}; parameters/momentum/step all compared")
-    add(workload="trainer_lion", phase="public_contract_gate", status=status,
+    add(workload="trainer_lion", phase="public_contract_gate", steps=4, status=status,
         seconds_per_operation=elapsed, metric="continuation_max_abs_error",
         value=lion_error, max_abs_error=lion_error,
         oracle="FortML test_trainer independent Lion and parser oracle",
