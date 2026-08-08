@@ -383,6 +383,13 @@ a different workload, precision, device, or residency policy.
   evidence. Sorted arbitrary labels, packed per-class ELBO/gradient/JVP, simplex
   normalization, and CUDA refusal are gated in
   `results/gp_variational_multiclass_classification.csv`.
+- [x] Add weighted Bernoulli and one-vs-rest variational-GP objectives. The
+  independent NumPy oracle checks uniform likelihood-only scaling and a
+  nonuniform packed-gradient finite difference; the FortML gate checks shared
+  OVR row weights, malformed-weight refusals, CPU dispatch, and typed CUDA
+  refusal. The raw record is
+  `results/gp_variational_classification_weights.csv`; resident weighted
+  inducing solves remain unavailable.
 - [x] Add the shared binary GP likelihood value/JVP/VJP lane for logistic and
   probit signed margins, including a stable negative-tail oracle and an
   independent adjoint check. The raw record is `results/gp_likelihood.csv`;
