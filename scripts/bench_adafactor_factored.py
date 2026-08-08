@@ -97,12 +97,17 @@ def main() -> None:
         )
         public_seconds = time.perf_counter() - started
         public_status = "pass" if result.returncode == 0 else "unavailable"
-        notes = "factored recurrence, MLP integration, and vector regression tests"
+        notes = "factored recurrence, native/formatted checkpoint resume, MLP integration, and vector regression tests"
         if result.returncode != 0:
             notes = "focused fo test failed"
     details = {
         "python_version": platform.python_version(), "numpy_version": np.__version__,
-        "fortml_revision": revision(fortml),
+        "fortml_revision": revision(fortml, tuple(
+            fortml / name for name in (
+                "test_mlp_amsgrad_checkpoint.txt",
+                "test_mlp_radam_checkpoint.txt",
+            )
+        )),
         "benchmark_revision": revision(root, (output,)),
         "compiler": "gfortran", "flags": "-O3",
     }

@@ -5,7 +5,9 @@ before recording the public FortML gate. The independent NumPy fixture uses a
 2-by-2 matrix block with row/column state and a two-element vector block with
 unfactored state. It checks an uninterrupted trajectory against a split and
 resumed trajectory, then runs `test_mlp_adafactor_factored` and the existing
-vector-Adafactor regression fixture.
+vector-Adafactor regression fixture. The public gate also compares
+uninterrupted training with native in-memory and formatted-text checkpoint
+resumes, including all ragged row, column, and vector states.
 
 The benchmark records three explicit phases:
 
