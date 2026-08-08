@@ -103,6 +103,11 @@ not completion gates.
   blocked independent oracle, native CUDA option, and high-N CPU/GPU scaling
   evidence against KeOps, GPyTorch-KeOps, and dense PyTorch.
 - [x] Add derivative-observation and derivative-prediction workloads.
+- [x] Add the locally-periodic mixed-observation derivative-GP lane. An
+  independent dense NumPy Cholesky oracle checks value/first-derivative
+  covariance blocks, parameter JVPs, posterior moments, and typed query/CUDA
+  boundaries in `results/derivative_gp_local_periodic.csv`; the protocol is
+  documented in `results/DERIVATIVE_GP_LOCAL_PERIODIC.md`.
 - [x] Add multi-output and variational GP workloads.
 - [x] Add the batched multi-output GP shape contract. The independent NumPy
   oracle assembles output-major intrinsic-coregionalization covariance and
@@ -378,6 +383,11 @@ a different workload, precision, device, or residency policy.
   `test_trainer` and `test_mlp_adafactor` recurrence/checkpoint gates in
   `results/adafactor.csv`; the packed-vector API does not claim matrix-factored
   state, and the CPU-only CUDA boundary remains an explicit unavailable row.
+- [x] Add layout-aware matrix-factored Adafactor checkpoint migration. The
+  independent row/column/vector NumPy recurrence is paired with native and
+  formatted schema-8 continuation gates in `results/adafactor_factored.csv`;
+  resident CUDA remains an explicit unavailable row. The protocol is
+  documented in `results/ADAFACTOR_FACTORED.md`.
 - [x] Add the deterministic AMSGrad trainer/MLP lane. The independent NumPy
   bias-corrected max-second-moment oracle is paired with `test_mlp_amsgrad`'s
   in-memory and formatted checkpoint continuation gates in `results/amsgrad.csv`;
@@ -496,6 +506,11 @@ a different workload, precision, device, or residency policy.
   raw multiclass margins, and normalized gain feature importance. The release
   app exports first/final stage checksums and the raw records are retained in
   `results/xgboost_workloads.csv`.
+- [x] Add one-file text persistence for `xgboost_multiclass_t`. The independent
+  stable-sigmoid and probability-simplex oracle checks arbitrary integer class
+  labels, class metadata, round-trip equality, and malformed/truncated refusal;
+  the raw record is `results/xgboost_multiclass_persistence.csv` and the
+  protocol is documented in `results/XGBOOST_MULTICLASS_PERSISTENCE.md`.
 - [x] Add a correctness-gated squared-log (RMSLE) XGBoost lane. The independent
   NumPy oracle solves the transformed-coordinate one-split Newton fixture,
   while the release app records exact CPU fit/predict, weighted-histogram

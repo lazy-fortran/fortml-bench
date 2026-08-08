@@ -28,6 +28,7 @@ Complete-call studies:
 - [Generic trainer checkpoint continuation](TRAINER_CHECKPOINT.md)
 - [Unfactored Adafactor trainer state](ADAFACTOR.md)
 - [Layout-aware factored Adafactor recurrence and checkpoint resume](ADAFACTOR_FACTORED.md)
+- [Multiclass XGBoost text persistence](XGBOOST_MULTICLASS_PERSISTENCE.md)
 - [AMSGrad optimizer and MLP training](AMSGRAD.md)
 - [RAdam optimizer and MLP training](RADAM.md)
 - [RAdam trajectory hypergradients](MLP_RADAM_HYPERGRADIENT.md)
