@@ -14,13 +14,13 @@ as an oracle.
 
 | Phase | Device | Status | Max error | Time (s) |
 | --- | --- | --- | ---: | ---: |
-| Save/load round trip | CPU | pass | 0.0 | 1.35746e-4 |
-| Independent feature oracle | CPU | pass | 2.22045e-16 | 1.35746e-4 |
+| Save/load round trip | CPU | pass | 0.0 | 1.49993e-4 |
+| Independent feature oracle | CPU | pass | 2.22045e-16 | 1.49993e-4 |
 | Resident serialization | CUDA | unavailable | n/a | n/a |
 
 Raw rows are in [`pipeline_persistence.csv`](pipeline_persistence.csv). The
-rows were generated with FortML `ce2ff195ddc0edbd2c498ccbf24370eb730f9b4e`
-and benchmark harness `69036e7886fe1733586f43a49ed60f17cf2396ed`, using GNU
+rows were generated with FortML `e9151e53c6a677df8d6eb0c4d4cfcd130cca70ed`
+and benchmark harness `5242cddb0c19416c5c791ecd05dd2cc55744e425`, using GNU
 Fortran `-O2`, Python 3.14.6, and NumPy 2.5.1:
 
 ```sh
