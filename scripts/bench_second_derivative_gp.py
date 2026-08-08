@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Benchmark the bounded RBF value/gradient/Hessian GP reference.
+"""Benchmark the bounded RBF/Matérn-5/2 value/gradient/Hessian GP reference.
 
 The NumPy implementation is an independent dense Cholesky oracle. It checks
 mixed order-four covariance blocks and differentiates query predictions with a
@@ -21,7 +21,7 @@ import numpy as np
 
 FIELDS = (
     "workload", "phase", "backend", "device", "status", "n_samples",
-    "n_queries", "likelihood", "seconds_per_operation", "metric", "value",
+    "n_queries", "likelihood", "kernel", "seconds_per_operation", "metric", "value",
     "max_abs_error", "oracle", "python_version", "numpy_version",
     "fortml_revision", "benchmark_revision", "compiler", "flags", "notes",
 )
@@ -65,21 +65,52 @@ def distance_derivative(base: np.ndarray, difference: np.ndarray,
     raise ValueError(f"unsupported derivative order {order}")
 
 
+def matern52_distance_derivative(variance: float, lengthscale: float,
+                                 difference: float, order: int) -> float:
+    """Independent scalar Matérn-5/2 distance derivative through order five."""
+    root_five = np.sqrt(5.0)
+    radius = abs(difference) / lengthscale
+    base = variance * np.exp(-root_five * radius)
+    if order == 0:
+        radial = 1.0 + root_five * radius + (5.0 / 3.0) * radius**2
+    elif order == 1:
+        radial = -(5.0 / 3.0) * radius * (1.0 + root_five * radius)
+    elif order == 2:
+        radial = (5.0 / 3.0) * (5.0 * radius**2 - root_five * radius - 1.0)
+    elif order == 3:
+        radial = (25.0 / 3.0) * radius * (3.0 - root_five * radius)
+    elif order == 4:
+        radial = (25.0 / 3.0) * (3.0 - 5.0 * root_five * radius + 5.0 * radius**2)
+    elif order == 5:
+        radial = (root_five**5 / 3.0) * (-8.0 + 7.0 * root_five * radius - 5.0 * radius**2)
+    else:
+        raise ValueError(f"unsupported derivative order {order}")
+    if difference < 0.0 and order % 2:
+        radial = -radial
+    return float(base * radial / lengthscale**order)
+
+
 def covariance(left: np.ndarray, left_order: np.ndarray, right: np.ndarray,
-               right_order: np.ndarray, variance: float, lengthscale: float) -> np.ndarray:
+               right_order: np.ndarray, variance: float, lengthscale: float,
+               kernel: str = "rbf") -> np.ndarray:
     difference = left[:, None] - right[None, :]
-    base = variance * np.exp(-0.5 * difference**2 / lengthscale**2)
-    result = np.empty_like(base)
+    result = np.empty_like(difference)
     for i, order_left in enumerate(left_order):
         for j, order_right in enumerate(right_order):
-            result[i, j] = ((-1.0) ** int(order_right) *
-                            distance_derivative(base[i, j], difference[i, j],
-                                                lengthscale,
-                                                int(order_left + order_right)))
+            total = int(order_left + order_right)
+            if kernel == "rbf":
+                base = variance * np.exp(-0.5 * difference**2 / lengthscale**2)
+                derivative = distance_derivative(base[i, j], difference[i, j], lengthscale, total)
+            elif kernel == "matern52":
+                derivative = matern52_distance_derivative(variance, lengthscale,
+                    float(difference[i, j]), total)
+            else:
+                raise ValueError(f"unsupported kernel {kernel}")
+            result[i, j] = (-1.0) ** int(order_right) * derivative
     return result
 
 
-def oracle() -> dict[str, float]:
+def oracle(kernel: str) -> dict[str, float]:
     x = np.array([-1.1, -0.25, 0.45, 1.2], dtype=np.float64)
     orders = np.array([0, 1, 2, 0], dtype=np.int64)
     y = np.array([0.7, -0.2, 1.1, -0.45], dtype=np.float64)
@@ -87,23 +118,23 @@ def oracle() -> dict[str, float]:
     query_orders = np.array([0, 1, 2, 0], dtype=np.int64)
     direction = np.array([0.23, -0.17, 0.11, -0.19], dtype=np.float64)
     variance, lengthscale, noise, jitter = 1.6, 0.75, 0.035, 1.0e-10
-    gram = covariance(x, orders, x, orders, variance, lengthscale) + (noise + jitter) * np.eye(4)
+    gram = covariance(x, orders, x, orders, variance, lengthscale, kernel) + (noise + jitter) * np.eye(4)
     alpha = np.linalg.solve(gram, y)
-    cross = covariance(x, orders, query, query_orders, variance, lengthscale)
+    cross = covariance(x, orders, query, query_orders, variance, lengthscale, kernel)
     mean = cross.T @ alpha
     solved_cross = np.linalg.solve(gram, cross)
     prior_diag = np.diag(covariance(query, query_orders, query, query_orders,
-                                    variance, lengthscale))
+                                    variance, lengthscale, kernel))
     posterior_variance = prior_diag - np.sum(cross * solved_cross, axis=0)
-    prior = covariance(query, query_orders, query, query_orders, variance, lengthscale)
+    prior = covariance(query, query_orders, query, query_orders, variance, lengthscale, kernel)
     posterior_covariance = prior - cross.T @ solved_cross
     posterior_covariance = 0.5 * (posterior_covariance + posterior_covariance.T)
 
     def prediction(points: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        cross_points = covariance(x, orders, points, query_orders, variance, lengthscale)
+        cross_points = covariance(x, orders, points, query_orders, variance, lengthscale, kernel)
         solved = np.linalg.solve(gram, cross_points)
         prior_points = np.diag(covariance(points, query_orders, points, query_orders,
-                                          variance, lengthscale))
+                                          variance, lengthscale, kernel))
         return cross_points.T @ alpha, prior_points - np.sum(cross_points * solved, axis=0)
 
     h = 2.0e-5
@@ -117,9 +148,13 @@ def oracle() -> dict[str, float]:
     for i, order_left in enumerate(orders):
         for j, order_right in enumerate(query_orders):
             difference = x[i] - query[j]
-            base = variance * np.exp(-0.5 * difference**2 / lengthscale**2)
-            cross_dot[i, j] = direction[j] * ((-1.0) ** (int(order_right) + 1)) * distance_derivative(
-                base, difference, lengthscale, int(order_left + order_right + 1))
+            total = int(order_left + order_right + 1)
+            if kernel == "rbf":
+                base = variance * np.exp(-0.5 * difference**2 / lengthscale**2)
+                derivative = distance_derivative(base, difference, lengthscale, total)
+            else:
+                derivative = matern52_distance_derivative(variance, lengthscale, difference, total)
+            cross_dot[i, j] = direction[j] * ((-1.0) ** (int(order_right) + 1)) * derivative
     solved_dot = np.linalg.solve(gram, cross_dot)
     mean_dot_exact = cross_dot.T @ alpha
     variance_dot_exact = -np.sum(cross_dot * solved_cross, axis=0) - np.sum(cross * solved_dot, axis=0)
@@ -149,7 +184,7 @@ def main() -> None:
     root = Path(__file__).resolve().parents[1]
     fortml = args.fortml.resolve()
     output = args.output.resolve()
-    metrics = oracle()
+    metrics = {kernel: oracle(kernel) for kernel in ("rbf", "matern52")}
     started = time.perf_counter()
     if args.skip_fortml:
         status, notes = "skipped", "--skip-fortml"
@@ -167,39 +202,51 @@ def main() -> None:
     }
     rows: list[dict[str, object]] = []
 
-    def add(**values: object) -> None:
+    def add(kernel: str, **values: object) -> None:
         row = {field: "" for field in FIELDS}
         row.update(details)
         row.update({"workload": "second_derivative_gp", "backend": "numpy_oracle",
                     "device": "cpu", "status": "pass", "n_samples": 4, "n_queries": 4,
-                    "likelihood": "gaussian"})
+                    "likelihood": "gaussian", "kernel": kernel})
         row.update(values)
         rows.append(row)
 
-    add(phase="prediction", metric="mean_max_abs_error", value=metrics["prediction_mean_max_abs_error"],
-        max_abs_error=metrics["prediction_mean_max_abs_error"],
-        oracle="independent NumPy RBF order-four covariance and Cholesky solve")
-    add(phase="prediction", metric="variance_max_abs_error", value=metrics["prediction_variance_max_abs_error"],
-        max_abs_error=metrics["prediction_variance_max_abs_error"],
-        oracle="independent NumPy latent variance Schur complement",
-        notes=f"minimum_posterior_variance={metrics['minimum_posterior_variance']:.6e}")
-    add(phase="joint_covariance", metric="symmetry_abs_error", value=metrics["joint_covariance_max_abs_error"],
-        max_abs_error=metrics["joint_covariance_max_abs_error"],
-        oracle="independent NumPy dense latent covariance", notes="posterior covariance is symmetrized")
-    add(phase="input_products", metric="jvp_central_difference_max_abs_error",
-        value=metrics["input_jvp_fd_max_abs_error"], max_abs_error=metrics["input_jvp_fd_max_abs_error"],
-        oracle="independent NumPy central difference of mixed-order predictions")
-    add(phase="input_products", metric="vjp_duality_abs_error", value=metrics["input_vjp_duality_abs_error"],
-        max_abs_error=metrics["input_vjp_duality_abs_error"], oracle="independent NumPy cotangent identity")
-    add(phase="public_contract_gate", backend="fortml", seconds_per_operation=elapsed,
-        metric="fortml_second_derivative_gp_test", value=1.0, max_abs_error=max(metrics.values()),
-        oracle="FortML test_second_derivative_gp behavioral gate", notes=notes)
-    add(phase="device_boundary", backend="fortml", status="refused", device="cuda",
-        metric="typed_cuda_prediction_and_covariance", value="nan", max_abs_error=0.0,
-        oracle="FORTNUM_NOT_IMPLEMENTED", notes="resident derivative covariance/solve is not linked")
-    add(phase="input_boundary", backend="fortml", status="refused", metric="non_rbf_or_order_three_fit",
-        value="nan", max_abs_error=0.0, oracle="typed FORTNUM_NOT_IMPLEMENTED/DOMAIN_ERROR",
-        notes="only scalar 1-D RBF orders 0:2 are in this bounded reference")
+    for kernel, kernel_metrics in metrics.items():
+        add(kernel, phase="prediction", metric="mean_max_abs_error",
+            value=kernel_metrics["prediction_mean_max_abs_error"],
+            max_abs_error=kernel_metrics["prediction_mean_max_abs_error"],
+            oracle=f"independent NumPy {kernel} order-four covariance and Cholesky solve")
+        add(kernel, phase="prediction", metric="variance_max_abs_error",
+            value=kernel_metrics["prediction_variance_max_abs_error"],
+            max_abs_error=kernel_metrics["prediction_variance_max_abs_error"],
+            oracle="independent NumPy latent variance Schur complement",
+            notes=f"minimum_posterior_variance={kernel_metrics['minimum_posterior_variance']:.6e}")
+        add(kernel, phase="joint_covariance", metric="symmetry_abs_error",
+            value=kernel_metrics["joint_covariance_max_abs_error"],
+            max_abs_error=kernel_metrics["joint_covariance_max_abs_error"],
+            oracle="independent NumPy dense latent covariance", notes="posterior covariance is symmetrized")
+        add(kernel, phase="input_products", metric="jvp_central_difference_max_abs_error",
+            value=kernel_metrics["input_jvp_fd_max_abs_error"],
+            max_abs_error=kernel_metrics["input_jvp_fd_max_abs_error"],
+            oracle="independent NumPy central difference of mixed-order predictions")
+        add(kernel, phase="input_products", metric="vjp_duality_abs_error",
+            value=kernel_metrics["input_vjp_duality_abs_error"],
+            max_abs_error=kernel_metrics["input_vjp_duality_abs_error"],
+            oracle="independent NumPy cotangent identity")
+        add(kernel, phase="public_contract_gate", backend="fortml", seconds_per_operation=elapsed,
+            metric="fortml_second_derivative_gp_test", value=1.0,
+            max_abs_error=max(kernel_metrics[key] for key in (
+                "prediction_mean_max_abs_error", "prediction_variance_max_abs_error",
+                "joint_covariance_max_abs_error", "input_jvp_fd_max_abs_error",
+                "input_vjp_duality_abs_error")),
+            oracle="FortML test_second_derivative_gp behavioral gate", notes=notes)
+        add(kernel, phase="device_boundary", backend="fortml", status="refused", device="cuda",
+            metric="typed_cuda_prediction_and_covariance", value="nan", max_abs_error=0.0,
+            oracle="FORTNUM_NOT_IMPLEMENTED", notes="resident derivative covariance/solve is not linked")
+        add(kernel, phase="input_boundary", backend="fortml", status="refused",
+            metric="unsupported_or_coincident_fifth_derivative", value="nan", max_abs_error=0.0,
+            oracle="typed FORTNUM_NOT_IMPLEMENTED/DOMAIN_ERROR",
+            notes="Matern-5/2 fifth derivative refuses coincidence; other kernels are outside this bounded reference")
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")
