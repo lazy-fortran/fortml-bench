@@ -131,87 +131,116 @@ def main() -> None:
         "benchmark_revision": revision(root, (output,)),
         "compiler": os.environ.get("FO_FC", "gfortran"),
         "flags": "-O3",
-        "oracle": "independent NumPy packed-softmax/temperature replay",
     }
     x, expected_labels = fixture()
     environment = os.environ.copy()
     environment.update({"FO_FC": environment.get("FO_FC", "gfortran"),
                         "OMP_NUM_THREADS": "1"})
+    records: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(dir="/mnt/storage", prefix="fortml-calibrated-softmax-") as temporary:
-        oracle_path = Path(temporary) / "oracle.csv"
-        environment["FORTML_BENCH_CALIBRATED_SOFTMAX_ORACLE"] = str(oracle_path)
         build = subprocess.run(["fo", "build", "--flag", "-O3"], cwd=fortml,
                                env=environment, capture_output=True, text=True)
         if build.returncode:
             raise RuntimeError(build.stderr.strip() or build.stdout.strip())
-        run = subprocess.run(["fo", "exec", "--no-build", args.target], cwd=fortml,
-                             env=environment, capture_output=True, text=True)
-        if run.returncode or not oracle_path.is_file():
-            raise RuntimeError(run.stderr.strip() or run.stdout.strip() or
-                               "calibrated softmax app emitted no oracle")
-        parameters, labels, predictions, observed, diagnostics = parse_oracle(oracle_path)
-        expected_parameter_count = N_FEATURES * N_CLASSES + N_CLASSES + 1
-        if parameters.size != expected_parameter_count:
-            raise RuntimeError(f"unexpected packed parameter count {parameters.size}")
-        coefficients = parameters[:N_FEATURES * N_CLASSES].reshape(
-            (N_FEATURES, N_CLASSES), order="F",
-        )
-        intercept = parameters[N_FEATURES * N_CLASSES:N_FEATURES * N_CLASSES + N_CLASSES]
-        temperature = parameters[-1]
-        if not np.isfinite(temperature) or temperature <= 0.0:
-            raise RuntimeError(f"temperature is not positive: {temperature}")
-        scores = x @ coefficients + intercept
-        expected_probabilities = softmax(scores / temperature)
-        probability_error = float(np.max(np.abs(observed - expected_probabilities)))
-        label_error = float(np.max(np.abs(labels - expected_labels)))
-        expected_predictions = CLASS_LABELS[np.argmax(expected_probabilities, axis=1)]
-        prediction_error = float(np.max(np.abs(predictions - expected_predictions)))
-        simplex_error = float(np.max(np.abs(observed.sum(axis=1) - 1.0)))
-        if probability_error > 5.0e-12 or label_error != 0.0 or prediction_error != 0.0:
-            raise RuntimeError(
-                f"calibrated softmax oracle mismatch: probability={probability_error:.3e}, "
-                f"labels={label_error:.3e}, predictions={prediction_error:.3e}"
+        for method in ("temperature", "sigmoid", "isotonic"):
+            oracle_path = Path(temporary) / f"oracle-{method}.csv"
+            environment["FORTML_BENCH_CALIBRATED_SOFTMAX_ORACLE"] = str(oracle_path)
+            environment["FORTML_BENCH_CALIBRATED_SOFTMAX_METHOD"] = method
+            run = subprocess.run(["fo", "exec", "--no-build", args.target], cwd=fortml,
+                                 env=environment, capture_output=True, text=True)
+            if run.returncode or not oracle_path.is_file():
+                raise RuntimeError(run.stderr.strip() or run.stdout.strip() or
+                                   f"calibrated softmax {method} app emitted no oracle")
+            parameters, labels, predictions, observed, diagnostics = parse_oracle(oracle_path)
+            base_parameter_count = N_FEATURES * N_CLASSES + N_CLASSES
+            expected_parameter_count = base_parameter_count + {
+                "temperature": 1, "sigmoid": 2 * N_CLASSES, "isotonic": 0,
+            }[method]
+            if parameters.size != expected_parameter_count:
+                raise RuntimeError(f"{method}: unexpected packed parameter count {parameters.size}")
+            coefficients = parameters[:N_FEATURES * N_CLASSES].reshape(
+                (N_FEATURES, N_CLASSES), order="F",
             )
-        if not all(np.isfinite(diagnostics.get(name, np.nan)) for name in (
-                "oof_log_loss", "calibrated_oof_log_loss")):
-            raise RuntimeError("OOF diagnostics are missing or nonfinite")
-        fit_seconds = next(float(line.rsplit(",", 1)[1])
-                           for line in run.stdout.splitlines()
-                           if line.startswith("calibrated_softmax_cv_fit,"))
-        predict_seconds = next(float(line.rsplit(",", 1)[1])
+            intercept = parameters[N_FEATURES * N_CLASSES:base_parameter_count]
+            scores = x @ coefficients + intercept
+            if method == "temperature":
+                temperature = parameters[-1]
+                if not np.isfinite(temperature) or temperature <= 0.0:
+                    raise RuntimeError(f"temperature is not positive: {temperature}")
+                expected_probabilities = softmax(scores / temperature)
+                oracle_name = "independent NumPy packed-softmax/temperature replay"
+            elif method == "sigmoid":
+                calibration = parameters[base_parameter_count:].reshape((N_CLASSES, 2))
+                raw = softmax(scores)
+                calibrated = 1.0 / (1.0 + np.exp(-(
+                    raw * calibration[:, 0][None, :] + calibration[:, 1][None, :]
+                )))
+                expected_probabilities = calibrated / calibrated.sum(axis=1, keepdims=True)
+                oracle_name = "independent NumPy packed-softmax/Platt replay"
+            else:
+                expected_probabilities = None
+                oracle_name = "independent NumPy simplex/label oracle; PAVA knots are fitted buffers"
+            probability_error = (
+                float(np.max(np.abs(observed - expected_probabilities)))
+                if expected_probabilities is not None else float("nan")
+            )
+            label_error = float(np.max(np.abs(labels - expected_labels)))
+            expected_predictions = CLASS_LABELS[np.argmax(
+                expected_probabilities if expected_probabilities is not None else observed,
+                axis=1,
+            )]
+            prediction_error = float(np.max(np.abs(predictions - expected_predictions)))
+            simplex_error = float(np.max(np.abs(observed.sum(axis=1) - 1.0)))
+            if (expected_probabilities is not None and probability_error > 5.0e-12) or \
+                    label_error != 0.0 or prediction_error != 0.0 or \
+                    not np.all(np.isfinite(observed)) or simplex_error > 5.0e-14:
+                raise RuntimeError(
+                    f"{method} oracle mismatch: probability={probability_error:.3e}, "
+                    f"simplex={simplex_error:.3e}, labels={label_error:.3e}, "
+                    f"predictions={prediction_error:.3e}"
+                )
+            if not all(np.isfinite(diagnostics.get(name, np.nan)) for name in (
+                    "oof_log_loss", "calibrated_oof_log_loss")):
+                raise RuntimeError(f"{method}: OOF diagnostics are missing or nonfinite")
+            fit_seconds = next(float(line.rsplit(",", 1)[1])
                                for line in run.stdout.splitlines()
-                               if line.startswith("calibrated_softmax_cv_predict,"))
-    records = [
-        row(details, workload="calibrated_softmax_cv", phase="fit", backend="fortml",
-            device="cpu", status="pass", n_samples=N_SAMPLES, n_features=N_FEATURES,
-            n_classes=N_CLASSES, cv_folds=3, method="temperature",
-            metric="packed_replay_max_abs_error", value=probability_error,
-            max_abs_error=probability_error, seconds_per_operation=fit_seconds,
-            notes="stratified held-out logits and deployment refit"),
-        row(details, workload="calibrated_softmax_cv", phase="predict", backend="fortml",
-            device="cpu", status="pass", n_samples=N_SAMPLES, n_features=N_FEATURES,
-            n_classes=N_CLASSES, cv_folds=3, method="temperature",
-            metric="probability_simplex_error", value=simplex_error,
-            max_abs_error=max(probability_error, simplex_error),
-            seconds_per_operation=predict_seconds,
-            notes="sorted integer labels and positive temperature replay"),
-        row(details, workload="calibrated_softmax_cv", phase="diagnostics", backend="fortml",
-            device="cpu", status="pass", n_samples=N_SAMPLES, n_features=N_FEATURES,
-            n_classes=N_CLASSES, cv_folds=3, method="temperature", metric="oof_log_loss",
-            value=diagnostics["oof_log_loss"], max_abs_error=0.0,
-            notes="uncalibrated out-of-fold log loss"),
-        row(details, workload="calibrated_softmax_cv", phase="diagnostics", backend="fortml",
-            device="cpu", status="pass", n_samples=N_SAMPLES, n_features=N_FEATURES,
-            n_classes=N_CLASSES, cv_folds=3, method="temperature",
-            metric="calibrated_oof_log_loss", value=diagnostics["calibrated_oof_log_loss"],
-            max_abs_error=0.0, notes="positive temperature OOF log loss"),
-        row(details, workload="calibrated_softmax_cv", phase="device_contract",
-            backend="fortml", device="cuda", status="unavailable", n_samples=N_SAMPLES,
-            n_features=N_FEATURES, n_classes=N_CLASSES, cv_folds=3, method="temperature",
-            metric="predict_proba", value="unavailable", max_abs_error=0.0,
-            oracle="typed device contract",
-            notes="FORTNUM_NOT_IMPLEMENTED; resident softmax/calibration graph is absent"),
-    ]
+                               if line.startswith(f"calibrated_softmax_cv_fit,{method},"))
+            predict_seconds = next(float(line.rsplit(",", 1)[1])
+                                   for line in run.stdout.splitlines()
+                                   if line.startswith(f"calibrated_softmax_cv_predict,{method},"))
+            common = dict(workload="calibrated_softmax_cv", backend="fortml",
+                          n_samples=N_SAMPLES, n_features=N_FEATURES, n_classes=N_CLASSES,
+                          cv_folds=3, method=method)
+            records.extend([
+                row(details, phase="fit", device="cpu", status="pass", **common,
+                    metric="packed_parameter_count", value=parameters.size,
+                    max_abs_error=0.0, oracle=oracle_name,
+                    seconds_per_operation=fit_seconds,
+                    notes="stratified held-out logits and deployment refit"),
+                row(details, phase="predict", device="cpu", status="pass", **common,
+                    metric="packed_replay_max_abs_error",
+                    value=(probability_error if np.isfinite(probability_error) else "unavailable"),
+                    max_abs_error=(probability_error if np.isfinite(probability_error) else 0.0),
+                    oracle=oracle_name, seconds_per_operation=predict_seconds,
+                    notes=("sorted labels and smooth packed Platt replay" if method == "sigmoid"
+                           else "sorted labels and positive temperature replay" if method == "temperature"
+                           else "sorted labels and deterministic weighted PAVA values")),
+                row(details, phase="predict", device="cpu", status="pass", **common,
+                    metric="probability_simplex_error", value=simplex_error,
+                    max_abs_error=max(simplex_error, probability_error) if np.isfinite(probability_error)
+                    else simplex_error, oracle=oracle_name,
+                    notes="simplex normalization"),
+                row(details, phase="diagnostics", device="cpu", status="pass", **common,
+                    metric="oof_log_loss", value=diagnostics["oof_log_loss"], max_abs_error=0.0,
+                    oracle=oracle_name, notes="uncalibrated out-of-fold log loss"),
+                row(details, phase="diagnostics", device="cpu", status="pass", **common,
+                    metric="calibrated_oof_log_loss", value=diagnostics["calibrated_oof_log_loss"],
+                    max_abs_error=0.0, oracle=oracle_name, notes="calibrated out-of-fold log loss"),
+                row(details, phase="device_contract", device="cuda", status="unavailable", **common,
+                    metric="predict_proba", value="unavailable", max_abs_error=0.0,
+                    oracle="typed device contract",
+                    notes="FORTNUM_NOT_IMPLEMENTED; resident softmax/calibration graph is absent"),
+            ])
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")
