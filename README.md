@@ -48,6 +48,18 @@ its local path. The checked-in first run is summarized in
 [`results/README.md`](results/README.md). Its raw CSV and plot are next to
 that note.
 
+The multiclass XGBoost validation lane independently replays weighted OVR
+Newton stages and checks best-prefix restoration, validation metadata,
+transactional unknown-label refusal, and the typed CUDA boundary:
+
+```bash
+python -B scripts/bench_xgboost_multiclass_validation.py \
+  --fortml ../fortml --output results/xgboost_multiclass_validation.csv \
+  --report results/XGBOOST_MULTICLASS_VALIDATION.md
+```
+
+See [`results/XGBOOST_MULTICLASS_VALIDATION.md`](results/XGBOOST_MULTICLASS_VALIDATION.md).
+
 ## Complete model and GP-feature calls
 
 The small exact-GP and MLP harness separates fit, prediction, forward, and

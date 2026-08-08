@@ -603,6 +603,14 @@ a different workload, precision, device, or residency policy.
   labels, class metadata, round-trip equality, and malformed/truncated refusal;
   the raw record is `results/xgboost_multiclass_persistence.csv` and the
   protocol is documented in `results/XGBOOST_MULTICLASS_PERSISTENCE.md`.
+- [x] Add weighted validation and common-prefix early stopping for
+  `xgboost_multiclass_t`. `scripts/bench_xgboost_multiclass_validation.py`
+  independently replays all depth-one OVR Newton stages, weighted normalized
+  multiclass log-loss, best-prefix restoration, arbitrary validation labels,
+  and transactional unknown-label refusal. The release app records requested,
+  retained, best-round, loss, and patience metadata plus the typed CUDA tree
+  refusal in `results/xgboost_multiclass_validation.csv`; the protocol is
+  documented in [`results/XGBOOST_MULTICLASS_VALIDATION.md`](results/XGBOOST_MULTICLASS_VALIDATION.md).
 - [x] Add a correctness-gated squared-log (RMSLE) XGBoost lane. The independent
   NumPy oracle solves the transformed-coordinate one-split Newton fixture,
   while the release app records exact CPU fit/predict, weighted-histogram
