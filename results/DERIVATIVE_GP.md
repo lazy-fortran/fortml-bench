@@ -8,7 +8,8 @@ assembles a dense joint posterior covariance. It also finite-differences the
 packed log-kernel/log-noise coordinates to independently gate the new dense
 posterior `joint_covariance_jvp` and `joint_covariance_vjp` products. The
 FortML release app emits CPU timings only after all checks pass; the current
-CSV has 60 correctness-gated CPU/CUDA-contract rows.
+CSV has 77 correctness-gated CPU/CUDA-contract rows, including the polynomial
+mixed-observation hyperparameter HVP.
 
 CUDA rows are deliberately recorded as `unavailable`: the derivative-GP
 resident covariance/factorization graph is not linked and FortML returns
@@ -18,8 +19,14 @@ The spectral-mixture row uses the packed GPyTorch-compatible coordinates
 `[log_weight, log_scale(:), mean(:)]` and an independent dense two-feature
 oracle. It covers query JVP/VJP and posterior covariance parameter JVP/VJP;
 mixed parameter HVP remains a typed refusal because fourth input/parameter
-products are not yet generated. The current CSV contains 75 correctness-gated
-CPU/CUDA-contract rows.
+products are not yet generated. The CSV includes both the independent NumPy
+oracle rows and the corresponding FortML CPU/CUDA-contract rows.
+
+The polynomial HVP row differentiates the dense mixed-observation likelihood
+through the Cholesky solve in packed log variance/scale/offset/degree and
+log-noise coordinates. Its value is checked against an independent NumPy
+central-difference likelihood-gradient oracle; the CUDA companion row records
+the typed refusal because the resident derivative-GP graph is not linked.
 
 ```bash
 python -B scripts/bench_derivative_gp.py \

@@ -248,6 +248,47 @@ def joint_covariance(x: np.ndarray, components: np.ndarray, y: np.ndarray,
     return 0.5 * (prior - cross.T @ work + (prior - cross.T @ work).T)
 
 
+def likelihood(x: np.ndarray, components: np.ndarray, y: np.ndarray,
+               name: str, theta: np.ndarray) -> float:
+    """Independent dense log marginal likelihood for the HVP oracle."""
+    k_train = np.empty((len(x), len(x)))
+    for i in range(len(x)):
+        for j in range(len(x)):
+            k_train[i, j] = covariance(x[i], int(components[i]), x[j],
+                                       int(components[j]), name, theta)
+    k_train.flat[:: len(x) + 1] += np.exp(theta[-1]) + JITTER
+    alpha = np.linalg.solve(k_train, y)
+    sign, logdet = np.linalg.slogdet(k_train)
+    if sign <= 0.0:
+        raise RuntimeError("independent polynomial likelihood covariance is not SPD")
+    return float(-0.5 * np.sum(y * alpha) - 0.5 * y.shape[1] * logdet -
+                 0.5 * len(x) * y.shape[1] * np.log(2.0 * np.pi))
+
+
+def likelihood_gradient(x: np.ndarray, components: np.ndarray, y: np.ndarray,
+                        name: str, theta: np.ndarray) -> np.ndarray:
+    """Central-difference only the independent likelihood oracle."""
+    gradient = np.empty_like(theta)
+    step = 2.0e-5
+    for i in range(len(theta)):
+        direction = np.zeros_like(theta)
+        direction[i] = step
+        gradient[i] = (likelihood(x, components, y, name, theta + direction) -
+                       likelihood(x, components, y, name, theta - direction)) / (2.0 * step)
+    return gradient
+
+
+def polynomial_hvp_oracle() -> float:
+    """Return the independent polynomial mixed-HVP reduction."""
+    x, y, components, *_ = fixture()
+    theta = np.log(np.array([1.3, 0.4, 1.5, 2.2, NOISE], dtype=np.float64))
+    direction = 0.08 - 0.017 * np.arange(1, len(theta) + 1)
+    step = 2.0e-4
+    product = (likelihood_gradient(x, components, y, "polynomial", theta + step * direction) -
+               likelihood_gradient(x, components, y, "polynomial", theta - step * direction)) / (2.0 * step)
+    return float(np.sum(product))
+
+
 def oracle(name: str) -> tuple[float, float, float, float, float]:
     x, y, components, query, direction, query_components, mean_bar, variance_bar = fixture()
     h = 1.0e-5
@@ -367,6 +408,21 @@ def main() -> None:
             rows.append(row(kernel=name, operation=operation, device="cuda", status="unavailable",
                             backend="fortml", seconds_per_operation="", value="", max_abs_error="",
                             oracle="typed_device_contract", notes="FORTNUM_NOT_IMPLEMENTED: resident derivative-GP graph not linked"))
+
+    expected_hvp = polynomial_hvp_oracle()
+    if ("polynomial", "hyperparameter_hvp") not in records:
+        raise RuntimeError("release app omitted polynomial/hyperparameter_hvp")
+    seconds, actual = records[("polynomial", "hyperparameter_hvp")]
+    error = abs(actual - expected_hvp)
+    if error > 5.0e-4 * max(1.0, abs(expected_hvp)):
+        raise RuntimeError(f"polynomial/hyperparameter_hvp oracle mismatch: {error:.3e}")
+    rows.append(row(kernel="polynomial", operation="hyperparameter_hvp",
+                    seconds_per_operation=seconds, value=actual, max_abs_error=error,
+                    notes="exact mixed-observation HVP; independent likelihood finite-difference oracle passed"))
+    rows.append(row(kernel="polynomial", operation="hyperparameter_hvp", device="cuda",
+                    status="unavailable", backend="fortml", seconds_per_operation="",
+                    value="", max_abs_error="", oracle="typed_device_contract",
+                    notes="FORTNUM_NOT_IMPLEMENTED: resident derivative-GP graph not linked"))
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", newline="") as stream:
