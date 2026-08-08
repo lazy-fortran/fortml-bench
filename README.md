@@ -593,6 +593,19 @@ See [`results/MULTICLASS_CALIBRATION.md`](results/MULTICLASS_CALIBRATION.md).
 The CUDA row remains an explicit refusal until a resident calibration kernel
 is linked.
 
+The reliability-diagram lane checks weighted equal-width confidence bins,
+including empty-bin zero conventions and deterministic first-maximum ties,
+against an independent NumPy oracle before retaining timing:
+
+```bash
+python3 -B scripts/bench_reliability_diagram.py \
+    --fortml ../fortml --output results/reliability_diagram.csv
+```
+
+See [`results/RELIABILITY_DIAGRAM.md`](results/RELIABILITY_DIAGRAM.md). The
+CUDA row is an explicit capability refusal because no resident metric kernel
+is linked.
+
 The composable physics-residual lane checks four weighted affine PINN-style
 terms plus an independent nonlinear reverse-over-forward HVP fixture. The
 FortML gate covers the FortOpt adapter, malformed-input refusals, the exact
