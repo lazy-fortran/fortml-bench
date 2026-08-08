@@ -82,6 +82,8 @@ def oracle() -> dict[str, float]:
     bce_hvp = probabilities * (1.0 - probabilities) * direction / logits.size
     exponent = np.exp(logits - logits.max(axis=1, keepdims=True))
     softmax = exponent / exponent.sum(axis=1, keepdims=True)
+    labels = (np.arange(N) % 3).astype(int)
+    class_weight = np.array([0.75, 1.0, 1.25])
     softmax_hvp = softmax * (direction -
                              (softmax * direction).sum(axis=1, keepdims=True)) / N
     softmax_direction = softmax * (direction -
@@ -96,6 +98,31 @@ def oracle() -> dict[str, float]:
         cotangent.sum(axis=1, keepdims=True)
     weighted_softmax_hvp = weights[:, None] * softmax * (direction -
         (softmax * direction).sum(axis=1, keepdims=True)) / weights.sum()
+    true_probability = softmax[np.arange(N), labels]
+    complement = 1.0 - true_probability
+    log_true_probability = np.log(true_probability)
+    gamma = 2.0
+    factors = class_weight[labels]
+    first_derivative = factors * (gamma * complement ** (gamma - 1.0) *
+                                  log_true_probability - complement ** gamma /
+                                  true_probability)
+    second_derivative = factors * (-gamma * (gamma - 1.0) *
+                                   complement ** (gamma - 2.0) * log_true_probability +
+                                   2.0 * gamma * complement ** (gamma - 1.0) /
+                                   true_probability + complement ** gamma /
+                                   true_probability ** 2)
+    row_dot = (softmax * direction).sum(axis=1)
+    true_probability_dot = true_probability * (direction[np.arange(N), labels] - row_dot)
+    coefficient = first_derivative * true_probability
+    coefficient_dot = (second_derivative * true_probability + first_derivative) * \
+        true_probability_dot
+    one_hot = np.zeros_like(softmax)
+    one_hot[np.arange(N), labels] = 1.0
+    softmax_dot = softmax * (direction - row_dot[:, None])
+    focal_softmax_hvp = (weights[:, None] *
+                         (coefficient_dot[:, None] * (one_hot - softmax) -
+                          coefficient[:, None] * softmax_dot) /
+                         weights.sum())
     weighted = weights[:, None] * direction[:, :1] / weights.sum()
     residual = prediction - target
     huber = np.where(np.abs(residual) < 0.75, direction[:, :1], 0.0) / N
@@ -165,6 +192,7 @@ def oracle() -> dict[str, float]:
         "softmax_hvp": float(softmax_hvp_vector.sum()),
         "log_softmax_hvp": float(log_softmax_hvp.sum()),
         "weighted_softmax_cross_entropy_hvp": float(weighted_softmax_hvp.sum()),
+        "focal_softmax_cross_entropy_hvp": float(focal_softmax_hvp.sum()),
         "weighted_mse_hvp": float(weighted.sum()),
         "huber_hvp": float(huber.sum()),
         "mae_jvp": float(mae),
@@ -221,7 +249,7 @@ def main() -> None:
         "fortml_revision": revision(fortml),
         "benchmark_revision": revision(root, (args.output.resolve(),)),
         "compiler": os.environ.get("FO_FC", "gfortran"), "flags": "-O3",
-        "notes": "weighted multilabel/ordinal plus shared value/JVP/VJP/HVP facade; MLP uses weighted-MSE products",
+        "notes": "weighted focal-softmax/multilabel/ordinal plus shared value/JVP/VJP/HVP facade; MLP uses weighted-MSE products",
     }
     rows = []
     for phase, (seconds, checksum) in actual.items():
