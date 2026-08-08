@@ -1160,6 +1160,19 @@ python3 -B scripts/bench_adaboost_classifier.py \
 
 See [`results/ADABOOST_CLASSIFIER.md`](results/ADABOOST_CLASSIFIER.md).
 
+The multiclass SAMME lane fits one weighted depth-one CART learner over three
+sorted arbitrary integer labels. Its independent NumPy oracle reconstructs
+the SAMME stage weight, weighted-vote margins, stabilized softmax, and labels;
+the CPU rows are retained only after every value matches, and CUDA is recorded
+as a typed refusal:
+
+```bash
+python3 -B scripts/bench_adaboost_samme.py \
+  --fortml ../fortml --output results/adaboost_samme.csv
+```
+
+See [`results/ADABOOST_SAMME.md`](results/ADABOOST_SAMME.md).
+
 The bagging lane exercises the seeded bootstrap and without-replacement CART
 ensemble with three integer classes. Its independent NumPy oracle checks the
 cluster labels and probability simplex, while the release app records fit and
