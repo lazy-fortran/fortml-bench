@@ -17,5 +17,5 @@ compiler flags, and six CPU/refusal rows. The scalar-loop covariance agrees to
 machine precision. The posterior variance is positive (`1.227275432322503e+00`
 minimum on this fixture). The FortML public-contract gate passes. No GPU
 timing is reported: `kernel_operator_t` and resident CUDA return
-`FORTNUM_NOT_IMPLEMENTED` until their static ABI carries the four-parameter
-locally-periodic leaf.
+the typed `FORTNUM_DOMAIN_ERROR` refusal until their static ABI carries the
+four-parameter locally-periodic leaf.

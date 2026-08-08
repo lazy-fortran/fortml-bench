@@ -169,7 +169,7 @@ def main() -> None:
         "FortML test_local_periodic_gp behavioral gate", backend="fortml",
         seconds_per_operation=elapsed, max_abs_error=0.0, notes=notes)
     add("device_boundary", "typed_cuda_prediction_and_covariance", float("nan"),
-        "FORTNUM_NOT_IMPLEMENTED", device="cuda", row_status="refused",
+        "typed FORTNUM_DOMAIN_ERROR refusal", device="cuda", row_status="refused",
         backend="fortml", max_abs_error=0.0,
         notes="resident local-periodic operator/CUDA ABI is not linked")
     output.parent.mkdir(parents=True, exist_ok=True)
