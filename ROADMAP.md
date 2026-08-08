@@ -409,6 +409,13 @@ a different workload, precision, device, or residency policy.
   the independent NumPy fixture check branch-summed value/JVP/VJP/HVP products,
   metadata, and output-preserving typed CUDA refusals. Conditional, cyclic,
   and resident branch execution remain separate open contracts.
+- [x] Add the fitted horizontal basis-pipeline persistence lane. The raw record
+  is `results/pipeline_persistence.csv`; an independent NumPy reconstruction
+  checks feature and metadata counts before the Fortran release app's
+  versioned text save/load round trip. The source test additionally checks
+  value/JVP/VJP/HVP equivalence, names, offsets, malformed-input transactionality,
+  and the typed CUDA serialization refusal. Sequential/residual/linear-estimator
+  schemas and resident-device checkpoints remain separate contracts.
 - [x] Add the production Lion trainer lane. The independent NumPy recurrence
   checks decoupled weight decay, clipping, EMA, validation, and uninterrupted
   versus checkpointed text-resume trajectories. The raw record is

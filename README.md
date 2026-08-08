@@ -1370,6 +1370,18 @@ See [`results/PIPELINE_SCHEMA.md`](results/PIPELINE_SCHEMA.md).
 
 See [`results/BASIS_PIPELINE_TRAINING.md`](results/BASIS_PIPELINE_TRAINING.md).
 
+The fitted basis-pipeline persistence lane checks a versioned host text state
+dictionary. The Fortran release app round-trips stage/feature/parameter names,
+one-based offsets, schema metadata, packed parameters, and transformed values;
+the independent NumPy harness also records the typed resident-CUDA refusal:
+
+```bash
+python -B scripts/bench_pipeline_persistence.py \
+  --fortml ../fortml --output results/pipeline_persistence.csv
+```
+
+See [`results/PIPELINE_PERSISTENCE.md`](results/PIPELINE_PERSISTENCE.md).
+
 The named fan-out/fan-in basis-DAG lane checks an independent two-branch
 quadratic/spectral feature construction, branch metadata and packed offsets,
 JVP/VJP duality, central-difference HVPs, CPU dispatch, and the typed CUDA
