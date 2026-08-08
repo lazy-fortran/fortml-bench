@@ -1,0 +1,4 @@
+workload,phase,backend,device,status,n_samples,n_features,n_estimators,seconds_per_operation,metric,value,max_abs_error,oracle,python_version,numpy_version,fortml_revision,benchmark_revision,compiler,flags,notes
+xgboost_categorical_ordered,fit,fortml,cpu,pass,256,2,1,9.413425e-05,max_abs_error,0.0,0.0,independent NumPy two-group partition oracle,3.14.6,2.5.1,96a9b00,81a7de4,gfortran,-O3,ordered-gradient four-code integer feature
+xgboost_categorical_ordered,predict,fortml,cpu,pass,256,2,1,7.793515625e-06,max_abs_error,0.0,0.0,independent NumPy two-group partition oracle,3.14.6,2.5.1,96a9b00,81a7de4,gfortran,-O3,repeated fixed-tree prediction timing
+xgboost_categorical_ordered,capability_check,fortml,cuda,unavailable,256,2,1,,,,,declared device contract,3.14.6,2.5.1,96a9b00,81a7de4,gfortran,-O3,no resident CUDA categorical-tree kernel is linked; typed refusal
