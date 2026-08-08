@@ -8,7 +8,7 @@ assembles a dense joint posterior covariance. It also finite-differences the
 packed log-kernel/log-noise coordinates to independently gate the new dense
 posterior `joint_covariance_jvp` and `joint_covariance_vjp` products. The
 FortML release app emits CPU timings only after all checks pass; the current
-CSV has 104 correctness-gated CPU/CUDA-contract rows, including the polynomial
+CSV has 94 correctness-gated CPU/CUDA-contract rows, including the polynomial
 and ARD-RBF mixed-observation hyperparameter HVPs.
 
 CUDA rows are deliberately recorded as `unavailable`: the derivative-GP
