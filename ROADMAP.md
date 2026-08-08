@@ -449,6 +449,10 @@ a different workload, precision, device, or residency policy.
   FortML release-app orthonormality/timing protocol. The raw record is
   `results/pca.csv`; complete FortML fitted-array export remains explicitly
   open in `results/PCA.md`.
+- [x] Add a deterministic dense k-means lane with an independent seeded Lloyd
+  oracle, final-inertia gate, release fit/transform timings, and an explicit
+  CUDA refusal. The raw record is `results/kmeans.csv`; the protocol is
+  documented in `results/KMEANS.md`.
 - [x] Add a weighted multi-output ridge lane with an independent NumPy
   closed-form oracle, vector/matrix prediction, and packed coefficient/input
   JVP/VJP checks. The raw record is `results/ridge.csv`; a complete-array

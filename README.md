@@ -101,6 +101,17 @@ python -B scripts/bench_gp_mean.py \
 
 See [`results/GP_MEAN.md`](results/GP_MEAN.md).
 
+The dense k-means lane checks deterministic seeded Lloyd fit, final inertia,
+and transform timing against an independent NumPy implementation. CUDA is a
+typed unavailable row until resident clustering state is linked:
+
+```bash
+python -B scripts/bench_kmeans.py --fortml ../fortml \
+  --output results/kmeans.csv
+```
+
+See [`results/KMEANS.md`](results/KMEANS.md).
+
 The ARD-GP lane checks an anisotropic RBF covariance with one length scale per
 feature, input gradients and mixed Hessians, analytic parameter JVP/VJP/HVP
 products, and exact-GP posterior and hyperparameter-gradient products against
