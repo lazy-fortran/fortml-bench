@@ -223,12 +223,12 @@ def release_oracle() -> dict[str, float]:
 
 def make_row(details: dict[str, object], **values: object) -> dict[str, object]:
     row: dict[str, object] = {field: "" for field in FIELDS}
-    row.update(details)
     row.update({
         "workload": "second_derivative_gp_rbf_order3", "device": "cpu",
         "status": "pass", "n_samples": 5, "n_queries": 4,
         "max_observation_order": 3, "kernel": "rbf",
     })
+    row.update(details)
     row.update(values)
     return row
 
