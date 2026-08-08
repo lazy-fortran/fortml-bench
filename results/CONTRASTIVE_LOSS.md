@@ -15,8 +15,8 @@ python -B scripts/bench_contrastive_loss.py \
 ```
 
 The recorded CPU rows use 512 repetitions. The independent NumPy checksum
-errors are below `3e-16` for value/JVP/VJP and exactly zero for the aggregate
-HVP in the checked fixture. CPU seconds are machine-dependent; the CSV retains
+errors are at most `4.5e-16` for value/JVP/VJP and exactly zero for the
+aggregate HVP in the checked fixture. CPU seconds are machine-dependent; the CSV retains
 the measured seconds per operation plus compiler/source revisions. FortML
 reports `FORTNUM_NOT_IMPLEMENTED` for the CUDA request because a resident
 pair-distance/reduction kernel is not linked. This is a capability record, not
