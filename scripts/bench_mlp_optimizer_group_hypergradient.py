@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Correctness-gated optimizer-group trajectory benchmark.
 
-An independent NumPy two-parameter linear-MSE trajectory reproduces the
-post-SGD group scaling, central-differences all packed coordinates, and gates
-the FortML timing on the complete value/gradient/JVP oracle. CUDA rows are
-typed refusals until the full group state is resident.
+An independent NumPy two-parameter linear-MSE trajectory reproduces global
+gradient clipping followed by post-SGD group scaling, central-differences all
+packed coordinates on a fixed clipping active set, and gates the FortML timing
+on the complete value/gradient/JVP oracle. CUDA rows are typed refusals until
+the full group state is resident.
 """
 
 from __future__ import annotations
@@ -27,6 +28,7 @@ N_VALIDATION = 3
 N_PARAMETERS = 4
 LEARNING_RATE = 0.07
 L2 = 0.03
+GRADIENT_CLIP_NORM = 0.1
 GROUPS = np.array([0.65, 1.25], dtype=np.float64)
 FD_STEP = 2.0e-6
 REPETITIONS = 16
@@ -80,6 +82,9 @@ def trajectory(parameters: np.ndarray) -> float:
     theta = np.array([0.21, 0.06], dtype=np.float64)
     for _ in range(STEPS):
         gradient = loss_gradient(theta, train_x, train_target, l2)
+        gradient_norm = float(np.linalg.norm(gradient))
+        if gradient_norm > GRADIENT_CLIP_NORM:
+            gradient = gradient*GRADIENT_CLIP_NORM/gradient_norm
         theta = theta - learning_rate * scales * gradient
     residual = validation_x[:, 0] * theta[0] + theta[1] - validation_target[:, 0]
     return 0.5 * float(np.mean(residual * residual))
@@ -168,18 +173,20 @@ def run_fortml(fortml: Path, target: str, details: dict[str, str], expected: dic
     rows = [base(details, workload="mlp_optimizer_group_hypergradient", phase="value_gradient",
                  variant="fixed_full_batch", backend="fortml", status="pass",
                  seconds_per_operation=timing, metric="validation_mse", value=actual[("value", 1)],
-                 max_abs_error=error, oracle="independent NumPy group trajectory and central-FD products",
-                 notes=f"{target}; four gradients and JVP checked")]
+                 max_abs_error=error, oracle="independent NumPy clipped group trajectory and central-FD products",
+                 notes=f"{target}; fixed_clip={GRADIENT_CLIP_NORM:g}; four gradients and JVP checked")]
     rows.extend(base(details, workload="mlp_optimizer_group_hypergradient", phase="gradient_component",
                      variant="fixed_full_batch", backend="fortml", status="pass", metric=f"gradient_{i}",
                      value=actual[("gradient", i)], max_abs_error=abs(actual[("gradient", i)] - expected["gradient"][i - 1]),
-                     oracle="independent NumPy group trajectory and central-FD products", notes=target)
+                     oracle="independent NumPy clipped group trajectory and central-FD products",
+                     notes=f"{target}; fixed_clip={GRADIENT_CLIP_NORM:g}")
                 for i in range(1, N_PARAMETERS + 1))
     rows.append(base(details, workload="mlp_optimizer_group_hypergradient", phase="jvp",
                      variant="fixed_full_batch", backend="fortml", status="pass",
                      metric="directional_validation_mse_derivative", value=actual[("jvp", 1)],
                      max_abs_error=abs(actual[("jvp", 1)] - expected["tangent"]),
-                     oracle="independent NumPy group trajectory and central-FD products", notes=target))
+                     oracle="independent NumPy clipped group trajectory and central-FD products",
+                     notes=f"{target}; fixed_clip={GRADIENT_CLIP_NORM:g}"))
     rows.append(base(details, workload="mlp_optimizer_group_hypergradient", phase="hvp_refusal",
                      variant="fixed_full_batch", backend="fortml", status="pass",
                      metric="status_code", value=actual[("hvp_status", 1)], max_abs_error=0.0,
@@ -200,17 +207,19 @@ def main() -> None:
     rows = [base(details, workload="mlp_optimizer_group_hypergradient", phase="value_gradient",
                  variant="fixed_full_batch", backend="numpy_oracle", status="pass",
                  seconds_per_operation=expected["seconds"], metric="validation_mse", value=expected["value"],
-                 max_abs_error=0.0, oracle="independent NumPy post-SGD group trajectory with central-FD products",
-                 notes="packed=[log_lr,log_l2,log_multiplier_1,log_multiplier_2]")]
+                 max_abs_error=0.0, oracle="independent NumPy clipped group trajectory with central-FD products",
+                 notes=f"packed=[log_lr,log_l2,log_multiplier_1,log_multiplier_2]; fixed_clip={GRADIENT_CLIP_NORM:g}")]
     rows.extend(base(details, workload="mlp_optimizer_group_hypergradient", phase="gradient_component",
                      variant="fixed_full_batch", backend="numpy_oracle", status="pass", metric=f"gradient_{i}",
                      value=float(value), max_abs_error=0.0,
-                     oracle="independent central finite-difference outer objective", notes="all group coordinates checked")
+                     oracle="independent central finite-difference clipped outer objective",
+                     notes=f"fixed_clip={GRADIENT_CLIP_NORM:g}; all group coordinates checked")
                 for i, value in enumerate(expected["gradient"], start=1))
     rows.append(base(details, workload="mlp_optimizer_group_hypergradient", phase="jvp",
                      variant="fixed_full_batch", backend="numpy_oracle", status="pass",
                      metric="directional_validation_mse_derivative", value=expected["tangent"], max_abs_error=0.0,
-                     oracle="independent central-FD directional product", notes=f"direction={DIRECTION.tolist()}; h={FD_STEP:g}"))
+                     oracle="independent central-FD clipped directional product",
+                     notes=f"fixed_clip={GRADIENT_CLIP_NORM:g}; direction={DIRECTION.tolist()}; h={FD_STEP:g}"))
     rows.append(base(details, workload="mlp_optimizer_group_hypergradient", phase="hvp_refusal",
                      variant="fixed_full_batch", backend="numpy_oracle", status="not_applicable",
                      metric="status_code", value="nan", max_abs_error="nan",
