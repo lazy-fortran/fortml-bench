@@ -368,11 +368,11 @@ a different workload, precision, device, or residency policy.
   and full-ensemble replay checks prefix predictions, preserves the fitted
   objective/routing state, and records the zero-length-prefix refusal in
   `results/xgboost_slice.csv` and `results/XGBOOST_SLICE.md`.
-- [x] Add the generic trainer portable text checkpoint/resume lane. An
-  independent NumPy Adam state continuation oracle is paired with the
+- [x] Add the generic trainer portable text checkpoint/resume lane. Independent
+  NumPy Adam and Lion state continuation oracles are paired with the
   `test_trainer` malformed/truncated/extra-record gate in
   `results/trainer_checkpoint.csv`; host-resident state has an explicit CUDA
-  refusal row.
+  refusal row for both optimizer workloads.
 - [x] Add the deterministic unfactored Adafactor trainer/MLP lane. The
   independent NumPy squared-gradient/update-RMS oracle is paired with
   `test_trainer` and `test_mlp_adafactor` recurrence/checkpoint gates in
