@@ -113,6 +113,18 @@ python -B scripts/bench_gp_mean.py \
 
 See [`results/GP_MEAN.md`](results/GP_MEAN.md).
 
+The Student-t process lane checks the large-degree-of-freedom exact-GP limit
+and the defining data-dependent covariance contrast against an independent
+NumPy Cholesky oracle. It also records the typed refusal at `nu <= 2`, where a
+finite covariance does not exist:
+
+```bash
+FO_SCAN_FALLBACK=regex python -B scripts/bench_student_t_process.py \
+  --fortml ../fortml --output results/student_t_process.csv
+```
+
+See [`results/STUDENT_T_PROCESS.md`](results/STUDENT_T_PROCESS.md).
+
 The dense k-means lane checks deterministic seeded Lloyd fit, final inertia,
 and transform timing against an independent NumPy implementation. CUDA is a
 typed unavailable row until resident clustering state is linked:
