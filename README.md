@@ -1134,6 +1134,18 @@ python3 -B scripts/bench_adaboost_classifier.py \
 
 See [`results/ADABOOST_CLASSIFIER.md`](results/ADABOOST_CLASSIFIER.md).
 
+The bagging lane exercises the seeded bootstrap and without-replacement CART
+ensemble with three integer classes. Its independent NumPy oracle checks the
+cluster labels and probability simplex, while the release app records fit and
+prediction timings and an explicit CUDA refusal:
+
+```bash
+python3 -B scripts/bench_bagging_classifier.py \
+  --fortml ../fortml --output results/bagging_classifier.csv
+```
+
+See [`results/BAGGING_CLASSIFIER.md`](results/BAGGING_CLASSIFIER.md).
+
 The separately named LightGBM-style lane records weighted regression and
 binary-logistic histogram boosting with deterministic globally best-leaf growth
 up to `num_leaves`. The six-sample weighted-Newton fixture is an independent

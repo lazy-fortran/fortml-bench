@@ -562,6 +562,11 @@ a different workload, precision, device, or residency policy.
   reconstructs the learner error, alpha, signed margin, probabilities, and
   labels. The raw record is `results/adaboost_classifier.csv`; the CUDA row is
   an explicit typed refusal.
+- [x] Add the seeded bagging classifier lane. The release app fits a
+  bootstrap CART ensemble, while `scripts/bench_bagging_classifier.py`
+  independently checks the six cluster labels and probability simplex. The
+  raw record is `results/bagging_classifier.csv`; the CUDA row is an explicit
+  typed refusal until a resident ensemble kernel is linked.
 - [ ] Add physics-informed, Hamiltonian, Lagrangian, and symplectic workloads
   with analytic harmonic-oscillator and manufactured-PDE oracles. Record
   trajectory error, energy drift, symplectic Jacobian defect, residual norms,
