@@ -273,6 +273,13 @@ a different workload, precision, device, or residency policy.
   the Park–Miller shuffle cursor and checks value, both gradient components,
   and a directional JVP before retaining FortML timing; CUDA remains an
   explicit refusal until resident batch-cursor derivatives exist.
+- [x] Add a fixed seeded mini-batch coupled-L2 Adam hypergradient workload
+  over log learning rate and log regularization. The independent NumPy lane
+  replays first/second moments and bias correction, checks the complete
+  value/gradient/JVP array before retaining FortML timing, and records typed
+  CUDA refusals. The raw record is
+  `results/mlp_minibatch_adam_hypergradient.csv`; resident Adam trajectory
+  derivatives remain an explicit follow-up contract.
 - [x] Add a fixed full-batch Lion hypergradient workload over log learning
   rate, log regularization, and beta logits. The independent NumPy lane
   central-differences all four packed coordinates and a directional JVP away
