@@ -35,6 +35,23 @@ class Repository:
 
 PAPERS: tuple[Paper, ...] = (
     Paper(
+        key="deep-kernel-learning",
+        arxiv_id="1511.02222",
+        title="Deep Kernel Learning",
+        needed_for=(
+            "The composition itself, and the training story around it. The "
+            "kernel is a base kernel evaluated on a neural feature map, "
+            "k(x, x') = k_base(g(x, w), g(x', w)), with the network weights "
+            "learned jointly with the base kernel's hyperparameters through "
+            "the marginal likelihood rather than pretrained and frozen. What "
+            "we need from the paper and cannot get from the one-line "
+            "definition is which parts are load-bearing: that the base kernel "
+            "keeps its own lengthscale on the feature space, and how the "
+            "network output dimension interacts with it."
+        ),
+        consumed_by=("fortml/src/gp/fortml_deep_kernel_gp.f90",),
+    ),
+    Paper(
         key="student-t-process",
         arxiv_id="1402.4306",
         title="Student-t Processes as Alternatives to Gaussian Processes",
