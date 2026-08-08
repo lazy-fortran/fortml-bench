@@ -380,6 +380,19 @@ See [`results/RADIUS_NEIGHBORS_REGRESSION.md`](results/RADIUS_NEIGHBORS_REGRESSI
 CUDA remains an explicit unavailable capability row until a resident
 radius-search reduction is linked.
 
+The multi-output radius-neighbor regression lane checks shared uniform
+neighborhood membership, vector-valued outliers, all two target columns, and
+the release app's summary against an independent NumPy oracle:
+
+```bash
+.venv/bin/python -B scripts/bench_radius_neighbors_multioutput.py \
+    --fortml ../fortml --output results/radius_neighbors_multioutput.csv
+```
+
+See [`results/RADIUS_NEIGHBORS_MULTIOUTPUT.md`](results/RADIUS_NEIGHBORS_MULTIOUTPUT.md).
+CUDA remains an explicit unavailable capability row until a resident
+radius-search reduction is linked.
+
 The dense RBF one-class SVM lane checks a capped-simplex dual fit, KKT offset,
 signed scores, and `+1`/`-1` anomaly labels against an independent NumPy oracle,
 then records NumPy and checked FortML CPU fit/predict timings.  The CUDA row

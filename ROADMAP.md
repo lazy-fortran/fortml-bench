@@ -201,6 +201,12 @@ a different workload, precision, device, or residency policy.
   CUDA refusal are defined by `scripts/bench_radius_neighbors_regression.py`
   and documented in `results/RADIUS_NEIGHBORS_REGRESSION.md`; the CSV is
   generated only after the FortML release app builds successfully.
+- [x] Add dense multi-output closed-radius nearest-neighbor regression with
+  shared uniform neighborhoods, vector-valued outliers, complete prediction
+  arrays, and an independent NumPy oracle. The raw record is
+  `results/radius_neighbors_multioutput.csv`; CUDA remains a typed unavailable
+  row until a resident radius-search reduction is linked. The protocol is
+  documented in `results/RADIUS_NEIGHBORS_MULTIOUTPUT.md`.
 - [x] Add weighted primal linear SVM classification with arbitrary binary
   integer labels, feature-only L2 regularization, complete signed-margin
   checks, and a typed CUDA refusal. The raw record is

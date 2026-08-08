@@ -39,6 +39,7 @@ Complete-call studies:
 - [One-vs-one logistic classification](OVO_LOGISTIC.md)
 - [Multilabel logistic classification](MULTILABEL_LOGISTIC.md)
 - [Radius-neighbor classification](RADIUS_NEIGHBORS.md)
+- [Radius-neighbor multi-output regression](RADIUS_NEIGHBORS_MULTIOUTPUT.md)
 - [Weighted linear SVM classification](LINEAR_SVM.md)
 - [Dense RBF SVM classification](RBF_SVM.md)
 - [Coupled-L2 Adam trajectory hypergradients](ADAM_HYPERGRADIENT.md)
