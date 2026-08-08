@@ -346,6 +346,12 @@ a different workload, precision, device, or residency policy.
   `test_trainer` and `test_mlp_adafactor` recurrence/checkpoint gates in
   `results/adafactor.csv`; the packed-vector API does not claim matrix-factored
   state, and the CPU-only CUDA boundary remains an explicit unavailable row.
+- [x] Add the deterministic AMSGrad trainer/MLP lane. The independent NumPy
+  bias-corrected max-second-moment oracle is paired with `test_mlp_amsgrad`'s
+  in-memory and formatted checkpoint continuation gates in `results/amsgrad.csv`;
+  CPU rows compare complete parameter norms and MLP losses, while resident
+  AMSGrad CUDA state remains an explicit unavailable row. Fixed-trajectory
+  hypergradients through the max active set remain open.
 - [x] Add the exact fixed full-batch unfactored Adafactor trajectory
   hypergradient lane. The independent NumPy recurrence checks the objective,
   all five packed hyperparameter derivatives, JVP, VJP, bounded L-BFGS-B path,

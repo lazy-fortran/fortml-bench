@@ -1496,6 +1496,24 @@ python -B scripts/bench_adafactor.py \
 
 See [`results/ADAFACTOR.md`](results/ADAFACTOR.md).
 
+## AMSGrad optimizer and MLP training
+
+The AMSGrad lane checks the deterministic bias-corrected first moment and
+elementwise maximum second-moment recurrence used by `mlp_train`. An
+independent NumPy oracle covers a 4,096-parameter, 128-step state trajectory
+and a one-feature linear MLP for 32 epochs before the FortML release timing is
+retained. The CUDA rows are explicit `unavailable`: no resident AMSGrad state
+kernel is linked, and no host fallback is relabeled as device evidence.
+
+```bash
+python -B scripts/bench_amsgrad_training.py \
+  --fortml ../fortml --output results/amsgrad.csv
+```
+
+See [`results/AMSGRAD.md`](results/AMSGRAD.md). The FortML behavioral fixture
+also checks in-memory and formatted checkpoint continuation, including the
+maximum-second-moment state.
+
 ## Validity boundary
 
 The first comparison is a kernel-product comparison. It does not claim that a
