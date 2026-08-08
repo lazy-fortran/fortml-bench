@@ -1335,6 +1335,18 @@ python -B scripts/bench_mlp_adagrad_schedule_hypergradient.py \
 
 See [`results/MLP_ADAGRAD_SCHEDULE_HYPERGRADIENT.md`](results/MLP_ADAGRAD_SCHEDULE_HYPERGRADIENT.md).
 
+Scheduled RAdam trajectory hypergradients are checked with independent
+cosine/exponential schedule derivatives, JVP/VJP/FortOpt products, and typed
+outer-HVP/CUDA refusals:
+
+```bash
+python -B scripts/bench_mlp_radam_schedule_hypergradient.py \
+  --fortml ../fortml \
+  --output results/mlp_radam_schedule_hypergradient.csv
+```
+
+See [`results/MLP_RADAM_SCHEDULE_HYPERGRADIENT.md`](results/MLP_RADAM_SCHEDULE_HYPERGRADIENT.md).
+
 The shared objective-trainer and XGBoost additive-contribution correctness
 lane runs independent Fortran behavioral gates and an independent NumPy
 quadratic update oracle. Its wall times are correctness-gate timings, not
