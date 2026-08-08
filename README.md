@@ -1226,8 +1226,10 @@ See [`results/COLUMN_PIPELINE_DEVICE.md`](results/COLUMN_PIPELINE_DEVICE.md).
 
 The separately named LightGBM-style lane records weighted regression and
 binary-logistic histogram boosting with deterministic globally best-leaf growth
-up to `num_leaves`. The six-sample weighted-Newton fixture is an independent
-oracle; CPU timing and the typed CUDA refusal are kept in a dedicated CSV:
+up to `num_leaves`. The release app also gates cumulative staged predictions,
+additive base-plus-tree contributions, and transactional fitted-prefix slicing.
+The six-sample weighted-Newton fixture is an independent oracle; CPU timing
+and the typed CUDA refusal are kept in a dedicated CSV:
 
 ```bash
 .venv/bin/python -B scripts/bench_lightgbm.py \

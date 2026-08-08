@@ -92,7 +92,8 @@ def main() -> None:
         fields = [field.strip() for field in line.split(",")]
         if fields:
             parsed[fields[0]] = fields[1:]
-    for key in ("lightgbm_fit", "lightgbm_predict", "lightgbm_binary",
+    for key in ("lightgbm_fit", "lightgbm_predict", "lightgbm_staged",
+                "lightgbm_contributions", "lightgbm_slice", "lightgbm_binary",
                 "lightgbm_oracle", "lightgbm_cuda"):
         if key not in parsed:
             raise RuntimeError(f"missing release row {key}")
@@ -116,6 +117,31 @@ def main() -> None:
         n_estimators=int(float(predict[2])), seconds_per_operation=float(predict[3]),
         metric="weighted_regression_mse", value=float(predict[4]),
         max_abs_error=0.0)
+    staged = parsed["lightgbm_staged"]
+    staged_error = float(staged[4])
+    if staged_error > 1.0e-12:
+        raise RuntimeError(f"staged prediction mismatch: {staged_error}")
+    add(phase="staged", n_samples=int(staged[0]), n_features=int(staged[1]),
+        n_estimators=int(float(staged[2])), seconds_per_operation=float(staged[3]),
+        metric="final_stage_max_abs_error", value=staged_error,
+        max_abs_error=staged_error, notes="cumulative linked predictions")
+    contributions = parsed["lightgbm_contributions"]
+    contribution_error = float(contributions[4])
+    if contribution_error > 1.0e-12:
+        raise RuntimeError(f"contribution mismatch: {contribution_error}")
+    add(phase="contributions", n_samples=int(contributions[0]),
+        n_features=int(contributions[1]), n_estimators=int(float(contributions[2])),
+        seconds_per_operation=float(contributions[3]),
+        metric="margin_reconstruction_max_abs_error", value=contribution_error,
+        max_abs_error=contribution_error, notes="base margin plus tree terms")
+    sliced = parsed["lightgbm_slice"]
+    slice_error = float(sliced[4])
+    if slice_error > 1.0e-12:
+        raise RuntimeError(f"prefix slice mismatch: {slice_error}")
+    add(phase="slice", n_samples=int(sliced[0]), n_features=int(sliced[1]),
+        n_estimators=int(float(sliced[2])), seconds_per_operation=float(sliced[3]),
+        metric="prefix_prediction_max_abs_error", value=slice_error,
+        max_abs_error=slice_error, notes="transactional four-tree prefix")
     binary = parsed["lightgbm_binary"]
     add(phase="binary", n_samples=int(binary[0]), n_features=int(binary[1]),
         n_estimators=int(float(binary[2])), seconds_per_operation=0.0,

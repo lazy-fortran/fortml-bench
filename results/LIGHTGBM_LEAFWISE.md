@@ -21,13 +21,18 @@ fixture. The Python harness checks this before recording timings.
 | --- | --- | ---: | ---: |
 | contract oracle | NumPy/CPU | 0 | maximum error 0 |
 | oracle | FortML/CPU | 0 | maximum error 0 |
-| fit | FortML/CPU | 8.400000e-4 | weighted fit wall time |
-| predict | FortML/CPU | 1.400000e-5 | weighted MSE 5.126846e-2 |
+| fit | FortML/CPU | 8.410000e-4 | weighted fit wall time |
+| predict | FortML/CPU | 1.300000e-5 | weighted MSE 5.126846e-2 |
+| staged | FortML/CPU | 1.600000e-5 | final stage max error 0 |
+| contributions | FortML/CPU | 1.900000e-5 | margin reconstruction max error 0 |
+| slice | FortML/CPU | 1.000000e-5 | four-tree prefix max error 0 |
 | binary | FortML/CPU | not timed | accuracy 0.994792 |
 | predict | FortML/CUDA | unavailable | typed `FORTNUM_NOT_IMPLEMENTED` |
 
+The staged, contribution, and slice rows are correctness-gated against the
+independent tree-walk oracle in `fortml/test/test_lightgbm_staged_slice.f90`.
 The CPU rows are release timings only and are not GPU evidence. NaN,
-categorical, GOSS, EFB, distributed, and resident-CUDA policies remain
+categorical, GOSS, EFB, distributed, persistence, and resident-CUDA policies remain
 explicit follow-up boundaries. The CSV records FortML and benchmark source
 revisions, compiler, flags, Python, and NumPy versions.
 
