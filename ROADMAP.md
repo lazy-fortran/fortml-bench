@@ -444,6 +444,11 @@ a different workload, precision, device, or residency policy.
   lane. The independent softmax value/JVP/HVP oracle and FortOpt contract are
   recorded in `results/mlp_classifier_objective.csv`; no resident CUDA graph
   is implied.
+- [x] Add fixed-input packed-parameter probability JVP/VJP products for the
+  multiclass MLP classifier. The independent tanh/softmax replay checks all 21
+  packed coordinates, central differences, and tangent/cotangent duality; the
+  raw record is `results/mlp_classifier_parameter_products.csv` with a typed
+  resident-CUDA refusal.
 - [x] Add the composable physics-residual objective lane. Four weighted
   affine residual slots and a nonlinear reverse-over-forward HVP are checked
   with independent value/gradient/JVP/VJP products; providers without an HVP

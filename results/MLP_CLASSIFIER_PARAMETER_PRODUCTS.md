@@ -21,3 +21,6 @@ NumPy versions, timing, and raw oracle errors.
 
 Current release rows are in
 [`mlp_classifier_parameter_products.csv`](mlp_classifier_parameter_products.csv).
+Those rows pin FortML revision
+`e5a8a7c8d0eeca6dc1b2e22f1809a80417319f26` and benchmark revision
+`5a15e9ac72dd9f7f542e1b723a669a28df1d559e`.

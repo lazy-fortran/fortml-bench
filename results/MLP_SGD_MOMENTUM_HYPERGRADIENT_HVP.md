@@ -17,3 +17,9 @@ The FortML path is deliberately bounded: one dense layer with linear output
 has a constant network Hessian, while nonlinear or multilayer models return a
 typed `FORTNUM_NOT_IMPLEMENTED` status until third network derivatives are
 available. No host fallback is reported as GPU execution.
+
+The checked-in rows pin FortML revision
+`e5a8a7c8d0eeca6dc1b2e22f1809a80417319f26` and benchmark revision
+`020b2051322ee676a398735ab3869173d9e5b807`. The affine CPU HVP errors are
+`1.24e-8`, `1.79e-8`, and `2.85e-8` for the three packed components; the CUDA
+rows are typed unavailable records.
