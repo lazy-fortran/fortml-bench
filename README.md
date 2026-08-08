@@ -429,6 +429,18 @@ python3 -B scripts/bench_mlp_classifier_objective.py \
 
 See [`results/MLP_CLASSIFIER_OBJECTIVE.md`](results/MLP_CLASSIFIER_OBJECTIVE.md).
 
+The fixed-input multiclass MLP probability-product lane checks the packed
+network parameter JVP and VJP against an independent NumPy tanh-network replay
+and central finite differences. It also records a CPU timing and an explicit
+CUDA refusal; no host timing is relabeled as resident GPU execution:
+
+```bash
+python3 -B scripts/bench_mlp_classifier_parameter_products.py \
+  --fortml ../fortml --output results/mlp_classifier_parameter_products.csv
+```
+
+See [`results/MLP_CLASSIFIER_PARAMETER_PRODUCTS.md`](results/MLP_CLASSIFIER_PARAMETER_PRODUCTS.md).
+
 The multilabel MLP lane checks two independent sigmoid heads, concatenated
 parameters, multilabel probabilities and indicators, BCE gradients, parameter
 HVPs, and probability JVPs against an independent NumPy oracle. CUDA remains
