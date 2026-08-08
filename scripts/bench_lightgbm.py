@@ -135,6 +135,7 @@ def main() -> None:
         n_estimators=int(float(warm[2])), seconds_per_operation=float(warm[3]),
         metric="full_staged_max_abs_error", value=warm_error,
         max_abs_error=warm_error,
+        oracle="independent fresh-fit staged prediction oracle",
         notes="four-tree prefix continuation against independent eight-tree fit")
     if parsed["lightgbm_warm_start_invalid"] != ["1"]:
         raise RuntimeError(f"unexpected warm-start refusal {parsed['lightgbm_warm_start_invalid']!r}")

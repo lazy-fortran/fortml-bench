@@ -33,9 +33,10 @@ fixture. The Python harness checks this before recording timings.
 | binary | FortML/CPU | not timed | accuracy 0.994792 |
 | predict | FortML/CUDA | unavailable | typed `FORTNUM_NOT_IMPLEMENTED` |
 
-The staged, warm-start, contribution, slice, and persistence rows are
-correctness-gated against independent tree-walk oracles in
-`fortml/test/test_lightgbm_staged_slice.f90` and
+The staged, contribution, slice, and persistence rows are correctness-gated
+against independent tree-walk oracles in
+`fortml/test/test_lightgbm_staged_slice.f90`; the warm-start row compares its
+complete staged output with an independently fresh-fitted eight-tree model in
 `fortml/test/test_lightgbm_warm_start.f90`.
 The CPU rows are release timings only and are not GPU evidence. NaN,
 categorical, GOSS, EFB, distributed, persistence, and resident-CUDA policies remain
