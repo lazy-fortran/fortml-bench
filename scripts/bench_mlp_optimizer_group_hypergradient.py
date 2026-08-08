@@ -114,7 +114,8 @@ def base(details: dict[str, str], **values: Any) -> dict[str, Any]:
 def unavailable(details: dict[str, str], device: str, status: str, notes: str) -> list[dict[str, Any]]:
     phases = [("value_gradient", "validation_mse"), ("gradient_component", "gradient_1"),
               ("gradient_component", "gradient_2"), ("gradient_component", "gradient_3"),
-              ("gradient_component", "gradient_4"), ("jvp", "directional_validation_mse_derivative")]
+              ("gradient_component", "gradient_4"), ("jvp", "directional_validation_mse_derivative"),
+              ("hvp_refusal", "status_code")]
     return [base(details, workload="mlp_optimizer_group_hypergradient", phase=phase,
                  variant="fixed_full_batch", backend="fortml", device=device, status=status,
                  metric=metric, oracle="FortML release-app protocol", notes=notes)
@@ -146,14 +147,16 @@ def run_fortml(fortml: Path, target: str, details: dict[str, str], expected: dic
         if check.returncode != 0 or not oracle_path.is_file():
             return unavailable(details, "cpu", "unavailable", "release target emitted no oracle")
         actual = read_oracle(oracle_path)
-        required = {("value", 1), ("jvp", 1)} | {("gradient", i) for i in range(1, N_PARAMETERS + 1)}
+        required = {("value", 1), ("jvp", 1), ("hvp_status", 1)} | {("gradient", i) for i in range(1, N_PARAMETERS + 1)}
         if set(actual) != required:
-            raise RuntimeError("FortML optimizer-group app omitted complete value/gradient/JVP array")
+            raise RuntimeError("FortML optimizer-group app omitted complete value/gradient/JVP/HVP contract")
         errors = [abs(actual[("value", 1)] - expected["value"]), abs(actual[("jvp", 1)] - expected["tangent"])]
         errors.extend(abs(actual[("gradient", i)] - expected["gradient"][i - 1]) for i in range(1, N_PARAMETERS + 1))
         error = float(max(errors))
         if error > ORACLE_TOLERANCE:
             raise RuntimeError(f"FortML optimizer-group oracle mismatch: {error:.3e}")
+        if actual[("hvp_status", 1)] != 3.0:
+            raise RuntimeError("FortML optimizer-group HVP did not return FORTNUM_NOT_IMPLEMENTED")
         timed = subprocess.run(["fo", "exec", "--no-build", target], cwd=fortml,
                                env=environment, capture_output=True, text=True)
     if timed.returncode != 0:
@@ -177,6 +180,11 @@ def run_fortml(fortml: Path, target: str, details: dict[str, str], expected: dic
                      metric="directional_validation_mse_derivative", value=actual[("jvp", 1)],
                      max_abs_error=abs(actual[("jvp", 1)] - expected["tangent"]),
                      oracle="independent NumPy group trajectory and central-FD products", notes=target))
+    rows.append(base(details, workload="mlp_optimizer_group_hypergradient", phase="hvp_refusal",
+                     variant="fixed_full_batch", backend="fortml", status="pass",
+                     metric="status_code", value=actual[("hvp_status", 1)], max_abs_error=0.0,
+                     oracle="public typed third-derivative boundary",
+                     notes="HVP returns FORTNUM_NOT_IMPLEMENTED with zero product"))
     return rows
 
 
@@ -203,6 +211,11 @@ def main() -> None:
                      variant="fixed_full_batch", backend="numpy_oracle", status="pass",
                      metric="directional_validation_mse_derivative", value=expected["tangent"], max_abs_error=0.0,
                      oracle="independent central-FD directional product", notes=f"direction={DIRECTION.tolist()}; h={FD_STEP:g}"))
+    rows.append(base(details, workload="mlp_optimizer_group_hypergradient", phase="hvp_refusal",
+                     variant="fixed_full_batch", backend="numpy_oracle", status="not_applicable",
+                     metric="status_code", value="nan", max_abs_error="nan",
+                     oracle="public typed third-derivative boundary",
+                     notes="NumPy oracle does not emulate unsupported third network derivatives"))
     rows.extend(unavailable(details, "cpu", "skipped", "--skip-fortml") if args.skip_fortml
                 else run_fortml(fortml, args.target, details, expected))
     rows.extend(unavailable(details, "cuda", "unavailable", "complete group state derivatives are CPU-only until resident kernels exist"))
