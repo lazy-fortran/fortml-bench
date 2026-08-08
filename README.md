@@ -1533,6 +1533,19 @@ python3 -B scripts/bench_xgboost_interaction.py \
 
 See [`results/XGBOOST_INTERACTION.md`](results/XGBOOST_INTERACTION.md).
 
+The XGBoost DART lane checks seeded prior-tree dropout and `1/(k+1)` tree
+normalisation against an independent NumPy depth-one Newton replay. The
+release app also checks staged/contribution products, schema-v5 persistence,
+warm-start parity, invalid dropout controls, and the typed resident-CUDA
+refusal:
+
+```bash
+python3 -B scripts/bench_xgboost_dart.py \
+  --fortml ../fortml --output results/xgboost_dart.csv
+```
+
+See [`results/XGBOOST_DART.md`](results/XGBOOST_DART.md).
+
 The binary AdaBoost lane uses weighted depth-one CART learners. Its independent
 NumPy oracle reconstructs the one-stump error, learner weight, signed margin,
 probabilities, and labels. The CPU rows are retained only after the complete

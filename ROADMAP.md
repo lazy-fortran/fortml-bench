@@ -685,6 +685,14 @@ a different workload, precision, device, or residency policy.
   deterministic scales, schema-3 persistence, warm-start parity, malformed-rate
   refusal, and typed CUDA refusal; fit-time dropout derivatives remain an
   explicit discrete-fit boundary.
+- [x] Add bounded seeded XGBoost DART/dropout boosting. `booster="dart"`
+  selects prior trees through a compiler-independent hash stream and persists
+  per-tree `1/(k+1)` normalisation in schema-5 snapshots. The release app and
+  `scripts/bench_xgboost_dart.py` independently replay a depth-one NumPy
+  Newton oracle and gate staged margins, additive contributions, deterministic
+  replay, warm-start suffixes, malformed-control refusals, and the typed CUDA
+  boundary in `results/xgboost_dart.csv`; fit-time dropout remains a discrete
+  split boundary.
 - [ ] Add a matched full XGBoost lane when the optional dependency and a pinned
   release are available. The current exact depth-limited and weighted CPU
   histogram FortML lanes are recorded in `results/xgboost_workloads.csv`; both
