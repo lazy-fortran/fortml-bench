@@ -96,7 +96,8 @@ def parse_oracle(path: Path) -> tuple[
                 row = int(record["row"]) - 1
                 column = int(record["column"]) - 1
                 probabilities[row, column] = float(record["value"])
-            elif quantity in {"oof_log_loss", "calibrated_oof_log_loss"}:
+            elif quantity in {"oof_log_loss", "calibrated_oof_log_loss",
+                              "transactional_preserved"}:
                 diagnostics[quantity] = float(record["value"])
     return np.asarray(parameters), labels, predictions, probabilities, diagnostics
 
@@ -202,6 +203,8 @@ def main() -> None:
             if not all(np.isfinite(diagnostics.get(name, np.nan)) for name in (
                     "oof_log_loss", "calibrated_oof_log_loss")):
                 raise RuntimeError(f"{method}: OOF diagnostics are missing or nonfinite")
+            if diagnostics.get("transactional_preserved", 0.0) != 1.0:
+                raise RuntimeError(f"{method}: malformed refit was not transactional")
             fit_seconds = next(float(line.rsplit(",", 1)[1])
                                for line in run.stdout.splitlines()
                                if line.startswith(f"calibrated_softmax_cv_fit,{method},"))
@@ -236,6 +239,10 @@ def main() -> None:
                 row(details, phase="diagnostics", device="cpu", status="pass", **common,
                     metric="calibrated_oof_log_loss", value=diagnostics["calibrated_oof_log_loss"],
                     max_abs_error=0.0, oracle=oracle_name, notes="calibrated out-of-fold log loss"),
+                row(details, phase="fit_contract", device="cpu", status="pass", **common,
+                    metric="transactional_refit_preserved", value=1.0, max_abs_error=0.0,
+                    oracle="malformed refit preserves deployed probabilities and labels",
+                    notes="candidate commit occurs only after complete OOF/deployment fit"),
                 row(details, phase="device_contract", device="cuda", status="unavailable", **common,
                     metric="predict_proba", value="unavailable", max_abs_error=0.0,
                     oracle="typed device contract",

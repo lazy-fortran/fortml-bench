@@ -20,7 +20,9 @@ input/packed-parameter JVP/VJP products are smooth and exact. Isotonic
 prediction is complete, while active-set JVP/VJP products return
 `FORTNUM_NOT_IMPLEMENTED` explicitly. The CPU runs take approximately
 `5.7e-4 s` to fit and `2.5e-6`--`9.2e-6 s` per prediction batch on this small
-fixture.
+fixture. Each policy also probes a malformed two-row refit after deployment;
+the candidate-commit contract preserves the prior probabilities and labels,
+and the CSV records this as `transactional_refit_preserved=1`.
 
 The source revision is `85cadc3`; the benchmark generator revision is
 `500b9a5`. CUDA is recorded as `unavailable` with a typed
