@@ -303,6 +303,18 @@ CPU fit/predict timings and explicit CUDA capability and plan-creation
 refusals until a resident tree-ensemble kernel is available. The plan ABI
 version and fitted shape are checked without allocating or copying host trees.
 
+The random-forest OOB lane checks stored bootstrap-inclusion state,
+transactional OOB decision probabilities, OOB accuracy, complete coverage,
+and explicit insufficient-coverage behavior. Its independent NumPy threshold
+oracle rejects in-bag fallback and records the typed CUDA boundary:
+
+```bash
+python -B scripts/bench_random_forest_oob.py \
+  --fortml ../fortml --output results/random_forest_oob.csv
+```
+
+See [`results/RANDOM_FOREST_OOB.md`](results/RANDOM_FOREST_OOB.md).
+
 The Extra-Trees lane exercises the seeded randomized-threshold classifier on
 the same separated fixture. A direct NumPy class-rule oracle checks all query
 labels and probability normalization; the CUDA row is a typed refusal until a

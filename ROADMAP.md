@@ -664,6 +664,12 @@ a different workload, precision, device, or residency policy.
   independently checks the six cluster labels and probability simplex. The
   raw record is `results/bagging_classifier.csv`; the CUDA row is an explicit
   typed refusal until a resident ensemble kernel is linked.
+- [x] Add the random-forest OOB lane. The release app retains one bootstrap
+  inclusion column per tree and checks transactional OOB decision probabilities,
+  OOB accuracy, complete coverage, and the typed CUDA refusal. The Python gate
+  independently reconstructs the threshold-label fixture and rejects any
+  hidden in-bag fallback. Raw evidence is `results/random_forest_oob.csv` and
+  the protocol is documented in `results/RANDOM_FOREST_OOB.md`.
 - [ ] Add physics-informed, Hamiltonian, Lagrangian, and symplectic workloads
   with analytic harmonic-oscillator and manufactured-PDE oracles. Record
   trajectory error, energy drift, symplectic Jacobian defect, residual norms,
