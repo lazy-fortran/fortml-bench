@@ -22,8 +22,8 @@ prediction is complete, while active-set JVP/VJP products return
 `5.7e-4 s` to fit and `2.5e-6`--`9.2e-6 s` per prediction batch on this small
 fixture.
 
-The source revision is `7e362e2`; the benchmark generator revision is
-`1519424`. CUDA is recorded as `unavailable` with a typed
+The source revision is `85cadc3`; the benchmark generator revision is
+`500b9a5`. CUDA is recorded as `unavailable` with a typed
 `FORTNUM_NOT_IMPLEMENTED` boundary. The complete softmax-plus-calibration
 graph is not resident on an accelerator and no hidden host fallback is used.
 
