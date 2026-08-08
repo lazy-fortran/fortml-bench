@@ -960,6 +960,18 @@ See [`results/CUDA_ADAMW.md`](results/CUDA_ADAMW.md). This is a resident
 no-autodiff optimizer-state contract, not full MLP gradient or hypergradient
 GPU evidence.
 
+The matching resident CUDA Adagrad state lane independently checks the
+canonical accumulated-square recurrence and device-resident gradient ABI:
+
+```bash
+.venv/bin/python -B scripts/bench_cuda_adagrad.py \
+  --fortml ../fortml --output results/cuda_adagrad.csv
+```
+
+See [`results/CUDA_ADAGRAD.md`](results/CUDA_ADAGRAD.md). Compilation or
+device absence is an explicit `unavailable` row; the gate has no kernel timing
+claim and does not imply resident MLP gradient or hypergradient training.
+
 The dense k-nearest-neighbor lane checks sorted arbitrary integer classes,
 stable original-row distance ties, uniform and inverse-distance weighting,
 complete probability checksums, and predicted labels with an independent

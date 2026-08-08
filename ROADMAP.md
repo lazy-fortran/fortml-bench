@@ -292,6 +292,11 @@ a different workload, precision, device, or residency policy.
   NumPy seven-step moment/bias-correction/decoupled-decay oracle. The raw
   record is `results/cuda_adamw.csv`; compile-inclusive gate wall time is not
   presented as resident kernel performance.
+- [x] Add a resident CUDA Adagrad state correctness gate with an independent
+  NumPy eight-step accumulated-square recurrence oracle. The raw record is
+  `results/cuda_adagrad.csv`; compile-inclusive gate wall time is not presented
+  as resident kernel performance, and a missing CUDA toolchain/device remains
+  an explicit `unavailable` row.
 - [x] Add the joint basis-pipeline training correctness lane. The raw record is
   `results/basis_pipeline_training.csv`, with independent value/JVP/HVP and
   CUDA-refusal checks documented in `results/BASIS_PIPELINE_TRAINING.md`.
