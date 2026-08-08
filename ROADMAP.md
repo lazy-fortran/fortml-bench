@@ -584,6 +584,12 @@ a different workload, precision, device, or residency policy.
   reconstructs the learner error, alpha, signed margin, probabilities, and
   labels. The raw record is `results/adaboost_classifier.csv`; the CUDA row is
   an explicit typed refusal.
+- [x] Add the multiclass SAMME lane. The release app fits a deterministic
+  weighted-CART stump over sorted arbitrary integer labels, and
+  `scripts/bench_adaboost_samme.py` independently reconstructs the
+  random-guessing-bound error, `log((1-error)/error)+log(K-1)` stage weight,
+  weighted-vote margins, stabilized softmax, and labels. The raw record is
+  `results/adaboost_samme.csv`; the CUDA row is an explicit typed refusal.
 - [x] Add the seeded bagging classifier lane. The release app fits a
   bootstrap CART ensemble, while `scripts/bench_bagging_classifier.py`
   independently checks the six cluster labels and probability simplex. The
