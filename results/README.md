@@ -9,6 +9,7 @@ Complete-call studies:
 - [Exact GP and MLP workloads](MODEL_WORKLOADS.md)
 - [MLP training, basis pipeline, and tree workloads](FEATURES.md)
 - [Total-degree polynomial interaction basis](POLYNOMIAL_INTERACTIONS.md)
+- [Random Fourier feature basis](RANDOM_FOURIER.md)
 - [SGD/Nesterov training and differentiable imputation](TRAINING_IMPUTER.md)
 - [AdamW training and MLP hypergradients](ADAMW_HYPERGRADIENT.md)
 - [AdamW beta-logit hypergradients](ADAMW_BETA_HYPERGRADIENT.md)
