@@ -1228,7 +1228,10 @@ The separately named LightGBM-style lane records weighted regression and
 binary-logistic histogram boosting with deterministic globally best-leaf growth
 up to `num_leaves`. The release app also gates cumulative staged predictions,
 additive base-plus-tree contributions, transactional fitted-prefix slicing, and
-versioned text save/load with trailing-record refusal.
+versioned text save/load with trailing-record refusal. The release app also
+continues a weighted four-tree prefix to eight trees and checks all staged
+outputs against an independently fitted eight-tree model, including a typed
+non-growing-target refusal.
 The six-sample weighted-Newton fixture is an independent oracle; CPU timing
 and the typed CUDA refusal are kept in a dedicated CSV:
 

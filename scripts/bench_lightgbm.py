@@ -93,6 +93,7 @@ def main() -> None:
         if fields:
             parsed[fields[0]] = fields[1:]
     for key in ("lightgbm_fit", "lightgbm_predict", "lightgbm_staged",
+                "lightgbm_warm_start", "lightgbm_warm_start_invalid",
                 "lightgbm_contributions", "lightgbm_slice", "lightgbm_persistence",
                 "lightgbm_persistence_invalid", "lightgbm_binary", "lightgbm_oracle",
                 "lightgbm_cuda"):
@@ -126,6 +127,21 @@ def main() -> None:
         n_estimators=int(float(staged[2])), seconds_per_operation=float(staged[3]),
         metric="final_stage_max_abs_error", value=staged_error,
         max_abs_error=staged_error, notes="cumulative linked predictions")
+    warm = parsed["lightgbm_warm_start"]
+    warm_error = float(warm[4])
+    if warm_error > 1.0e-12:
+        raise RuntimeError(f"warm-start staged mismatch: {warm_error}")
+    add(phase="warm_start", n_samples=int(warm[0]), n_features=int(warm[1]),
+        n_estimators=int(float(warm[2])), seconds_per_operation=float(warm[3]),
+        metric="full_staged_max_abs_error", value=warm_error,
+        max_abs_error=warm_error,
+        notes="four-tree prefix continuation against independent eight-tree fit")
+    if parsed["lightgbm_warm_start_invalid"] != ["1"]:
+        raise RuntimeError(f"unexpected warm-start refusal {parsed['lightgbm_warm_start_invalid']!r}")
+    add(phase="warm_start_refusal", n_samples=int(warm[0]), n_features=int(warm[1]),
+        n_estimators=int(float(warm[2])), seconds_per_operation=0.0,
+        metric="status_code", value=1.0, max_abs_error=0.0,
+        notes="non-growing target FORTNUM_DOMAIN_ERROR")
     contributions = parsed["lightgbm_contributions"]
     contribution_error = float(contributions[4])
     if contribution_error > 1.0e-12:

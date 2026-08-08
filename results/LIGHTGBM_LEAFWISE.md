@@ -21,18 +21,22 @@ fixture. The Python harness checks this before recording timings.
 | --- | --- | ---: | ---: |
 | contract oracle | NumPy/CPU | 0 | maximum error 0 |
 | oracle | FortML/CPU | 0 | maximum error 0 |
-| fit | FortML/CPU | 8.190000e-4 | weighted fit wall time |
-| predict | FortML/CPU | 1.300000e-5 | weighted MSE 5.126846e-2 |
-| staged | FortML/CPU | 1.500000e-5 | final stage max error 0 |
-| contributions | FortML/CPU | 1.300000e-5 | margin reconstruction max error 0 |
-| slice | FortML/CPU | 9.000000e-6 | four-tree prefix max error 0 |
-| persistence | FortML/CPU | 6.730000e-4 | text round-trip max error 0 |
+| fit | FortML/CPU | 1.013000e-3 | weighted fit wall time |
+| predict | FortML/CPU | 1.600000e-5 | weighted MSE 5.126846e-2 |
+| staged | FortML/CPU | 1.800000e-5 | final stage max error 0 |
+| warm start | FortML/CPU | 5.170000e-4 | four-to-eight-tree staged max error 0 |
+| warm start refusal | FortML/CPU | not timed | non-growing target status 1 |
+| contributions | FortML/CPU | 1.700000e-5 | margin reconstruction max error 0 |
+| slice | FortML/CPU | 6.000000e-6 | four-tree prefix max error 0 |
+| persistence | FortML/CPU | 8.440000e-4 | text round-trip max error 0 |
 | persistence refusal | FortML/CPU | not timed | trailing record status 3 |
 | binary | FortML/CPU | not timed | accuracy 0.994792 |
 | predict | FortML/CUDA | unavailable | typed `FORTNUM_NOT_IMPLEMENTED` |
 
-The staged, contribution, slice, and persistence rows are correctness-gated against the
-independent tree-walk oracle in `fortml/test/test_lightgbm_staged_slice.f90`.
+The staged, warm-start, contribution, slice, and persistence rows are
+correctness-gated against independent tree-walk oracles in
+`fortml/test/test_lightgbm_staged_slice.f90` and
+`fortml/test/test_lightgbm_warm_start.f90`.
 The CPU rows are release timings only and are not GPU evidence. NaN,
 categorical, GOSS, EFB, distributed, persistence, and resident-CUDA policies remain
 explicit follow-up boundaries. The CSV records FortML and benchmark source
