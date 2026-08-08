@@ -8,7 +8,7 @@ with NumPy.  Every bin is compared before the timing row is retained; empty
 bins must return zero means and zero mass.
 
 The recorded CPU run used gfortran `-O3` and reports a FortML curve time of
-`9.75e-06` seconds per 512-row operation with maximum absolute oracle error
+`1.87e-05` seconds per 512-row operation with maximum absolute oracle error
 `0.0`.  The NumPy oracle row is retained for provenance, and the CUDA row is
 an explicit `unavailable` capability record because no resident metric kernel
 is linked.
