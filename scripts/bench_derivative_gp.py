@@ -71,6 +71,9 @@ def fixture() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarra
 def scalar_kernel(a: np.ndarray, b: np.ndarray, name: str) -> float:
     if name == "polynomial":
         return 1.3 * (1.5 + 0.4 * float(np.dot(a, b))) ** 2.2
+    if name == "ard_rbf":
+        difference = a - b
+        return float(1.3 * np.exp(-0.5 * np.sum(difference**2 / np.asarray((0.75, 1.25))**2)))
     squared = float(np.sum((a - b) ** 2))
     if name == "periodic":
         return 1.3 * np.exp(-2.0 * np.sin(np.pi * np.sqrt(squared) / 2.1) ** 2 / 0.8**2)
@@ -178,6 +181,23 @@ def covariance(a: np.ndarray, ca: int, b: np.ndarray, cb: int, name: str,
     """Independent analytic value/gradient/mixed-Hessian covariance blocks."""
     if name == "spectral_mixture":
         return spectral_covariance(a, ca, b, cb, None if theta is None else theta[:10])
+    if name == "ard_rbf":
+        if theta is None:
+            variance, lengths = 1.3, np.asarray((0.75, 1.25), dtype=np.float64)
+        else:
+            variance, lengths = np.exp(theta[0]), np.exp(theta[1:3])
+        difference = a - b
+        inverse = 1.0 / lengths**2
+        value = variance * np.exp(-0.5 * np.sum(difference**2 * inverse))
+        if ca == 0 and cb == 0:
+            return float(value)
+        if ca > 0 and cb == 0:
+            return float(-value * difference[ca - 1] * inverse[ca - 1])
+        if ca == 0 and cb > 0:
+            return float(value * difference[cb - 1] * inverse[cb - 1])
+        return float(value * (inverse[ca - 1] * (ca == cb) -
+                             difference[ca - 1] * difference[cb - 1] *
+                             inverse[ca - 1] * inverse[cb - 1]))
     if name == "polynomial":
         if theta is None:
             variance, scale, offset, degree = 1.3, 0.4, 1.5, 2.2
@@ -278,14 +298,18 @@ def likelihood_gradient(x: np.ndarray, components: np.ndarray, y: np.ndarray,
     return gradient
 
 
-def polynomial_hvp_oracle() -> float:
-    """Return the independent polynomial mixed-HVP reduction."""
+def derivative_hvp_oracle(name: str) -> float:
+    """Return an independent mixed-HVP reduction for a smooth kernel."""
     x, y, components, *_ = fixture()
-    theta = np.log(np.array([1.3, 0.4, 1.5, 2.2, NOISE], dtype=np.float64))
+    values = {
+        "polynomial": [1.3, 0.4, 1.5, 2.2],
+        "ard_rbf": [1.3, 0.75, 1.25],
+    }
+    theta = np.log(np.array(values[name] + [NOISE], dtype=np.float64))
     direction = 0.08 - 0.017 * np.arange(1, len(theta) + 1)
     step = 2.0e-4
-    product = (likelihood_gradient(x, components, y, "polynomial", theta + step * direction) -
-               likelihood_gradient(x, components, y, "polynomial", theta - step * direction)) / (2.0 * step)
+    product = (likelihood_gradient(x, components, y, name, theta + step * direction) -
+               likelihood_gradient(x, components, y, name, theta - step * direction)) / (2.0 * step)
     return float(np.sum(product))
 
 
@@ -307,6 +331,7 @@ def oracle(name: str) -> tuple[float, float, float, float, float]:
     covariance = joint_covariance(x, components, y, query, query_components, name)
     kernel_parameter_count = {"periodic": 3, "rational_quadratic": 3,
                               "cosine": 2, "polynomial": 4,
+                              "ard_rbf": 3,
                               "spectral_mixture": 10}[name]
     if name == "spectral_mixture":
         kernel_theta = np.array([
@@ -318,7 +343,8 @@ def oracle(name: str) -> tuple[float, float, float, float, float]:
         theta = np.log(np.array({"periodic": [1.3, 0.8, 2.1],
                                  "rational_quadratic": [1.3, 0.8, 1.7],
                                  "cosine": [1.3, 0.8],
-                                 "polynomial": [1.3, 0.4, 1.5, 2.2]}[name] + [NOISE]))
+                                 "polynomial": [1.3, 0.4, 1.5, 2.2],
+                                 "ard_rbf": [1.3, 0.75, 1.25]}[name] + [NOISE]))
     parameter_direction = 0.08 - 0.017 * np.arange(1, kernel_parameter_count + 2)
     covariance_plus = joint_covariance(x, components, y, query, query_components, name,
                                        theta + 1.0e-5 * parameter_direction)
@@ -364,7 +390,7 @@ def main() -> None:
         "compiler": os.environ.get("FO_FC", "gfortran"), "flags": "-O3",
     }
     expected = {name: oracle(name) for name in (
-        "periodic", "rational_quadratic", "cosine", "polynomial", "spectral_mixture")}
+        "periodic", "rational_quadratic", "cosine", "polynomial", "spectral_mixture", "ard_rbf")}
 
     def row(**values: object) -> dict[str, str]:
         result = {field: "" for field in FIELDS}
@@ -409,20 +435,21 @@ def main() -> None:
                             backend="fortml", seconds_per_operation="", value="", max_abs_error="",
                             oracle="typed_device_contract", notes="FORTNUM_NOT_IMPLEMENTED: resident derivative-GP graph not linked"))
 
-    expected_hvp = polynomial_hvp_oracle()
-    if ("polynomial", "hyperparameter_hvp") not in records:
-        raise RuntimeError("release app omitted polynomial/hyperparameter_hvp")
-    seconds, actual = records[("polynomial", "hyperparameter_hvp")]
-    error = abs(actual - expected_hvp)
-    if error > 5.0e-4 * max(1.0, abs(expected_hvp)):
-        raise RuntimeError(f"polynomial/hyperparameter_hvp oracle mismatch: {error:.3e}")
-    rows.append(row(kernel="polynomial", operation="hyperparameter_hvp",
-                    seconds_per_operation=seconds, value=actual, max_abs_error=error,
-                    notes="exact mixed-observation HVP; independent likelihood finite-difference oracle passed"))
-    rows.append(row(kernel="polynomial", operation="hyperparameter_hvp", device="cuda",
-                    status="unavailable", backend="fortml", seconds_per_operation="",
-                    value="", max_abs_error="", oracle="typed_device_contract",
-                    notes="FORTNUM_NOT_IMPLEMENTED: resident derivative-GP graph not linked"))
+    for name in ("polynomial", "ard_rbf"):
+        expected_hvp = derivative_hvp_oracle(name)
+        if (name, "hyperparameter_hvp") not in records:
+            raise RuntimeError(f"release app omitted {name}/hyperparameter_hvp")
+        seconds, actual = records[(name, "hyperparameter_hvp")]
+        error = abs(actual - expected_hvp)
+        if error > 5.0e-4 * max(1.0, abs(expected_hvp)):
+            raise RuntimeError(f"{name}/hyperparameter_hvp oracle mismatch: {error:.3e}")
+        rows.append(row(kernel=name, operation="hyperparameter_hvp",
+                        seconds_per_operation=seconds, value=actual, max_abs_error=error,
+                        notes="exact mixed-observation HVP; independent likelihood finite-difference oracle passed"))
+        rows.append(row(kernel=name, operation="hyperparameter_hvp", device="cuda",
+                        status="unavailable", backend="fortml", seconds_per_operation="",
+                        value="", max_abs_error="", oracle="typed_device_contract",
+                        notes="FORTNUM_NOT_IMPLEMENTED: resident derivative-GP graph not linked"))
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", newline="") as stream:

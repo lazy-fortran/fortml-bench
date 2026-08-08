@@ -1,15 +1,15 @@
 # Derivative-observation GP query products
 
 `bench_derivative_gp.py` checks periodic, rational-quadratic, cosine, polynomial,
-and spectral-mixture mixed value/first-derivative GPs. The independent NumPy oracle builds the value,
+spectral-mixture, and anisotropic (ARD) RBF mixed value/first-derivative GPs. The independent NumPy oracle builds the value,
 gradient, and mixed-Hessian covariance blocks from scalar formulas, then
 finite-differences complete posterior queries for input JVP and VJP checks and
 assembles a dense joint posterior covariance. It also finite-differences the
 packed log-kernel/log-noise coordinates to independently gate the new dense
 posterior `joint_covariance_jvp` and `joint_covariance_vjp` products. The
 FortML release app emits CPU timings only after all checks pass; the current
-CSV has 77 correctness-gated CPU/CUDA-contract rows, including the polynomial
-mixed-observation hyperparameter HVP.
+CSV has 104 correctness-gated CPU/CUDA-contract rows, including the polynomial
+and ARD-RBF mixed-observation hyperparameter HVPs.
 
 CUDA rows are deliberately recorded as `unavailable`: the derivative-GP
 resident covariance/factorization graph is not linked and FortML returns
@@ -27,6 +27,11 @@ through the Cholesky solve in packed log variance/scale/offset/degree and
 log-noise coordinates. Its value is checked against an independent NumPy
 central-difference likelihood-gradient oracle; the CUDA companion row records
 the typed refusal because the resident derivative-GP graph is not linked.
+
+The ARD-RBF HVP row uses one log variance and one log lengthscale per feature.
+Its value, first-derivative, and mixed-Hessian blocks are assembled directly in
+the NumPy oracle, and the packed likelihood HVP is checked by central
+differences before timing.
 
 ```bash
 python -B scripts/bench_derivative_gp.py \

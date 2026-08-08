@@ -238,10 +238,11 @@ for the polynomial/Fourier pipeline contract, not a GPU claim.
 
 The derivative-GP lane checks exact query-input JVP/VJP products and dense
 posterior covariance parameter JVP/VJP products for mixed value/first-derivative
-periodic, rational-quadratic, cosine, and polynomial GPs against an independent
-NumPy covariance and posterior finite-difference oracle. The polynomial lane
-also checks the mixed-observation hyperparameter HVP through the Cholesky
-likelihood, including the degree-one limit. CPU timings are retained only
+periodic, rational-quadratic, cosine, polynomial, spectral-mixture, and ARD-RBF
+GPs against an independent NumPy covariance and posterior finite-difference
+oracle. The polynomial and ARD-RBF lanes also check mixed-observation
+hyperparameter HVPs through the Cholesky likelihood, including the degree-one
+limit and every ARD log lengthscale. CPU timings are retained only
 after the checks pass; CUDA is an explicit typed refusal until the resident
 derivative-GP graph is linked:
 
