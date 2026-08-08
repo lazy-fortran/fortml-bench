@@ -2,9 +2,9 @@
 
 This lane checks the fixed full-batch optimizer-group adapter against an
 independent NumPy linear-MSE trajectory. The packed coordinates are
-`[log_learning_rate, log_l2, log_multiplier_1, log_multiplier_2]`; each group
+`[log_learning_rate, log_l2, log_multiplier_1, log_multiplier_2]`, and each group
 scales its post-SGD parameter delta exactly as `mlp_train` does. The release
-fixture sets a fixed global `gradient_clip_norm=0.1`; clipping is applied after
+fixture sets a fixed global `gradient_clip_norm=0.1`. Clipping is applied after
 the L2 term and before group scaling. Every value, gradient component, and a
 directional JVP must agree with an independent clipped NumPy recurrence and
 central finite differences before a FortML timing row is retained. The public
