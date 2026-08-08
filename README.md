@@ -697,6 +697,19 @@ python -B scripts/bench_group_kfold.py \
 See [`results/GROUP_KFOLD.md`](results/GROUP_KFOLD.md). The CUDA row is an
 explicit capability refusal because splitters own host index metadata only.
 
+The chronological-validation lane checks deterministic expanding or rolling
+windows, an excluded gap, and scorer orientation against an independent NumPy
+formula before retaining CPU timing:
+
+```bash
+python -B scripts/bench_time_series_split.py \
+    --fortml ../fortml --output results/time_series_split.csv
+```
+
+See [`results/TIME_SERIES_SPLIT.md`](results/TIME_SERIES_SPLIT.md). The CUDA
+row is an explicit capability refusal because splitters and scorer metadata own
+CPU validation control-plane state only.
+
 ### Weighted softmax-training lane
 
 The weighted softmax-training lane checks the packed FortOpt value, gradient,
