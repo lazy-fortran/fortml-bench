@@ -343,6 +343,11 @@ a different workload, precision, device, or residency policy.
   independent feature, metadata, JVP/VJP, HVP, CPU-dispatch, and typed-CUDA
   refusal checks. Residual, conditional, cyclic, and resident branch execution
   remain separate open contracts.
+- [x] Add the production Lion trainer lane. The independent NumPy recurrence
+  checks decoupled weight decay, clipping, EMA, validation, and uninterrupted
+  versus checkpointed text-resume trajectories. The raw record is
+  `results/lion_training.csv`; resident Lion state remains an explicit CUDA
+  unavailable row.
 - [x] Add correctness-gated records for the model-agnostic objective trainer
   and XGBoost additive tree contributions. The raw record is
   `results/training_core.csv`; the rows are correctness wall times, not

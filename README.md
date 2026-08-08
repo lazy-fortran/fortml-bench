@@ -150,10 +150,10 @@ FO_SCAN_FALLBACK=regex python -B scripts/bench_robust_gp.py \
 See [`results/ROBUST_GP.md`](results/ROBUST_GP.md).
 
 The bounded second-derivative GP lane checks mixed value/gradient/Hessian
-observations for the scalar one-dimensional RBF reference. An independent
-NumPy covariance oracle covers posterior moments, latent joint covariance,
-query JVP finite differences, VJP duality, and the typed CUDA/non-RBF/order
-refusal boundaries:
+observations for scalar one-dimensional RBF and Matérn-5/2 references. An
+independent NumPy covariance oracle covers posterior moments, latent joint
+covariance, query JVP finite differences, VJP duality, and the typed
+CUDA/non-RBF/order/coincidence refusal boundaries:
 
 ```bash
 FO_SCAN_FALLBACK=regex python -B scripts/bench_second_derivative_gp.py \
@@ -161,6 +161,18 @@ FO_SCAN_FALLBACK=regex python -B scripts/bench_second_derivative_gp.py \
 ```
 
 See [`results/SECOND_DERIVATIVE_GP.md`](results/SECOND_DERIVATIVE_GP.md).
+
+The production Lion trainer lane checks the stateful CPU recurrence, decoupled
+weight decay, clipping, EMA, validation, and uninterrupted versus checkpointed
+text-resume trajectories against an independent NumPy oracle. Resident Lion
+state is currently an explicit CUDA-unavailable row:
+
+```bash
+python3 -B scripts/bench_lion_training.py \
+  --fortml ../fortml --output results/lion_training.csv
+```
+
+See [`results/LION_TRAINING.md`](results/LION_TRAINING.md).
 
 The dense k-means lane checks deterministic seeded Lloyd fit, final inertia,
 and transform timing against an independent NumPy implementation. CUDA is a
