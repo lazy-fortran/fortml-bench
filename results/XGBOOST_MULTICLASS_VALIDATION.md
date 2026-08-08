@@ -26,6 +26,6 @@ python -B scripts/bench_xgboost_multiclass_validation.py \
   --report results/XGBOOST_MULTICLASS_VALIDATION.md
 ```
 
-FortML revision: `08f35af5d5cbb539f8244f138bbd7bbac9ab6259`
-Benchmark revision: `c6e82ae2327454799261b65f8e357eb9c09b32b7`
+FortML revision: `f8e45ea99e773c786e7004ef0957db1efc6d00a2`
+Benchmark revision: `c80cc923ff71c0bbda783a2af2375650f0b27f2b`
 Python 3.14.6, NumPy 2.5.1
