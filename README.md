@@ -1052,6 +1052,19 @@ not full Laplace evidence:
 
 See [`results/GP_CLASSIFICATION_TRAINING.md`](results/GP_CLASSIFICATION_TRAINING.md).
 
+The weighted Laplace-GP lane extends binary and one-vs-rest fitting with
+nonnegative row weights, including zero-weight rows. Its independent NumPy
+oracle checks the weighted mode log posterior and kernel envelope gradient
+against refitted finite differences; the FortML gate covers logistic/probit,
+OVR composition, malformed weights, and the explicit CUDA boundary:
+
+```bash
+python3 -B scripts/bench_gp_classification_sample_weights.py \
+  --fortml ../fortml --output results/gp_classification_sample_weights.csv
+```
+
+See [`results/GP_CLASSIFICATION_SAMPLE_WEIGHTS.md`](results/GP_CLASSIFICATION_SAMPLE_WEIGHTS.md).
+
 The inducing-point Bernoulli variational-GP lane checks a dense two-inducing
 point ELBO and packed variational-parameter gradient against an independent
 NumPy finite-difference oracle, then runs FortML's seeded Monte Carlo,
