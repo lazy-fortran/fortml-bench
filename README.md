@@ -806,10 +806,11 @@ The CUDA row is an explicit typed refusal until a resident logistic and
 calibration graph is linked.
 
 The multiclass calibration-aware cross-validation lane fits independent
-softmax models on three stratified folds, calibrates held-out logits with one
-positive temperature, then refits the deployment model.  A NumPy oracle
-replays the packed coefficient/intercept/temperature vector and checks every
-probability, prediction, and OOF diagnostic:
+softmax models on three stratified folds, calibrates held-out logits with
+temperature, Platt sigmoid, and weighted isotonic policies, then refits the
+deployment model.  A NumPy oracle replays the packed coefficient/intercept
+and smooth temperature/Platt blocks, while an independent simplex/label gate
+covers isotonic's fitted PAVA buffers:
 
 ```bash
 python3 -B scripts/bench_calibrated_softmax_cv.py \
