@@ -26,6 +26,7 @@ Complete-call studies:
 - [Generic trainer checkpoint continuation](TRAINER_CHECKPOINT.md)
 - [Unfactored Adafactor trainer state](ADAFACTOR.md)
 - [AMSGrad optimizer and MLP training](AMSGRAD.md)
+- [RAdam optimizer and MLP training](RADAM.md)
 - [RMSprop trajectory hypergradients](RMSPROP_HYPERGRADIENT.md)
 - [Adagrad trajectory hypergradients](ADAGRAD_HYPERGRADIENT.md)
 - [Resident CUDA correctness contracts](DEVICE_CONTRACTS.md)

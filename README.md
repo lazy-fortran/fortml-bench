@@ -1551,6 +1551,24 @@ See [`results/AMSGRAD.md`](results/AMSGRAD.md). The FortML behavioral fixture
 also checks in-memory and formatted checkpoint continuation, including the
 maximum-second-moment state.
 
+## RAdam optimizer and MLP training
+
+The RAdam lane checks the independent bias-corrected first/second-moment
+recurrence, including its `rho_t` rectification threshold, for a 4,096-
+parameter state trajectory and a one-feature linear MLP. The FortML app is
+`fortml_bench_radam_training`; the NumPy oracle runs before any CPU timing is
+retained. CUDA rows are explicitly `unavailable` because no resident RAdam
+state kernel is linked and host fallback is forbidden.
+
+```bash
+python -B scripts/bench_radam_training.py \
+  --fortml ../fortml --output results/radam.csv
+```
+
+See [`results/RADAM.md`](results/RADAM.md). The source test also checks exact
+format-8/text-schema-6 checkpoint resume and the output-preserving CUDA refusal;
+RAdam trajectory hypergradients and FortOpt adapters remain open.
+
 ## Validity boundary
 
 The first comparison is a kernel-product comparison. It does not claim that a
