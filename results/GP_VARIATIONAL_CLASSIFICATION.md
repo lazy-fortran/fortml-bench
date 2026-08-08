@@ -6,7 +6,7 @@ normal table and checks the packed mean/log-Cholesky parameter gradient by
 central finite differences. The Fortran gate independently exercises its
 seeded Monte Carlo objective, analytic gradient, directional parameter JVP,
 query-coordinate JVP/VJP products, variable-size minibatch scaling, malformed
-labels, and CPU/CUDA dispatch.
+labels, bounded FortOpt L-BFGS-B convergence, and CPU/CUDA dispatch.
 
 The CSV contains one CPU correctness-gate row and one explicit CUDA capability
 refusal. Gate wall time is not a model-throughput measurement, and no GPU

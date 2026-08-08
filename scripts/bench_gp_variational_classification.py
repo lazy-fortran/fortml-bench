@@ -6,7 +6,7 @@ generator: it evaluates a small RBF inducing-point ELBO with a fixed standard
 normal table and checks its analytic packed-parameter gradient by central
 finite differences.  The Fortran release tests then check the same public
 contract with their own seeded Monte Carlo table, parameter/query JVPs and
-VJPs, minibatch, and CUDA refusal oracles.  The recorded wall time is a
+VJPs, minibatch, optimizer, and CUDA refusal oracles.  The recorded wall time is a
 correctness-gate duration, not a model or accelerator throughput measurement.
 """
 
@@ -182,9 +182,11 @@ def main() -> None:
                        cwd=fortml, check=True)
         subprocess.run(["fo", "test", "test_gp_variational_classification_input"],
                        cwd=fortml, check=True)
+        subprocess.run(["fo", "test", "test_gp_variational_classification_training"],
+                       cwd=fortml, check=True)
         status = "pass"
         notes = ("Fortran tests supply seeded MC, parameter/query JVP/VJP, "
-                 "minibatch, and refusal oracles")
+                 "minibatch, L-BFGS-B optimizer, and refusal oracles")
     elapsed = time.perf_counter() - started
     add(workload="gp_variational_classification", phase="independent_oracle_gate",
         status=status, seconds_per_operation=elapsed, metric="elbo",

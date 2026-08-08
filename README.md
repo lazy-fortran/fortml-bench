@@ -953,8 +953,8 @@ See [`results/GP_CLASSIFICATION_TRAINING.md`](results/GP_CLASSIFICATION_TRAINING
 The inducing-point Bernoulli variational-GP lane checks a dense two-inducing
 point ELBO and packed variational-parameter gradient against an independent
 NumPy finite-difference oracle, then runs FortML's seeded Monte Carlo,
-parameter/query JVP and VJP, minibatch, and malformed-label tests. CUDA is an
-explicit typed refusal until
+parameter/query JVP and VJP, minibatch, malformed-label, and bounded
+L-BFGS-B optimizer tests. CUDA is an explicit typed refusal until
 the inducing solve, likelihood table, and reduction are resident:
 
 ```bash
