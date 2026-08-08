@@ -261,6 +261,13 @@ a different workload, precision, device, or residency policy.
   the Park–Miller shuffle cursor and checks value, both gradient components,
   and a directional JVP before retaining FortML timing; CUDA remains an
   explicit refusal until resident batch-cursor derivatives exist.
+- [x] Add a fixed full-batch Lion hypergradient workload over log learning
+  rate, log regularization, and beta logits. The independent NumPy lane
+  central-differences all four packed coordinates and a directional JVP away
+  from sign boundaries; the FortML release app must match the complete array
+  before its CPU timing is retained. Near-zero sign branches and CUDA remain
+  explicit typed refusals. The raw record is
+  `results/mlp_lion_hypergradient.csv`.
 - [x] Add a calibrated neural classifier lane with an independent fixture,
   sorted-class, probability-simplex, finite-bound, and prediction-domain
   oracle. The raw record is `results/mlp_calibrated_classifier.csv`; CPU fit
