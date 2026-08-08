@@ -13,7 +13,7 @@ checks every probability row, and checks the sorted-label prediction rule.
 The recorded run has a maximum replay error of `2.0817e-17`, zero probability
 simplex error, uncalibrated out-of-fold log loss `0.4690011479566449`, and
 calibrated out-of-fold log loss `0.1526771421492992`. The CPU timings are
-`2.02652e-4 s` for fitting and `6.03074e-6 s` per prediction batch. These are
+`2.18612e-4 s` for fitting and `6.09860e-6 s` per prediction batch. These are
 correctness-gated reference timings for a small dense fixture.
 
 The CUDA row is `unavailable` with a typed `FORTNUM_NOT_IMPLEMENTED` result.
