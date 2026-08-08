@@ -125,6 +125,18 @@ FO_SCAN_FALLBACK=regex python -B scripts/bench_student_t_process.py \
 
 See [`results/STUDENT_T_PROCESS.md`](results/STUDENT_T_PROCESS.md).
 
+The supplied-noise heteroskedastic GP lane checks the constant-noise reduction
+to an ordinary GP, the quiet/noisy posterior contrast, and positive log-noise
+interpolation against an independent NumPy diagonal-noise oracle. A zero
+observation variance is recorded as an explicit typed refusal:
+
+```bash
+FO_SCAN_FALLBACK=regex python -B scripts/bench_heteroskedastic_gp.py \
+  --fortml ../fortml --output results/heteroskedastic_gp.csv
+```
+
+See [`results/HETEROSKEDASTIC_GP.md`](results/HETEROSKEDASTIC_GP.md).
+
 The dense k-means lane checks deterministic seeded Lloyd fit, final inertia,
 and transform timing against an independent NumPy implementation. CUDA is a
 typed unavailable row until resident clustering state is linked:
