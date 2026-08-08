@@ -82,6 +82,7 @@ Complete-call studies:
 - [Weighted multiclass isotonic calibration](MULTICLASS_ISOTONIC_CALIBRATION.md)
 - [Leakage-safe multiclass calibrated softmax CV](CALIBRATED_SOFTMAX_CV.md)
 - [Monotonic XGBoost constraints](XGBOOST_MONOTONIC_CONSTRAINTS.md)
+- [Binary XGBoost log-probability products](XGBOOST_CLASSIFIER_LOG_PROBA.md)
 - [Multinomial and neural classification](CLASSIFICATION_MODELS.md)
 - [Differentiable Multinomial Naive Bayes](MULTINOMIAL_NB.md)
 - [Differentiable Complement Naive Bayes](COMPLEMENT_NB.md)

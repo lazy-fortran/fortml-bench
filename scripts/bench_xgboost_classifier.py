@@ -52,7 +52,10 @@ def main() -> None:
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     fortml = args.fortml.resolve()
-    ignored = ((root / "results" / "xgboost_classifier.csv").resolve(),)
+    ignored = (
+        (root / "results" / "xgboost_classifier.csv").resolve(),
+        args.output.resolve(),
+    )
     details = {
         "python_version": platform.python_version(),
         "numpy_version": np.__version__,
@@ -103,12 +106,14 @@ def main() -> None:
     cuda = parsed.get("xgb_classifier_cuda_refusal")
     if fit is None or predict is None or cuda is None:
         raise RuntimeError("binary classifier release app did not emit all rows")
-    if len(fit) != 7 or len(predict) != 6:
+    if len(fit) != 8 or len(predict) != 6:
         raise RuntimeError("binary classifier release app row schema changed")
-    fit_n, fit_d, fit_t, fit_seconds, logloss, accuracy, staged_error = fit
+    fit_n, fit_d, fit_t, fit_seconds, logloss, accuracy, staged_error, log_probability_error = fit
     pred_n, pred_d, pred_t, pred_seconds, pred_accuracy, importance_sum = predict
     if float(staged_error) > 3.0e-13:
         raise RuntimeError(f"staged probability mismatch: {staged_error}")
+    if float(log_probability_error) > 3.0e-13:
+        raise RuntimeError(f"log-probability mismatch: {log_probability_error}")
     if float(accuracy) < 0.9 or float(pred_accuracy) < 0.9:
         raise RuntimeError("binary classifier fixture accuracy unexpectedly low")
     if abs(float(importance_sum) - 1.0) > 3.0e-13:
@@ -117,6 +122,10 @@ def main() -> None:
         seconds_per_operation=fit_seconds, metric="log_loss", value=logloss,
         max_abs_error=staged_error,
         notes=f"accuracy={accuracy}; weighted sample path")
+    add(phase="predict", n_samples=fit_n, n_features=fit_d, n_estimators=fit_t,
+        seconds_per_operation=0.0, metric="log_probability_roundtrip_error",
+        value=log_probability_error, max_abs_error=log_probability_error,
+        notes="exp(predict_log_proba) equals predict_proba")
     add(phase="predict", n_samples=pred_n, n_features=pred_d, n_estimators=pred_t,
         seconds_per_operation=pred_seconds, metric="accuracy", value=pred_accuracy,
         max_abs_error=0.0, notes=f"normalized_gain_sum={importance_sum}")

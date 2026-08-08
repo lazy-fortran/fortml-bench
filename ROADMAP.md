@@ -798,6 +798,11 @@ a different workload, precision, device, or residency policy.
   CPU prediction timing, and emits an explicit CUDA-unavailable row. Raw
   evidence is in `results/xgboost_categorical.csv` and the protocol is
   documented in [`results/XGBOOST_CATEGORICAL.md`](results/XGBOOST_CATEGORICAL.md).
+- [x] Add binary XGBoost classifier log-probability products. The independent
+  fixture checks stable `exp(predict_log_proba)` round trips, while the release
+  app records the direct log-space error, staged consistency, and typed CUDA
+  refusal in `results/xgboost_classifier_log_proba.csv`; the protocol is
+  documented in [`results/XGBOOST_CLASSIFIER_LOG_PROBA.md`](results/XGBOOST_CLASSIFIER_LOG_PROBA.md).
 - [x] Add the binary AdaBoost lane. The release app fits a weighted depth-one
   CART learner, and `scripts/bench_adaboost_classifier.py` independently
   reconstructs the learner error, alpha, signed margin, probabilities, and
