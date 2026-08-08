@@ -1081,6 +1081,20 @@ CUDA refusals:
 
 See [`results/ADAGRAD_HYPERGRADIENT.md`](results/ADAGRAD_HYPERGRADIENT.md).
 
+The fixed full-batch AMSGrad hypergradient lane independently
+finite-differences the validation value, all five packed log/logit
+hyperparameters, and a directional JVP through the first/second moments and
+elementwise max-second-moment state. The release app is retained only after
+its complete value/gradient/JVP array agrees with the NumPy oracle. Max-state
+ties, zero denominators, and CUDA remain explicit typed refusals:
+
+```bash
+python3 -B scripts/bench_amsgrad_hypergradient.py \
+    --fortml ../fortml --output results/amsgrad_hypergradient.csv
+```
+
+See [`results/AMSGRAD_HYPERGRADIENT.md`](results/AMSGRAD_HYPERGRADIENT.md).
+
 The fixed seeded mini-batch SGD hypergradient lane checks the complete
 value/gradient/JVP array against an independent NumPy trajectory with the same
 Park–Miller shuffle cursor, then retains CPU timing and typed CUDA refusals:

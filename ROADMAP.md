@@ -401,8 +401,7 @@ a different workload, precision, device, or residency policy.
   bias-corrected max-second-moment oracle is paired with `test_mlp_amsgrad`'s
   in-memory and formatted checkpoint continuation gates in `results/amsgrad.csv`;
   CPU rows compare complete parameter norms and MLP losses, while resident
-  AMSGrad CUDA state remains an explicit unavailable row. Fixed-trajectory
-  hypergradients through the max active set remain open.
+  AMSGrad CUDA state remains an explicit unavailable row.
 - [x] Add the deterministic RAdam trainer/MLP lane. The independent NumPy
   rho-threshold recurrence oracle is paired with `test_mlp_radam`'s exact
   in-memory and formatted checkpoint continuation gate in `results/radam.csv`;
@@ -414,6 +413,13 @@ a different workload, precision, device, or residency policy.
   all five packed hyperparameter derivatives, JVP, VJP, bounded L-BFGS-B path,
   and the typed CUDA refusal in `results/adafactor_hypergradient.csv` and
   `results/ADAFACTOR_HYPERGRADIENT.md`.
+- [x] Add the exact fixed full-batch AMSGrad trajectory hypergradient lane.
+  The independent NumPy recurrence checks validation value, all five packed
+  log/logit derivatives, a directional JVP, and the max-second-moment active
+  set. The release app is retained only after the complete array agrees, and
+  `results/amsgrad_hypergradient.csv` records CPU timing plus typed max-tie,
+  denominator, and CUDA refusals. The protocol is documented in
+  `results/AMSGRAD_HYPERGRADIENT.md`.
 - [x] Add the weighted binary MLP objective adapter and bounded L-BFGS-B lane.
   The independent value/JVP/HVP finite-difference oracle and FortOpt contract
   are recorded in `results/mlp_binary_objective.csv`; no resident CUDA graph is

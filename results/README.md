@@ -31,6 +31,7 @@ Complete-call studies:
 - [Layout-aware factored Adafactor recurrence and checkpoint resume](ADAFACTOR_FACTORED.md)
 - [Multiclass XGBoost text persistence](XGBOOST_MULTICLASS_PERSISTENCE.md)
 - [AMSGrad optimizer and MLP training](AMSGRAD.md)
+- [AMSGrad trajectory hypergradients](AMSGRAD_HYPERGRADIENT.md)
 - [RAdam optimizer and MLP training](RADAM.md)
 - [RAdam trajectory hypergradients](MLP_RADAM_HYPERGRADIENT.md)
 - [MLP training precision capability contract](MLP_PRECISION.md)
