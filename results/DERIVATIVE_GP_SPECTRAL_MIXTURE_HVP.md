@@ -14,6 +14,6 @@ covariance/factorization graph is linked; no host fallback is used.
 
 ```bash
 FO_SCAN_FALLBACK=regex python3 -B scripts/bench_derivative_gp_spectral_mixture_hvp.py \
-  --fortml ../fortml-spectral-mixture-hvp \
+  --fortml ../fortml \
   --output results/derivative_gp_spectral_mixture_hvp.csv
 ```
