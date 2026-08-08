@@ -13,8 +13,8 @@ independent NumPy softmax oracle.  The recorded CPU run has maximum replay
 error `2.220446049250313e-16`, probability-simplex error
 `2.220446049250313e-16`, uncalibrated OOF log loss
 `0.16213853637082157`, and calibrated OOF log loss
-`0.03859049794844933`.  Fit time is `6.27131e-4 s`; prediction time is
-`2.87088e-6 s` per batch on this small fixture.
+`0.03859049794844933`.  Fit time is `6.20599e-4 s`; prediction time is
+`2.78892e-6 s` per batch on this small fixture.
 
 CUDA is recorded as `unavailable` with a typed `FORTNUM_NOT_IMPLEMENTED`
 boundary.  The complete softmax-plus-calibration graph is not resident on an
