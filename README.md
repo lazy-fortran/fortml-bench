@@ -996,6 +996,19 @@ Park–Miller shuffle cursor, then retains CPU timing and typed CUDA refusals:
 
 See [`results/MLP_MINIBATCH_HYPERGRADIENT.md`](results/MLP_MINIBATCH_HYPERGRADIENT.md).
 
+The fixed seeded mini-batch coupled-L2 Adam hypergradient lane independently
+replays first/second moments, bias correction, and validation MSE with a NumPy
+recurrence. The FortML release app is retained only after value, both packed
+gradient components, and a directional JVP agree; CPU timing and typed CUDA
+refusals are recorded:
+
+```bash
+python3 -B scripts/bench_mlp_minibatch_adam_hypergradient.py \
+    --fortml ../fortml --output results/mlp_minibatch_adam_hypergradient.csv
+```
+
+See [`results/MLP_MINIBATCH_ADAM_HYPERGRADIENT.md`](results/MLP_MINIBATCH_ADAM_HYPERGRADIENT.md).
+
 The calibrated neural classifier lane checks sorted labels, finite calibrated
 probabilities, the probability simplex, and prediction-domain invariants on a
 64-row deterministic fixture before retaining CPU fit/predict timings:
