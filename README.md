@@ -1484,6 +1484,19 @@ python3 -B scripts/bench_gp_classification_sample_weights.py \
 
 See [`results/GP_CLASSIFICATION_SAMPLE_WEIGHTS.md`](results/GP_CLASSIFICATION_SAMPLE_WEIGHTS.md).
 
+The independent multilabel Laplace-GP lane fits one weighted binary head per
+indicator column.  Its NumPy oracle reconstructs the two posterior
+probability vectors and finite-difference query JVP, while the FortML probe
+checks packed per-label products, thresholded indicators, and the typed CUDA
+refusal without simplex-normalizing labels:
+
+```bash
+python3 -B scripts/bench_gp_multilabel.py \
+  --fortml ../fortml --output results/gp_multilabel.csv
+```
+
+See [`results/GP_MULTILABEL.md`](results/GP_MULTILABEL.md).
+
 The inducing-point Bernoulli variational-GP lane checks a dense two-inducing
 point ELBO and packed variational-parameter gradient against an independent
 NumPy finite-difference oracle, then runs FortML's seeded Monte Carlo,
