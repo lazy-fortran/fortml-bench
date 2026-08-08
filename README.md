@@ -374,6 +374,18 @@ python -B scripts/bench_features.py \
 See [`results/FEATURES.md`](results/FEATURES.md); the HVP row is CPU evidence
 for the polynomial/Fourier pipeline contract, not a GPU claim.
 
+The Chebyshev basis lane independently replays the first-kind three-term
+recurrence and its input JVP/VJP/HVP products for a 4,096-by-3 fixture. CPU
+timings are retained only after the NumPy checks pass; the CUDA row is a typed
+resident-device refusal:
+
+```bash
+python -B scripts/bench_chebyshev_basis.py \
+  --fortml ../fortml --output results/chebyshev_basis.csv
+```
+
+See [`results/CHEBYSHEV_BASIS.md`](results/CHEBYSHEV_BASIS.md).
+
 The derivative-GP lane checks exact query-input JVP/VJP products and dense
 posterior covariance parameter JVP/VJP products for mixed value/first-derivative
 periodic, rational-quadratic, cosine, polynomial, spectral-mixture, and ARD-RBF
