@@ -16,6 +16,15 @@ timing is retained. Missing optional packages and release targets are written
 as explicit refusal rows, and a FortML pass requires complete probabilities
 and labels in addition to a successful process exit.
 
+The multiclass calibrated-softmax CV record extends this gate to three
+stratified OOF policies. Temperature and Platt rows replay the packed
+coefficient/intercept/calibration blocks elementwise in NumPy; isotonic rows
+independently check finite probabilities, simplex normalization, sorted-label
+predictions, and the zero-trainable-coordinate PAVA contract. Isotonic knot
+buffers are deliberately not serialized as trainable parameters, and their
+active-set derivative refusals are recorded rather than inferred as smooth
+products. Each policy has its own typed CUDA-unavailable row.
+
 The relaxed Bernoulli Naive Bayes record applies the same gate to a direct
 NumPy Bernoulli likelihood, stable log-softmax, and analytic input JVP.  Its
 scikit-learn context uses `binarize=None` so the relaxed `[0.1,0.9]` fixture is
