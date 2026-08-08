@@ -753,6 +753,18 @@ See [`results/MLP_SCHEDULE_HYPERGRADIENT.md`](results/MLP_SCHEDULE_HYPERGRADIENT
 The lane records explicit CUDA and outer-hyper-HVP refusal rows rather than
 silently falling back to host finite differences.
 
+The one-cycle trajectory lane checks the alternate logarithmic peak/final-rate
+coordinates through the linear warm-up and cosine tail:
+
+```bash
+.venv/bin/python -B scripts/bench_mlp_one_cycle_hypergradient.py \
+    --fortml ../fortml --output results/mlp_one_cycle_hypergradient.csv
+```
+
+See [`results/MLP_ONE_CYCLE_HYPERGRADIENT.md`](results/MLP_ONE_CYCLE_HYPERGRADIENT.md).
+The complete-array gate retains CPU products only after an independent affine
+NumPy replay agrees; CUDA and outer-HVP boundaries remain explicit refusals.
+
 Binary probability calibration (positive temperature scaling, Platt sigmoid,
 and weighted PAVA isotonic) is checked against an independent NumPy oracle:
 

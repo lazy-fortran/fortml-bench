@@ -201,6 +201,11 @@ a different workload, precision, device, or residency policy.
   emits all 180 values before its resident scalar timing is retained in
   `results/mlp_schedules.csv`. This gate does not claim neural training,
   OpenACC, or CUDA performance.
+- [x] Add a correctness-gated one-cycle schedule trajectory hypergradient
+  workload. The independent affine NumPy replay checks value, all four
+  logarithmic base/L2/peak/final derivatives, and a directional JVP before
+  retaining CPU timing; CUDA and outer-HVP rows are explicit capability
+  refusals in `results/mlp_one_cycle_hypergradient.csv`.
 - [x] Add a correctness-gated metric-aware plateau schedule lane. Independent
   Python transitions cover minimizing and maximizing metrics, patience and
   `min_delta` boundaries, compounded reductions, exact base/factor products,

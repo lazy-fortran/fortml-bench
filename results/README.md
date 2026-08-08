@@ -20,6 +20,7 @@ Complete-call studies:
 - [Metric-aware MLP plateau schedule](MLP_PLATEAU_SCHEDULE.md)
 - [Dense MLP activation products](MLP_ACTIVATIONS.md)
 - [Scheduled MLP trajectory hypergradients](MLP_SCHEDULE_HYPERGRADIENT.md)
+- [One-cycle MLP schedule hypergradients](MLP_ONE_CYCLE_HYPERGRADIENT.md)
 - [Composable MLP module tree](MLP_CHAIN.md)
 - [Named MLP parameter layout](MLP_PARAMETER_LAYOUT.md)
 - [Differentiable binary MLP classifier](MLP_BINARY_CLASSIFIER.md)
