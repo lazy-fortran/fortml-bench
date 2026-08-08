@@ -117,6 +117,10 @@ not completion gates.
   value/first-derivative blocks, query JVP/VJP, posterior covariance, and
   packed parameter JVP/VJP products; the release app records exact CPU rows
   and the resident CUDA graph remains an explicit typed refusal.
+- [x] Add the polynomial mixed-observation hyperparameter HVP lane. The
+  independent NumPy likelihood-gradient finite difference checks all four
+  packed log-kernel coordinates and log noise, including the degree-one limit;
+  the release record has CPU timings and an explicit resident-CUDA refusal.
 
 ## Evidence
 
