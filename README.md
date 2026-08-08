@@ -149,6 +149,19 @@ FO_SCAN_FALLBACK=regex python -B scripts/bench_robust_gp.py \
 
 See [`results/ROBUST_GP.md`](results/ROBUST_GP.md).
 
+The bounded second-derivative GP lane checks mixed value/gradient/Hessian
+observations for the scalar one-dimensional RBF reference. An independent
+NumPy covariance oracle covers posterior moments, latent joint covariance,
+query JVP finite differences, VJP duality, and the typed CUDA/non-RBF/order
+refusal boundaries:
+
+```bash
+FO_SCAN_FALLBACK=regex python -B scripts/bench_second_derivative_gp.py \
+  --fortml ../fortml --output results/second_derivative_gp.csv
+```
+
+See [`results/SECOND_DERIVATIVE_GP.md`](results/SECOND_DERIVATIVE_GP.md).
+
 The dense k-means lane checks deterministic seeded Lloyd fit, final inertia,
 and transform timing against an independent NumPy implementation. CUDA is a
 typed unavailable row until resident clustering state is linked:
@@ -1275,7 +1288,10 @@ The separately named LightGBM-style lane records weighted regression and
 binary-logistic histogram boosting with deterministic globally best-leaf growth
 up to `num_leaves`. The release app also gates cumulative staged predictions,
 additive base-plus-tree contributions, transactional fitted-prefix slicing, and
-versioned text save/load with trailing-record refusal.
+versioned text save/load with trailing-record refusal. The release app also
+continues a weighted four-tree prefix to eight trees and checks all staged
+outputs against an independently fitted eight-tree model, including a typed
+non-growing-target refusal.
 The six-sample weighted-Newton fixture is an independent oracle; CPU timing
 and the typed CUDA refusal are kept in a dedicated CSV:
 
