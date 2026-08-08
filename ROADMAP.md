@@ -692,6 +692,12 @@ a different workload, precision, device, or residency policy.
   deterministic scales, schema-3 persistence, warm-start parity, malformed-rate
   refusal, and typed CUDA refusal; fit-time dropout derivatives remain an
   explicit discrete-fit boundary.
+- [x] Add fixed-structure XGBoost/LightGBM leaf-coordinate JVP/VJP products.
+  `scripts/bench_tree_leaf_products.py` checks packed base-plus-leaf routing,
+  forward/reverse contractions, and the independent two-leaf NumPy oracle;
+  `results/tree_leaf_products.csv` records zero CPU error and explicit
+  unavailable resident-CUDA rows. Split routing and fit-time derivatives stay
+  separate discrete boundaries.
 - [x] Add bounded seeded XGBoost DART/dropout boosting. `booster="dart"`
   selects prior trees through a compiler-independent hash stream and persists
   per-tree `1/(k+1)` normalisation in schema-5 snapshots. The release app and
