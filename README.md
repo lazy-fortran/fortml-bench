@@ -137,6 +137,18 @@ FO_SCAN_FALLBACK=regex python -B scripts/bench_heteroskedastic_gp.py \
 
 See [`results/HETEROSKEDASTIC_GP.md`](results/HETEROSKEDASTIC_GP.md).
 
+The robust observation-model GP lane checks Poisson mode stationarity and
+positive log-rate responses, then contrasts a Student-t fit with a Gaussian
+fit after one large outlier. Malformed counts, likelihoods, and degrees of
+freedom remain explicit refusal rows:
+
+```bash
+FO_SCAN_FALLBACK=regex python -B scripts/bench_robust_gp.py \
+  --fortml ../fortml --output results/robust_gp.csv
+```
+
+See [`results/ROBUST_GP.md`](results/ROBUST_GP.md).
+
 The dense k-means lane checks deterministic seeded Lloyd fit, final inertia,
 and transform timing against an independent NumPy implementation. CUDA is a
 typed unavailable row until resident clustering state is linked:
