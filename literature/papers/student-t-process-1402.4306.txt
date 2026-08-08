@@ -1,0 +1,1139 @@
+                                                   Student-t Processes as Alternatives to Gaussian Processes
+
+
+
+                                                       Amar Shah                       Andrew Gordon Wilson                   Zoubin Ghahramani
+                                                  University of Cambridge               University of Cambridge               University of Cambridge
+
+
+                                                                Abstract                                simple exact learning and inference procedures, and
+
+
+
+
+arXiv:1402.4306v2 [stat.ML] 19 Feb 2014
+                                                                                                        impressive empirical performances [Rasmussen, 1996],
+                                                                                                        Gaussian processes as kernel machines have steadily
+                                              We investigate the Student-t process as an
+                                                                                                        grown in popularity over the last decade.
+                                              alternative to the Gaussian process as a non-
+                                              parametric prior over functions. We de-                   At the heart of every Gaussian process (GP) is
+                                              rive closed form expressions for the marginal             a parametrized covariance kernel, which determines
+                                              likelihood and predictive distribution of a               the properties of likely functions under a GP. Typ-
+                                              Student-t process, by integrating away an                 ically simple parametric kernels, such as the Gaus-
+                                              inverse Wishart process prior over the co-                sian (squared exponential) kernel are used, and its pa-
+                                              variance kernel of a Gaussian process model.              rameters are determined through marginal likelihood
+                                              We show surprising equivalences between dif-              maximization, having analytically integrated away the
+                                              ferent hierarchical Gaussian process models               Gaussian process. However, a fully Bayesian nonpara-
+                                              leading to Student-t processes, and derive a              metric treatment of regression would place a nonpara-
+                                              new sampling scheme for the inverse Wishart               metric prior over the Gaussian process covariance ker-
+                                              process, which helps elucidate these equiv-               nel, to represent uncertainty over the kernel function,
+                                              alences. Overall, we show that a Student-                 and to reflect the natural intuition that the kernel does
+                                              t process can retain the attractive proper-               not have a simple parametric form.
+                                              ties of a Gaussian process – a nonparamet-
+                                                                                                        Likewise, given the success of Gaussian processes ker-
+                                              ric representation, analytic marginal and pre-
+                                                                                                        nel machines, it is also natural to consider more general
+                                              dictive distributions, and easy model selec-
+                                                                                                        families of elliptical processes [Fang et al., 1989], such
+                                              tion through covariance kernels – but has en-
+                                                                                                        as Student-t processes, where any collection of func-
+                                              hanced flexibility, and predictive covariances
+                                                                                                        tion values has a desired elliptical distribution, with a
+                                              that, unlike a Gaussian process, explicitly de-
+                                                                                                        covariance matrix constructed using a kernel.
+                                              pend on the values of training observations.
+                                              We verify empirically that a Student-t pro-               As we will show, the Student-t process can be derived
+                                              cess is especially useful in situations where             by placing an inverse Wishart process prior on the ker-
+                                              there are changes in covariance structure,                nel of a Gaussian process. Given their intuitive value,
+                                              or in applications like Bayesian optimiza-                it is not surprising that various forms of Student-t
+                                              tion, where accurate predictive covariances               processes have been used in different applications [Yu
+                                              are critical for good performance. These                  et al., 2007, Zhang and Yeung, 2010, Xu et al., 2011,
+                                              advantages come at no additional computa-                 Archambeau and Bach, 2010]. However, the connec-
+                                              tional cost over Gaussian processes.                      tions between these models, and the theoretical prop-
+                                                                                                        erties of these models, remain largely unknown. Simi-
+                                                                                                        larly, the practical utility of such models remains un-
+                                          1    INTRODUCTION                                             certain. For example, Rasmussen and Williams [2006]
+                                                                                                        wonder whether “the Student-t process is perhaps not
+                                                                                                        as exciting as one might have hoped”.
+                                          Gaussian processes are rich distributions over func-
+                                          tions, which provide a Bayesian nonparametric ap-             In short, our paper answers in detail many of the
+                                          proach to regression. Owing to their interpretability,        “what, when and why?” questions one might have
+                                          non-parametric flexibility, large support, consistency,       about Student-t processes (TPs), inverse Wishart pro-
+                                                                                                        cesses, and elliptical processes in general. Specifically:
+                                          Appearing in Proceedings of the 17th International Con-
+                                          ference on Artificial Intelligence and Statistics (AISTATS)     • We precisely define and motivate the inverse
+                                          2014, Reykjavik, Iceland. JMLR: W&CP volume 33. Copy-             Wishart process [Dawid, 1981] as a prior over co-
+                                          right 2014 by the authors.
+                                                                                                            variance matrices of arbitrary size.
+                           Student-t Processes as Alternatives to Gaussian Processes
+
+
+    • We propose a Student-t process, which we derive       we write Σ ∼ Wn (ν, K) if its density is given by
+      from hierarchical Gaussian process models. We                                             1            
+      derive analytic forms for the marginal and pre-        p(Σ) = cn (ν, K)|Σ|(ν−n−1)/2 exp − Tr K −1 Σ ,
+      dictive distributions of this process, and analytic                                          2
+                                                                                                               (1)
+      derivatives of the marginal likelihood.                                                       −1
+                                                                                   ν/2 νn/2
+                                                            where cn (ν, K) = |K| 2         Γn (ν/2)     .
+    • We show that the Student-t process is the most
+      general elliptically symmetric process with ana-      The Wishart distribution defined with this param-
+      lytic marginal and predictive distributions.          eterization is consistent under marginalization. If
+                                                            Σ ∼ Wn (ν, K), then any n1 × n1 principal submatrix
+    • We derive a new way of sampling from the in-          Σ11 is Wn1 (ν, K11 ) distributed. This property makes
+      verse Wishart process, which intuitively resolves     the Wishart distribution appear to be an attractive
+      the seemingly bizarre marginal equivalence be-        of prior over covariance matrices. Unfortunately the
+      tween inverse Wishart and inverse Gamma priors        Wishart distribution suffers a flaw which makes it im-
+      for covariance kernels in hierarchical GP models.     practical for nonparametric Bayesian modelling.
+
+    • We show that the predictive covariances of a TP       Suppose we wish to model a covariance matrix using
+      depend on the values of training observations,        ν −1 Σ, so that its expected value E[ν −1 Σ] = K, and
+      even though the predictive covariances of a GP        var[ν −1 Σij ] = ν −1 (Kij
+                                                                                    2
+                                                                                       + Kii Kjj ). Since we require
+      do not.                                               ν > n − 1, we must let ν → ∞ to define a process
+                                                            which has positive semidefinite Wishart distributed
+    • We show that, contrary to the Student-t process       marginals of arbitrary size. However, as ν → ∞, ν −1 Σ
+      described in Rasmussen and Williams [2006], an        tends to the constant matrix K almost surely. Thus
+      analytic TP noise model can be used which sepa-       the requirement ν > n − 1 prohibits defining a useful
+      rates signal and noise analytically.                  process which has Wishart marginals of arbitrary size.
+                                                            Nevertheless, the inverse Wishart distribution does
+    • We demonstrate non-trivial differences in be-         not suffer this problem. Dawid [1981] parametrized
+      haviour between the GP and TP on a variety of         the inverse Wishart distribution as follows:
+      applications. We specifically find the TP more        Definition. A random Σ ∈ Π(n) is inverse Wishart
+      robust to change-points and model misspecifica-       distributed with parameters ν ∈ R+ , K ∈ Π(n) and
+      tion, to have notably improved predictive covari-     we write Σ ∼ IWn (ν, K) if its density is given by
+      ances, to have useful “tail-dependence” between                                           1             
+      distant function values (which is orthogonal to the    p(Σ) = cn (ν, K)|Σ|−(ν+2n)/2 exp − Tr KΣ−1 ,
+      choice of kernel), and to be particularly promis-                                            2
+                                                                                                                (2)
+      ing for Bayesian optimization, where predictive
+                                                                                    |K|(ν+n−1)/2
+      covariances are especially important.                 with cn (ν, K) = (ν+n−1)n/2                     .
+                                                                             2           Γn ((ν + n − 1)/2)
+We begin by introducing the inverse Wishart pro-            If Σ ∼ IWn (ν, K), Σ has mean and covariance only
+cess in section 2. We then derive a Student-t pro-          when ν > 2 and E[Σ] = (ν −2)−1 K. Both the Wishart
+cess by using an inverse Wishart process over covari-       and the inverse Wishart distributions place prior mass
+ance kernels (section 3), and discuss the properties        on every Σ ∈ Π(n). Furthermore Σ ∼ Wn (ν, K) if and
+of this Student−t process in section 4. Finally, we         only if Σ−1 ∼ IWn (ν − n + 1, K −1 ).
+demonstrate the Student-t process on regression and
+Bayesian optimization problems in section 5.                Dawid [1981] shows that the inverse Wishart distribu-
+                                                            tion defined as above is consistent under marginaliza-
+                                                            tion. If Σ ∼ IWn (ν, K), then any principal submatrix
+2     INVERSE WISHART PROCESS                               Σ11 will be IWn1 (ν, K11 ) distributed. Note the key dif-
+                                                            ference in the parameterizations of both distributions:
+In this section we argue that the inverse Wishart dis-      the parameter ν does not need to depend on the size of
+tribution is an attractive choice of prior for covariance   the matrix in the inverse Wishart distribution. These
+matrices of arbitrary size. The Wishart distribution        properties are desirable and motivate defining a pro-
+is a probability distribution over Π(n), the set of real    cess which has inverse Wishart marginals of arbitrary
+valued, n × n, symmetric, positive definite matrices.       size. Let X be some input space and k : X × X → R
+Its density function is defined as follows.                 a positive definite kernel function.
+Definition. A random Σ ∈ Π(n) is Wishart dis-               Definition. σ is an inverse Wishart process on X with
+tributed with parameters ν > n − 1, K ∈ Π(n), and           parameters ν ∈ R+ and base kernel k : X × X → R if
+                                                Shah, Wilson, Ghahramani
+
+ 2                                2
+                                                                  Definition. y ∈ Rn is multivariate Student-t dis-
+ 1                                1                               tributed with parameters ν ∈ R+ \[0, 2], φ ∈ Rn and
+                                                                  K ∈ Π(n) if it has density
+ 0                                0
+
+                                                                                    Γ( ν+n
+                                                                                        2 )
+−1                               −1                                   p(y) =              n         |K|−1/2
+                                                                               ((ν − 2)π) 2 Γ( ν2 )
+−2                               −2
+     0     1        2        3        0   1         2        3                             (y − φ)> K −1 (y − φ) − 2
+                                                                                                                    ν+n
+
+Figure 1: Five samples (blue solid) from GP(h, κ) (left)                           × 1+                                 (5)
+                                                                                                      ν−2
+and T P(ν, h, κ) (right), with ν = 5, h(x) = cos(x) (red
+dashed) and κ(xi , xj ) = 0.01 exp(−20(xi − xj )2 ). The          We write y ∼ MVTn (ν, φ, K).
+grey shaded area represents a 95% predictive interval             We easily compute the mean and covariance of
+under each model.                                                 the MVT using the generative derivation: E[y] =
+                                                                  E[E[y|Σ]] = φ and cov[y] = E[E[(y −φ)(y −φ)> |Σ]] =
+for any finite collection x1 , ..., xn ∈ X , σ(x1 , ..., xn ) ∼   E[(ν − 2)Σ] = K. We prove the following Lemma in
+IWn (ν, K) where K ∈ Π(n) with Kij = k(xi , xj ). We              the Supplementary Material.
+write σ ∼ IWP(ν, k).                                              Lemma 1. The multivariate Student-t is consistent
+In the next section we use the inverse Wishart process            under marginalization.
+as a nonparametric prior over kernels in a hierarchical           We define a Student-t process as follows.
+Gaussian process model.
+                                                                  Definition. f is a Student-t process on X with pa-
+                                                                  rameters ν > 2, mean function Ψ : X → R, and ker-
+3        DERIVING THE STUDENT-t                                   nel function k : X × X → R if any finite collection
+         PROCESS                                                  of function values have a joint multivariate Student-t
+                                                                  distribution, i.e. (f (x1 ), ..., f (xn ))> ∼ MVTn (ν, φ, K)
+Gaussian processes (GPs) are popular nonparamet-                  where K ∈ Π(n) with Kij = k(xi , xj ) and φ ∈ Rn with
+ric Bayesian distributions over functions. A thorough             φi = Φ(xi ). We write f ∼ T P(ν, Φ, k).
+guide to GPs has been provided by Rasmussen and
+Williams [2006]. GPs are characterized by a mean
+                                                                  4     TP PROPERTIES & RELATION
+function and a kernel function. Practitioners tend
+to use parametric kernel functions and learn their                      TO OTHER PROCESSES
+hyperparameters using maximum likelihood or sam-
+pling based methods. We propose placing an inverse                In this section we discuss the conditional distribution
+Wishart process prior on the kernel function, leading             of the TP, the relationship between GPs and TPs, an-
+to a Student-t process.                                           other covariance prior which leads to the same TP, el-
+                                                                  liptical processes, and a sampling scheme for the IWP
+For a base kernel kθ parameterized
+                              1
+                                   by θ, and a con-               which
+                                                                   1      gives insight into this equivalence. Finally we
+tinuous mean function φ : X → R, our generative                   consider modelling noisy functions with a TP.
+approach is as follows
+                  σ ∼ IWP(ν, kθ )                                 4.1    Relation to Gaussian process
+               y|σ ∼ GP(φ, (ν − 2)σ) .          (3)
+                                                                  The Student-t process generalizes the Gaussian pro-
+                                                                  cess. A GP can be seen as a limiting case of a TP as
+Since the inverse Wishart distribution is a conjugate             shown in Lemma 2, which is proven in the Supplemen-
+prior for the covariance matrix of a Gaussian likeli-             tary Material.
+hood, we can analytically marginalize σ in the gen-               Lemma 2. Suppose f ∼ T P(ν, Φ, k) and g ∼
+erative model of (3). For any collection of data                  GP(Φ, k). Then f tends to g in distribution as ν → ∞.
+y = (y1 , ..., yn )> with φ = (φ(x1 ), ..., φ(xn ))> ,
+                Z
+p(y|ν, K) = p(y|Σ)p(Σ|ν, K)dΣ                                     The ν parameter controls how heavy tailed the process
+                                                                 is. Smaller values of ν correspond to heavier tails. As ν
+                                             >
+                                                               gets larger, the tails converge to Gaussian tails. This
+       Z exp − 21 T r K + (y−φ)(y−φ)                Σ −1
+                                        ν−2                       is illustrated in prior sample draws shown in Figure
+     ∝                                                      dΣ    1. Notice that the samples from the TP tend to have
+                           |Σ|(ν+2n+1)/2
+                                             −(ν+n)/2           more extreme behaviour than the GP.
+                   1
+     ∝ 1+             (y − φ)> K −1 (y − φ)
+                ν−2                                               ν also controls the nature of the dependence between
+                                                           (4)    variables which are jointly Student-t distributed, and
+                                                                                                                            −2
+
+                                                                                                                            −3
+                                                                                                                                 −3       −2      −1   0   1        2          3
+                                                                  3                                                          3
+
+                                                                  2                                                          2
+
+                                                                  1                                                          1
+
+                                                                  0
+                                                                                          Student-t0 Processes as Alternatives to Gaussian Processes
+                                                                                                                            −1                                           0.5               1.5       2.5
+ 3                                              3
+                                                                −1                                 3
+                                                                                                                                                                    0
+                                                                                                                                                                    −6
+                                                                                                                                                                                   1             2             3
+
+                                                               Manuscript under review by AISTATS 2014
+2.5                                            2.5                                                2.5
+
+                                                                −2                                                          −2                                      −5
+ 2                                              2                                                  2
+
+
+
+1.5                                            1.5              −3
+                                                                      −3       −2    −1   0   1
+                                                                                                  1.5
+
+                                                                                                        2           3
+                                                                                                                            −3
+                                                                                                                                 −3       −2      −1   0   1
+                                                                                                                                                                    −4
+
+                                                                                                                                                                    2          3
+                                                                                                                                                                                                                   The scaling constant of the multivariate Student-t pre-
+ 1                                              1                                                  1
+
+
+
+0.5
+            3
+                                               0.5
+                                                                  3
+                                                                                                  0.5
+                                                                                                                             3                                      −3
+
+                                                                                                                                                                                                                   dictive covariance has an intuitive explanation. Note
+            2                                                     2                                                          2                                      −2
+ 0
+ −6   −5   −4    −3      −2   −1       0   1
+                                                0
+                                                −62      −53    −44
+
+
+
+
+                                                                  1
+                                                                       −35     −26   −1   0   1
+                                                                                                   0
+                                                                                                   −62          −53     −44
+
+
+
+                                                                                                                             1
+                                                                                                                                  −35     −26     −1   0   1         2
+
+
+
+                                                                                                                                                                    −1
+                                                                                                                                                                               3       4         5         6
+
+                                                                                                                                                                                                                   that β1 is distributed as the sum of squares of n1 inde-
+            1
+
+            0                                                     0                                                          0                                      0
+                                                                                                                                                                                                                   pendent MVT1 (ν, 0, 1) distributions and hence E[β1 ] =
+           −1                                                   −1                                                          −1                                      1                                              n1 . If the observed value of β1 is larger than n1 , the
+           −2                                                   −2
+                                                                                                            1
+                                                                                                                            −2                                      2
+                                                                                                                                                                                                                   predictive covariance is scaled up and vice versa. The
+           −3
+                −3       −2   −1       0   1         2     3
+                                                                −3
+                                                                      −3       −2    −1   0   1         2           3
+                                                                                                                            −3
+                                                                                                                                 −3       −2      −1   0   1
+                                                                                                                                                                    3
+
+
+                                                                                                                                                                    2
+                                                                                                                                                                    4
+                                                                                                                                                                               3                                   magnitude of scaling is controlled by ν.
+            3                                                     3
+
+           Figure 2: Uncorrelated bivariate samples from a
+           Figure 2: Bivariate samples from a student-t copula with ν = 3 (left), a student-t copula with ν = 10 (centre)
+            2 a Gaussian copula (right). All 2
+           and                               marginal distributions are N(0, 1) distributed.
+                                                     1                                                  1
+                                                                                                                                                                    5
+
+
+                                                                                                                                                                    1
+
+
+
+           Student-t copula with ν = 3 (left), a Student-t copula
+            1                                                     1
+                                                                                                                                                                    6
+
+                                                                                                                                                                                                                   4.3   Another Covariance Prior
+                                                                                                                                                       >   −1
+           Proof. It is sufficient to show convergence in den- Note that β + β = (y − φ) K (y − φ). We have
+           with
+            0
+           sity       ν finite
+                for any    = collection
+                                 10 (centre)           and
+                                          of inputs. Let  y ∼ a Gaussian copula (right).
+                                                                  0
+                                                                                                                            1         2
+
+                                                                 >     −1  p(y , y )
+           MVT (ν, φ, K) and set β = (y − φ) K (y − φ) then
+           All marginal distributions arep(y |y
+           −1        n                                          −1
+                                                                   N(0,)=
+                                                                            1)
+                                                                             p(y )distributed.
+                                                                                                            2       1
+                                                                                                                                      1
+                                                                                                                                          1
+                                                                                                                                              2
+                                                                                                                                                                                                                   Despite the apparent flexibility of the inverse Wishart
+                                                                                                                       β1 + β2 −(ν+n)/2      β1 (ν+n1 1
+           −2                        β −(ν+n)/2
+                                              −2                                                                                                          )/2
+                                                                                                                                                                                                                   distribution, we illustrate in Lemma 4 the surprising
+                         p(y) ∝ 1 +              → e−β/2                                                            ∝ 1+                     1+
+           −3                       ν−2       −3
+                                                                                                                          ν−2                   ν−2
+                                                                                                                                   −(ν+n)/2
+                −3       −2   −1       0   1         2     3
+           not just their marginal distributions. In Figure 2
+           an3 ν → ∞. Hence the distribution of y tends to a
+                                                                      −3       −2    −1   0   1         2           3
+                                                                                                                    ∝ 1+
+                                                                                                                             β2
+                                                                                                                         β1 + ν − 2
+                                                                                                                                                           (6)                                                     result that a multivariate Student-t distribution can be
+           Nn (φ, K) distribution as ν → ∞.
+           we show plots of samples which
+            2
+                                                                                      alldensity to
+                                                                                               have        Gaussian                                                                                                derived using a much simpler covariance prior which
+                                                                       Comparing this                 the one in  equation 5, we
+
+           marginals but different joint distributions.
+            1                                                          note that
+                                                                                                       Notice          how                                                                                         has been considered previously [Yu et al., 2007]. The
+                                                                                                        ν+β −2            
+           The ν parameter controls how heavy tailed the process
+            0
+           the
+           is.   The tail      dependency
+                      smaller it is, the  heavier the tails.   these
+                                                          ofAs ν  gets
+                                                                        y |y ∼ MVT
+                                                                        distributions       ν + n , φ˜ ,
+                                                                                                     is νcontrolled
+                                                                                                        2
+                                                                                                          +n −2
+                                                                                                                1    × K˜ . (7)   n2               1   2
+                                                                                                                                                                1
+                                                                                                                                                                1
+                                                                                                                                                                                       22                          proof can be found in the Supplementary Material.
+           −1
+           larger, the tails converge to mimic Gaussian tails. This
+           by
+           is
+           −2
+                     ν. inFor
+               illustrated             example,
+                               prior sample draws   shown inthe
+           Notice that the samples from the TP leave the 95%
+                                                                    dependencies
+                                                             Figure 1.                          between
+                                                                       As ν tends to infinity, this                 y(xptends
+                                                                                                    predictive distribution
+                                                                       to a Gaussian process predictive distribution as we
+                                                                                                                             )        1
+                                                                                                                                                                                                                   Lemma 4. Let K ∈ Π(n), φ ∈ Rn , ν > 2, ρ > 0 and
+           and
+           confidence
+           −3           y(x
+                         band   q )
+                                more  are
+                                      often    different
+                                            than the samples
+           GP, a clear indicator of the heavier tails.
+                                                              fromdepending
+                                                                   the would  expect  on
+                                                                                      given    whether
+                                                                                              Lemma    2.  The     y   is
+                                                                                                                predictive
+                                                                       has the same form as for a Gaussian process predic-
+                                                                                                                             a
+                                                                                                                            mean
+                −3       −2   −1       0   1         2     3
+           TPimportant
+           It is       or ato note GP,       even
+                                       that ν also      if thethe
+                                                   controls     natureTP and GP have the same
+                                                                       tive. The key difference is in the predictive covariance,
+                                                                       which is a scaled version of the Gaussian process pre-
+                                                                                                                                                                                                                                r−1 ∼ Γ(ν/2, ρ/2)
+           of the dependence between variables which are jointly
+           kernel.
+           student-t    distributed and not just the marginal distri-
+                                                                       dictive covariance.
+                                                                                                                                                                                                                                y|r ∼ Nn (φ, r(ν − 2)K/ρ),             (7)
+           bution of points. In Figure 2 we show plots of samples                                 A somewhat disappointing feature of the Gaussian
+           which all have Gaussian marginals but different joint                                  process is that for a given kernel, the predictive co-
+           distributions. Notice how the tail dependency of the                                   variance of new samples does not explicitly depend on
+           4.2                Conditional distribution
+           bivariate distributions is controlled by ν.                                            previous observations.
+                                                                                                                                                                                                                   then marginally y ∼ MVTn (ν, φ, K).
+                                                                                                  The scaling constant of the multivariate student-t pre-
+           4.2       Conditional distribution
+           The conditional distribution for a multivariate
+                                                                           1                      dictive covariance has an intuitive explanation. Note
+                                                                                                  that β1 is distributed as the sum of squares of n1 inde-                                                                                       ρ       β
+                                                                                                                                                                                                                                                             
+           We now derive the conditional distribution for a                                       pendent MVT1 (ν, 0, 1) distributions and hence E[β1 ] =                                                          From (7), r−1 |y ∼ Γ ν+n  2 , 2 (1 + ν−2 ) and hence
+           Student-t has an analytic form which we state in
+           multivariate student-t distribution. Suppose y ∼                                       n1 . If the observed value of β1 is larger than n1 , the
+                                                                                                                                                                                                                                         ν+β−2
+           MVTn (ν, φ, K) and let y1 and y2 represent the first
+           Lemma 3 and prove in the Supplementary Material.
+           n1 and remaining n2 entries of y respectively. Let
+                                                                                                  predictive covariance is scaled up and vice versa. The
+                                                                                                  magnitude of scaling is controlled by ν.
+                                                                                                                                                                                                                   E[(ν − 2)r/ρ|y] = ν+n−2     . This is exactly the fac-
+                                   −1
+           β1 = (y1 − φ1 )> K11       (y1 − φ1 ) and β2 = (y2 −
+                      −1
+           φ˜2 )> K˜22 (y2 − φ˜2 ), where φ˜2 = K21 K11
+                                                     −1
+                                                                                                  The fact that the predictive covariance of the multi-
+                                                                                                                                                                                                                   tor by which K̃22 is scaled in the MVT conditional
+           Lemma 3. Suppose y ∼ MVT
+                      ˜                            (ν, φ, K) and let y
+                                                        (y1 −φ1 )−
+                                        variate student-t depends on the data is one of the key
+                                                 of this distribution over a Gaussian one. 1
+                                        benefits n
+                                          −1
+           φ2 and K22 = K22 − K21 K11        K12 .
+                                                                                                                                                                                                                   distribution in (13).
+           and y2 represent the first n1 and remaining n2 entries
+           of y respectively. Then                                                                                                                                                                                 This result is surprising because we previously inte-
+                                                                                                                                                                                                                 grated over an infinite dimensional nonparametric ob-
+                                            ν + β1 − 2
+            y2 |y1 ∼ MVTn2 ν + n1 , φ˜2 ,                            × K̃22 , (6)                                                                                                                                  ject (the IWP) to derive the Student-t process, yet
+                                            ν + n1 − 2                                                                                                                                                             here we show that we can integrate over a single scale
+                                                                                                                                                                                                                   parameter (inverse Gamma) to arrive at the same
+           where φ˜2 = K21 K11  −1
+                                   (y1 − φ1 ) + φ2 , β1 = (y1 −
+               > −1                                             −1                                                                                                                                                 marginal process. We provide some insight into why
+           φ1 ) K11 (y1 − φ1 ) and K̃22 = K22 − K21 K11            K12 .
+                                                                                                                                                                                                                   these distinct priors lead to the same marginal multi-
+           Note that E[y2 |y1 ] = φ˜2 , cov[y2 |y1 ] = ν+n11 −2 × K̃22 .
+                                                       ν+β   −2
+                                                                                                                                                                                                                   variate Student-t distribution in section 4.5.
+
+           As ν tends to infinity, this predictive distribution tends                                                                                                                                              4.4   Elliptical Processes
+           to a Gaussian process predictive distribution as we
+           would expect given Lemma 2. Perhaps less intuitively,                                                                                                                                                   We now show that both Gaussian and Student-t pro-
+           this predictive distribution also tends to a Gaussian                                                                                                                                                   cesses are elliptically symmetric, and that the Student-
+           process predictive as n1 tends to infinity.                                                                                                                                                             t process is the more general elliptical process.
+
+           The predictive mean has the same form as for a Gaus-                                                                                                                                                    Definition. y ∈ Rn is elliptically symmetric if and
+           sian process, conditioned on having the same kernel                                                                                                                                                     only if there exists µ ∈ Rn , R a nonnegative random
+           k, with the same hyperparameters. The key difference                                                                                                                                                    variable, Ω a n × d matrix with maximal rank d and
+           is in the predictive covariance, which now explicitly                                                                                                                                                   u uniformly distributed on the unit sphere in Rd inde-
+                                                                                                                                                                                                                                             D                 D
+           depends on the training observations. Indeed, a some-                                                                                                                                                   pendent of R such that y = µ+RΩu, where = denotes
+           what disappointing feature of the Gaussian process is                                                                                                                                                   equality in distribution.
+           that for a given kernel, the predictive covariance of
+                                                                                                                                                                                                                   An overview of elliptically symmetric distributions and
+           new samples does not depend on training observations.
+                                                                                                                                                                                                                   the following Lemma can be found in Fang et al. [1989].
+           Importantly, since the marginal likelihood of the TP
+           in (5) differs from the marginal likelihood of the GP,                                                                                                                                                  Lemma 5. Suppose R1 ∼ χ2 (n)        √ and R2 ∼
+           both the predictive mean and predictive covariance of                                                                                                                                                   Γ−1 (ν/2, 1/2) independently. p
+                                                                                                                                                                                                                                                 If R = R1 , then y is
+           a TP will differ from that of a GP, after learning kernel                                                                                                                                               Gaussian distributed. If R = (ν − 2)R1 R2 then y is
+           hyperparameters.                                                                                                                                                                                        MVT distributed.
+                                             Shah, Wilson, Ghahramani
+
+
+Elliptically symmetric distributions characterize a            tions, which are volume preserving operations. Sym-
+large class of distributions which are unimodal and            metric positive definite (SPD) matrices can be repre-
+where the likelihood of a point decreases in its dis-          sented through a diagonal and an orthogonal matrix:
+tance from this mode. These properties are natural
+assumptions we often want to encode in our prior dis-          Theorem 8. Let Σ ∈ Π(n), the set of SPD, n × n
+tribution, making elliptical distributions ideal for mul-      matrices. Suppose {λ1 , ..., λn } are the eigenvalues of
+tivariate modelling tasks. The idea naturally extends          Σ. There exists Q ∈ Ξ(n) such that Σ = QΛQ> , where
+to infinite dimensional objects.                               Λ = diag(λ1 , ..., λn ).
+Definition. Let Y = {yi } be a countable family of
+random variables. It is an elliptical process if any finite    Now suppose Σ ∼ IWn (ν, I). We compute the den-
+subset of them are jointly elliptically symmetric.             sity of an IW using the representation in Theorem 8,
+                                                               being careful to include the Jacobian of the change
+Not all elliptical distributions have densities (e.g. Lévy,   of variable, J(Σ; Q, Λ), given in Edelman and Rao
+alpha-stable distributions). Even fewer elliptical pro-        [2005]. From (2) and using the facts that Q> Q = I
+cesses have densities, and the set of those that do is         and |AB| = |BA|,
+characterized in Theorem 6 due to Kelker [1970].
+Theorem 6. Suppose Y = {yi } is an elliptical pro-
+cess. Any finite collection z = {z1 , ..., zn } ⊂ Y has a        p(Σ)dΣ = p(QΛQ> )|J(Σ; Q, Λ)|dΛdQ
+density if and only if there exists a non-negative ran-                                    1            
+dom variable r such that z|r ∼ Nn (µ, rΩΩ> ).                      ∝ |QΛQ> |−(ν+2n)/2 exp − Tr (QΛQ> )−1
+                                                                                              2
+                                                                                 Y
+A simple corollary of this theorem describes the only                        >
+                                                                        × Q            |λi − λj | dΛdQ
+two cases where an elliptical process has an analyt-                             1≤i<j≤n
+ically representable density function (its proof is in-              n 
+                                                                     Y                                 
+                                                                         − ν+2n      1 Y
+                                                                                  − 2λ             n
+cluded in the Supplementary Material).                             ∝    λi   2
+                                                                                e      i |λi − λj | dλi dQ         (8)
+Corollary 7. Suppose Y = {yi } is an elliptical pro-                  i=1                j6=i
+cess. Any finite collection z = {z1 , ..., zn } ⊂ Y has
+an analytically representable density if and only if Y
+is either a Gaussian process or a Student-t process.           (8) tells us that Q is uniformly distributed over Ξ(n)
+Since the Student-t process generalizes the Gaussian           (e.g. from a Υn,n distribution as described in Dawid
+process, it is the most general elliptical process which       [1977]) and that the λi are exchangeable, i.e., per-
+has an analytically representable density. The TP is           muting the diag(Λ) does not affect its probability.
+thus an expressive tool for nonparametric Bayesian             We denote this exchangeable distribution Θn (ν). We
+modelling.                                                     generate a draw from an inverse Wishart distribu-
+                                                               tion by sampling Q ∼ Υn,n , Λ ∼ Θn (ν) and setting
+With analytic expressions for the predictive distribu-         Σ = QΛQ> .
+tions, the same computational costs as a Gaussian pro-
+cess and increased flexibility, the Student-t process can      This result provides a geometric interpretation of what
+be used as a drop-in replacement for a Gaussian pro-           a sample from IWn (ν, I) looks like. We first uniformly
+cess in many applications.                                     at random pick an orthogonal set of basis vectors in
+                                                               Rn and then stretch these basis vectors using an ex-
+                                                               changeable set of scalar random variables. An analo-
+4.5   A New Way to Sample the IWP
+                                                               gous interpretation holds for the Wishart distribution.
+We show that the density of an inverse Wishart dis-            Recall from Lemma 5 that if u is uniformly distributed
+tribution depends only on the eigenvalues of a pos-            on the unit sphere   in Rn and R ∼ χ2 (n) indepen-
+                                                                             √
+itive definite matrix. To the best of our knowledge            dently, then Ru ∼ Nn (0, I). By (4) and Lemma
+this change of variables has not been computed previ-          5, if we sample
+                                                                            p Q and Λ from the generative process
+ously. This decomposition offers a novel way of sam-           above, then (ν − 2)RQΛ1/2 u is marginally a draw
+pling from an inverse Wishart distribution and insight         from MVT(ν, 0, I). Since the diagonal elements of Λ
+into why the Student-t process can be derived using            are exchangeable, Q is orthogonal and sampled uni-
+an inverse Gamma or an inverse Wishart process co-             formly over Ξ(n), and u is spherically symmetric, we
+variance prior.                                                                          D √
+                                                               must have that QΛ1/2 u = R0 u for some positive
+Let Ξ(n) be the set of all n × n orthogonal matrices. A        scalar random variable R0 by symmetry. By Lemma
+matrix is orthogonal if it is square, real valued and its      5 we know R0 ∼ Γ−1 (ν/2, 1/2). In summary, the ac-
+rows and columns are orthogonal unit vectors. Orthog-          tion of QΛ1/2 on u is equivalent in distribution to a
+onal matrices are compositions of rotations and reflec-        rescaling by an inverse Gamma variate.
+                        Student-t Processes as Alternatives to Gaussian Processes
+
+                                                          3                                       3
+
+                                                          2                                       2
+
+                                                          1                                       1
+
+                                                          0                                       0
+
+                                                         −1                                      −1
+
+                                                         −2                                      −2
+
+                                                         −3                                      −3
+                                                          −5 −4 −3 −2 −1 0   1   2   3   4   5    −5 −4 −3 −2 −1 0   1   2   3   4    5
+
+                                                         Figure 4: Posterior distributions of 1 sample from Syn-
+                                                         thetic Data B under GP prior (left) and TP prior
+                                                         (right). The solid line is the posterior mean, the
+                                                         shaded area represents a 95% predictive interval, cir-
+Figure 3: Scatter plots of points drawn from various
+                                                         cles are training points and crosses are test points.
+2-dim processes. Here ν = 2.1 and Kij = 0.8δij + 0.2.
+Top-left: MVT2 (ν, 0, K) + MVT2 (ν, 0, 0.5I). Top-
+right: MVT2 (ν, 0, K + 0.5I) (our model). Bottom-        It is hence attractive that our proposed method can
+left: MVT2 (ν, 0, K) + N2 (0, 0.5I). Bottom-right:       model heavy tailed noise whilst retaining an analytic
+N2 (0, K + 0.5I).                                        inference scheme. This is a novel finding to the best
+                                                         of our knowledge.
+
+4.6   Modelling Noisy Functions                          5     APPLICATIONS
+It is common practice to assume that outputs are the     In this section we compare TPs to GPs for regression
+sum of a latent Gaussian process and independent         and Bayesian optimization.
+Gaussian noise. An advantage of such a model is in
+the fact that the sum of independent
+                                1      Gaussian 1dis-    5.1     Regression
+tributions is Gaussian distributed and hence such a
+Gaussian process model remains analytic in the pres-     Consider a set of observations {xi , yi }ni=1 for xi ∈ X
+ence of noise. Unfortunately the sum of two indepen-     and yi ∈ R. Analogous to Gaussian process regression,
+dent MVTs is analytically intractable.                   we assume the following generative model
+This problem was encountered by Rasmussen and                           f ∼ T P(ν, Φ, kθ )
+Williams [2006], who went on 1   to dismiss the multi-
+                                                    1
+
+variate Student-t process for practical purposes. Our                   yi = f (xi ) for i = 1, ..., n.                              (9)
+approach is to incorporate the noise into the kernel
+function, for example, letting k = kθ + δ, where kθ is   In this work we consider parametric
+                                                                                           1    kernel functions.                          1
+
+a parametrized kernel and δ is a diagonal kernel func-   A key task when using such kernels is in learning the
+tion. Such a model is not equivalent to adding inde-     parameters of the chosen kernel, which are called the
+pendent noise, since the scaling parameter ν will have   hyperparameters of the model. We include derivatives
+an effect on the squared-exponential kernel as well as   of the marginal log likelihood of the TP with respect to
+the noise kernel. Zhang and Yeung [2010] propose a       the hyperparameters in the Supplementary Material.
+similar method for handling noise; however, they in-
+correctly assume that the latent function and noise      5.1.1    Experiments
+are independent under this model. The noise will be
+                                                         We test the Student-t process as a regression model
+uncorrelated with the latent function, but not inde-
+                                                         on a number of datasets. We sample hyperparameters
+pendent.
+                                                         using Hamiltonian Monte Carlo [Neal, 2011] and use a
+As ν → ∞ this model tends to a GP with independent       kernel function which is a sum of a squared exponential
+Gaussian noise. In Figure 3, we consider samples from    and a delta kernel function (kθ = kSE ). The results for
+various two dimensional processes when ν is small and    all of these experiments are summarized in Table 1.
+the signal to noise ratio is small. Here we see that
+                                                         Synthetic Data A. We sample 100 functions from
+the TP with noise incorporated into its kernel behaves
+                                                         a GP prior with Gaussian noise and fit both GPs and
+similarly to a TP with independent Student-t noise.
+                                                         TPs to the data with the goal of predicting test points.
+There have been several attempts to make GP regres-      For each function we train on 80 data points and test
+sion robust to heavy tailed noise that rely on approx-   on 20. The TP, which generalizes the GP, has superior
+imate inference [Neal, 1997, Vanhatalo et al., 2009].    predictive uncertainty in this example.
+                                               Shah, Wilson, Ghahramani
+
+Table 1: Predictive Mean Squared Errors (MSE) and
+Log Likelihoods (LL) of regression experiments. The                       2
+TP consistently has the lowest MSE and highest LL.
+                                                                          0
+               Gaussian Process          Student-T Process
+Data set
+              MSE            LL          MSE           LL
+Synth A    2.24 ± 0.09 -1.66± 0.04    2.29 ± 0.08 -1.00± 0.03           −2
+Synth B    9.53 ± 0.03 -1.45± 0.02   5.69 ± 0.03 -1.30± 0.02
+Snow       10.2 ± 0.08 4.00 ± 0.12    10.5 ± 0.07 25.7 ± 0.18
+Spatial    6.89 ±0.04    4.34±0.22   5.71 ±0.03     44.4±0.4
+                                                                          −5 −4 −3 −2 −1 0         1        2   3   4   5
+Wine       4.84 ± 0.08    -1.4 ± 1   4.20 ± 0.06    113 ± 2
+
+                                                                        0.2
+
+
+Synthetic Data B. We construct data by drawing                          0.1
+100 functions from a GP with a squared exponential
+kernel and adding Student-t noise independently. The                      0
+posterior distribution of one sample is shown in Fig-                     −5 −4 −3 −2 −1 0         1        2   3   4   5
+ure 4. The predictive means are also not identical since        Figure 5: Posterior distribution of a function to maxi-
+the posterior distributions of the hyperparameters dif-         mize under a GP prior (top) and acquisition functions
+fer between the TP and the GP. Here the TP has a                (bottom). The solid green line is the acquisition func-
+superior predictive mean, since after hyperparameter            tion for a GP, the dotted red and dashed black lines
+training it is better able to model Student-t noise, as         are for TP priors with ν = 15 and ν = 5 respectively.
+well as better predictive uncertainty.                          All other hyperparameters are kept the same.
+Whistler Snowfall Data1 . Daily snowfall amounts
+                                                                5.2.1   Method
+in Whistler have been recorded for the years 2010 and
+2011. This data exhibits clear changepoint type be-             In this paper we work with the EI criterion and for
+haviour due to seasonality which the TP handles much            reasons described in Snoek et al. [2012] we use an ARD
+better than the GP.                                             Matérn 5/2 kernel defined as
+                                                                                        q              q          
+Spatial Interpolation Data2 . This dataset contains
+                                                                  kM 52 (x, x0 ) = θ0 1 + 5rx,x
+                                                                                             2
+                                                                                                 0   exp − 5rx,x 2
+                                                                                                                   0
+rainfall measurements at 467 (100 observed and 367 to
+be estimated) locations in Switzerland on 8 May 1986.                                                                       (10)
+                                                                                      P
+                                                                                      D   (xd −x0d )2
+Wine Data. This dataset due to Cortez et al. [2009]             where r2 (x, x0 ) =                     .
+                                                                                      d=1     θd2
+consists of 12 attributes of various red wines includ-
+ing acidity, density, pH and alcohol level. Each wine           We assume that the function we wish to optimize over
+is given a corresponding quality score between 0 and            is f : RD → R and is drawn from a multivariate
+10. We choose a random subset of 400 wines: 360 for             Student-t process with scale parameter ν > 2, con-
+training and 40 for testing.                                    stant mean µ and kernel function a linear sum of a
+                                                                ARD Matérn 5/2 kernel and a delta function kernel.
+                                                                Our goal is to find where f attains its minimum.
+5.2   Bayesian Optimization                                     Let XN = {xn , fn }N       n=1 be our current set of N
+                                                                observations and fbest = min{f1 , ..., fN }. To com-
+Machine learning algorithms often require tuning pa-            press notation we let θ represent the parameters      
+rameters, which control learning rates and abilities,           θ, ν, µ. Let the acquisition function aEI x; XN , θ de-
+via optimizing an objective function. One can model             note the expected improvement over the current best
+this objective function using a Gaussian process, under         value from choosing to sample at point x given cur-
+a powerful iterative optimization procedure known as            rent observations XN and hyperparameters θ. Note
+Gaussian process Bayesian optimization [Brochu et al.,          that the distribution of f (x)|XN , θ is MVT1 (ν +
+2010]. To pick where to query the objective function            N, µ̃(x; Xn ), τ̃ (x; Xn , ν)2 ), where the form of µ̃ and
+next, one can optimize the expected improvement (EI)            τ̃ are derived in (13). Let γ̃ = fbestτ̃ −µ̃ . Then
+over the running optimum, the probability of improv-
+ing the current best or a GP upper confidence bound.                                                                
+                                                                 aEI x; XN , θ = E max fbest − f (x), 0 |XN , θ            1
+                                                                     Z fbest                           y − µ̃ 
+                                                                                             1
+   1                                                               =          dy(fbest − y) λν+N
+     The snowfall dataset can be found at http://www.                   −∞                   τ̃           τ̃
+climate.weatheroffice.ec.gc.ca.                                                                 γ̃ 2 − 1 
+   2
+     The spatial interpolation data can be found at http:          = γ̃ τ̃ Λν+N (γ̃) + τ̃ 1 +                λν+N (γ̃), (11)
+//www.ai_geostats.org under SIC97.                                                              ν+N −1
+                                                      Student-t Processes as Alternatives to Gaussian Processes
+
+                      20                                                                       20                                                                         0
+                                                                    GP                                                                    GP                                                                           GP
+                                                                    TP                                                                    TP                                                                           TP
+                       0                                                                       15
+
+
+
+
+Max Function Value                                                        Min Function Value                                                        Min Function Value
+                                                                                                                                                                         −1
+
+
+                     −20                                                                       10
+                                                                                                                                                                         −2
+
+
+                     −40                                                                        5
+                                                                                                                                                                         −3
+
+                     −60                                                                        0
+                           1    2   3    4     5   6    7   8   9    10                             4   8   12 16 20 24 28          32   36    40                             2   4   6   8 10 12 14 16 18 20 22 24 26 28 30
+                                        Function Evaluation                                                   Function Evaluation                                                           Function Evaluation
+
+Figure 6: Function evaluations for the synthetic function (left), Branin-Hoo function (centre) and the Hartmann
+function (right). Evaluations under a Student-t process prior (solid line) and a Gaussian process prior (dashed
+line) are shown. Error bars represent the standard deviation of 50 runs. In each panel we are minimizing an
+objective function. The vertical axis represents the running minimum function value.
+
+where λν and Λν are the density and distribution func-                                                                    Branin-Hoo function             This function is a popular
+tions of a MVT1 (ν, 0, 1) distribution respectively.                                                                      benchmark for optimization methods [Jones, 2001] and
+                                                                                                                          is defined on the set {(x1 , x2 ) : 0 ≤ x1 ≤ 15, −5 ≤ x2 ≤
+The parameters θ are all sampled from the posterior
+                                                                                                                          15}. We initialized the runs with 4 initial observations,
+using slice sampling, similar to the method used in
+                                                                                                                          one for each corner of the input square.
+Snoek et al. [2012]. Suppose we have H sets of poste-
+rior samples {θ h }H
+                   h=1 . We set                                                                                           Hartmann function This is a function with 6 local
+                                                                                                                          minima in [0, 1]6 [Picheny et al., 2013]. The runs are
+                                              H
+                                           1 X                                                                          initialised with 6 observations at corners of the unit
+                               ãEI x; XN =     aEI x; XN , θ h                                              (12)         cube in R6 . Notice that the TP tends to behave more
+                                            H
+                                                        h=1
+                                                                                                                          like a step function whereas the Gaussian process’ rate
+as our approximate marginalized acquisition function.                                                                     of improvement is somewhat more constant. The rea-
+The choice of the net place to sample is xnext =                                                                         son for this behaviour is that the TP tends to more
+argmaxx∈RD ãEI x; XN , which we find by using gra-                                                                       thoroughly explore any modes which it has found, be-
+dient descent based methods starting from a dense set                                                                     fore moving away from these modes. This phenomenon
+of points in the input space.                                                                                             seems more prevalant in higher dimensions.
+To get more intuition on how ν changes the behaviour
+of the acquisition function, we study an example in                                                                       6         CONCLUSIONS
+Figure 5. Here we fix all hyperparameters other than
+                                                                                                                          We have 1shown that the inverse Wishart process
+ν and plot the acquisition functions
+                                  1   varying ν. In this                                                                                                                1
+                                                                                                                          (IWP) is an appropriate prior over covariance   matri-
+example, it is clear that in certain scenarios the TP
+                                                                                                                          ces of arbitrary size. We used an IWP prior over a GP
+prior and GP prior will lead to very different proposals
+                                                                                                                          kernel and showed that marginalizing over the IWP re-
+given the same information.
+                                                                                                                          sults in a Student-t process (TP). The TP has consis-
+                                                                                                                          tent marginals, closed form conditionals and contains
+5.2.2                          Experiments
+                                                                                                                          the Gaussian process as a special case. We also proved
+We compare a TP prior with a Matérn plus a delta                                                                         that the TP is the only elliptical process other than
+function kernel to a GP prior with the same kernel, for                                                                   the GP which has an analytically representable density
+Bayesian optimization. To integrate away uncertainty                                                                      function. The TP prior was applied in regression and
+we slice sample the hyperparameters [Neal, 2003]. We                                                                      Bayesian optimization tasks, showing improved per-
+consider 3 functions: a 1-dim synthetic sinusoidal, the                                                                   formance over GPs with no additional computational
+2-dim Branin-Hoo function and a 6-dim Hartmann                                                                            costs.
+function. All the results are shown in Figure 6.
+                                                                                                                          The take home message for practitioners should be
+Sinusoidal synthetic function            In this experi-                                                                  that the TP has many if not all of the benefits of
+ment we aimed to find the minimum of f (x) = −(x −                                                                        GPs, but with increased modelling flexibility at no
+1)2 sin(3x + 5x−1 + 1) in the interval [5, 10]. The func-                                                                 extra cost. Our work suggests that it could be use-
+tion has 2 local minima in this interval. TP optimiza-                                                                    ful to replace GPs with TPs in almost any applica-
+tion clearly outperforms GP optimization in this prob-                                                                    tion. The added flexibility of the TP is orthogonal to
+lem; the TP was able to come to within 0.1% of the                                                                        the choice of kernel, and could complement recent ex-
+minimum in 8.1 ± 0.4 iterations whilst the GP took                                                                        pressive closed form kernels [Wilson and Adams, 2013,
+10.7 ± 0.6 iterations.                                                                                                    Wilson et al., 2013] in future work.
+                                          Shah, Wilson, Ghahramani
+
+
+References                                                 J. Vanhatalo, P. Jylanki, and A. Vehtari. Gaussian
+                                                             Process Regression with Student-t Likelihood. Ad-
+C. Archambeau and F. Bach. Multiple Gaussian Pro-
+                                                             vances in Neural Information Processing Systems,
+  cess Models. Advances in Neural Information Pro-
+                                                             pages 1910–1918, 2009.
+  cessing Systems, 2010.
+                                                           A. G. Wilson and R. P. Adams. Gaussian process
+E. Brochu, M. Cora, and N. de Freitas. A Tutorial
+                                                             covariance kernels for pattern discovery and extrap-
+  on Bayesian Optimization of Expensive Cost Func-
+                                                             olation. Proceedings of the 30th International Con-
+  tions, with Applications to Active User Modeling
+                                                             ference on Machine Learning, 2013.
+  and Hierarchical Reinforcement Learning. arXiv,
+  2010. URL http://arxiv.org/abs/1012.2599.                A. G. Wilson, E. Gilboa, A. Nehorai, and J. P. Cun-
+P. Cortez, A. Cerdeira, F. Almeida, T. Matos, and            ningham. GPatt: Fast multidimensional pattern ex-
+  J. Reis. Modeling Wine Preferences by Data Mining          trapolation with Gaussian processes. arXiv, 2013.
+  from Physiochemical Properties. Decision Support           URL http://arxiv.org/abs/1310.5288.
+  Systems, Elsevier, 2009.                                 Z. Xu, F. Yan, and Y. Qi. Sparse Matrix-Variate t
+A. P. Dawid. Spherical Matrix Distributions and a            Process Blockmodel. 2011.
+  Multivariate Model. J. R. Statistical Society B,         S. Yu, V. Tresp, and K. Yu. Robust Multi-Task Learn-
+  1977.                                                       ing with t-Processes. 2007.
+A. P. Dawid. Some Matrix-Variate Distribution The-         Y. Zhang and D. Y. Yeung. Multi-Task Learning us-
+  ory: Notational Considerations and a Bayesian Ap-          ing Generalized t Process. Proceedings of the 13th
+  plication. Biometrika, 1981.                               Conference on Artificial Intelligence and Statistics,
+A. Edelman and N. Raj Rao. Random Matrix Theory.             2010.
+  Acta Numerica, 1:1–65, 2005.
+K. T. Fang, S. Kotz, and K. W. Ng. Symmetric Multi-
+  variate and Related Distributions. Chapman & Hall,
+  1989.
+D. R. Jones. A Taxonomy of Global Optimization
+  Methods Based on Response Surfaces. Journal of
+  Global Optimization, 21(4):345–383, 2001.
+D. Kelker. Distribution Theory of Spherical Distri-
+  butions and a Location-Scale Parameter. Sankhya,
+  Ser. A,, 1970.
+R. M. Neal. Monte Carlo Implementation of Gaussian
+  Process Models for Bayesian Regression and Classi-
+  fication. Technical Report No. 9702, Dept of Statis-
+  tics, University of Toronto, 1997.
+R. M. Neal. Slice Sampling. Annals of Statistics, 31(3):
+  705–767, 2003.
+R. M. Neal. Handbook of Markov chain Monte Carlo.
+  Chapman & Hall/CRC, 2011.
+V. Picheny, T. Wagner, and D. Ginsbourger. A Bench-
+  mark of Kriging-Based Infill Criteria for Noisy Op-
+  timization. Structural and Multidisciplinary Opti-
+  mization, 48(3):607–626, 2013.
+C. E. Rasmussen. Evaluation of Gaussian Processes
+  and other Methods for Non-Linear Regression. PhD
+  thesis, Graduate Department of Computer Science,
+  University of Toronto, 1996.
+C. E. Rasmussen and C. K. I. Williams. Gaussian
+  Processes for Machine Learning. MIT Press, 2006.
+J. Snoek, H. Larochelle, and R. Adams. Practical
+  Bayesian Optimization of Machine Learning Algo-
+  rithms. Advances in Neural Information Processing
+  Systems, 2012.
+                         Student-t Processes as Alternatives to Gaussian Processes
+
+
+
+
+                                Supplementary Material
+
+In Appendix A, we provide proofs of Lemmas and Corollaries from our paper. We describe the derivatives of
+the log marginal likelihood of the Student-t process which is useful for hyperparameter learning in Appendix B.
+In Appendix C we offer more insights as to why two seemingly different covariance priors for a Gaussian process
+prior lead to the same marginal distribution.
+
+
+A    Proofs
+
+Lemma. [1] The multivariate Student-t is consistent under marginalization.
+
+
+Proof. Assume the generative process of equation 3 of the main text. Σ11 is IWn1 (ν, K11 ) distributed for any
+principal submatrix of Σ. Futhermore y1 |Σ11 ∼ Nn1 (0, (ν − 2)Σ11 ) since the Gaussian distribution is consistent
+under marginalization. Hence y1 ∼ MVTn1 (ν, µ1 , K11 ).
+
+
+Lemma. [2] Suppose f ∼ T P(ν, Φ, k) and g ∼ GP(Φ, k). Then f tends to g in distribution as ν → ∞.
+
+
+Proof. It is sufficient to show convergence in density for any finite collection of inputs. Let y ∼ MVTn (ν, φ, K)
+and set β = (y − φ)> K −1 (y − φ) then
+                                                     β −(ν+n)/2
+                                        p(y) ∝ 1 +                → e−β/2
+                                                     ν−2
+
+an ν → ∞. Hence the distribution of y tends to a Nn (φ, K) distribution as ν → ∞.
+
+
+Lemma. [3] Suppose y ∼ MVTn (ν, φ, K) and let y1 and y2 represent the first n1 and remaining n2 entries of
+y respectively. Then
+                                                      ν + β1 − 2        
+                         y2 |y1 ∼ MVTn2 ν + n1 , φ˜2 ,            × K̃22 ,                            (13)
+                                                       ν + n1 − 2
+
+where φ˜2 = K21 K11
+                 −1                                     −1
+                    (y1 − φ1 ) − φ2 , β1 = (y1 − φ1 )> K11                                  −1
+                                                           (y1 − φ1 ) and K̃22 = K22 − K21 K11 K12 .
+
+
+Proof. Let β2 = (y2 − φ˜2 )> K̃22
+                               −1
+                                  (y2 − φ˜2 ). Note that β1 + β2 = (y − φ)> K −1 (y − φ). We have
+
+                                     p(y1 , y2 )    β1 + β2 −(ν+n)/2      β1 (ν+n1 )/2
+                      p(y2 |y1 ) =              ∝ 1+                     1+
+                                       p(y1 )         ν−2                   ν−2
+                                                        β2     −(ν+n)/2
+                                                ∝ 1+
+                                                     β1 + ν − 2
+
+Comparing this expression to the definition of a MVT density function gives the required result.
+
+
+Lemma. [4] Let K ∈ Π(n), φ ∈ Rn , ν > 2, ρ > 0 and
+
+                                            r−1 ∼ Γ(ν/2, ρ/2)
+                                            y|r ∼ Nn (φ, r(ν − 2)K/ρ),                                       (14)
+
+then marginally y ∼ MVTn (ν, φ, K).
+                                         Shah, Wilson, Ghahramani
+
+
+Proof. Let β = (y − φ)> K −1 (y − φ). We can analytically marginalize out the scalar r,
+                         Z                 Z                    n      
+                                                         ρβ                    ρ  − (ν+2)
+                  p(y) = p(y|r)p(r)dr ∝ exp −                    r− 2 exp −       r 2 dr
+                                                      2(ν − 2)r               2r
+                                                        (ν+n) Z
+                                                  β − 2                 1  − (ν+n+2)
+                                        ∝ 1+                     exp −       r     2    dr
+                                                ν−2                      2r
+                                                 β − 2
+                                                         (ν+n)
+
+                                        ∝ 1+
+                                                ν−2
+
+Hence y ∼ MVTn (ν, φ, K) . Note the redundancy in ρ. Without loss of generality, let ρ = 1.
+
+
+Corollary. [7] Suppose Y = {yi } is an elliptical process. Any finite collection z = {z1 , ..., zn } ⊂ Y has an
+analytically representable density if and only if Y is either a Gaussian process or a Student-t process.
+
+                                                                 R
+Proof. By Theorem 6, we need to be able to analytically solve p(z|r)p(r)dr, where z|r ∼ Nn (µ, rΩΩ> ). This
+is possible either when r is a constant with probability 1 or when r ∼ Γ−1 (ν/2, 1/2), the conjugate prior. These
+lead to the Gaussian and Student-t processes respectively.
+
+B    Marginal Likelihood Derivatives
+
+Being able to analytically compute the derivative of the likelihood with respect to the hyperparameters is useful
+for hyperparameter learning e.g. maximum likelihood or Hamiltonian (Hybrid) Monte Carlo.
+                                                                                               
+                           n               1                       Γ( ν+n
+                                                                        2 )           (ν + n)          β 
+         logp(y|ν, Kθ ) = − log((ν − 2)π) − log(|Kθ |) + log                      −           log 1 +      ,
+                           2               2                        Γ( ν2 )              2            ν−2
+
+
+where β = (y − φ)> Kθ−1 (y − φ) and its derivative with respect to a hyperparameter is
+                                                                       ∂K 
+                          ∂                      1      ν+n                  θ
+                             log p(y|ν, φ, Kθ ) = Tr         αα> − Kθ−1        ,
+                          ∂θ                     2     ν+β−2               ∂θ
+
+where α = Kθ−1 (y − φ). We may also learn ν using gradient based methods and the following derivative
+
+                       ∂                         n        ν + n     ν 
+                          log p(y|ν, Kθ ) = −          +ψ         −ψ
+                       ∂ν                     2(ν − 2)       2          2
+                                              1         β            (ν + n)β
+                                            − log 1 +          +                                               (15)
+                                              2         ν−2      2(ν − 2)2 + 2β(ν − 2)
+
+where ψ is the digamma function.
+
+C    More Insight Into the Inverse Wishart Process and Inverse Gamma Priors
+
+As a reminder, we define a Wishart distribution as follows
+Definition. A random Σ ∈ Π(n) is Wishart distributed with parameters ν > n − 1, K ∈ Π(n) and we write
+Σ ∼ Wn (ν, K) if its density is given by
+                                                              1         
+                             p(Σ) = cn (ν, K)|Σ|(ν−n−1)/2 exp − Tr K −1 Σ ,                                    (16)
+                                                               2
+                                       −1
+where cn (ν, K) = |K|ν/2 2νn/2 Γn (ν/2)     .
+                            Student-t Processes as Alternatives to Gaussian Processes
+
+
+C.1      The Multivariate Gamma Function
+
+The function in the normalizing constant of the Wishart distribution is called the multivariate gamma function
+and is defined as follows
+Definition. The multivariate gamma function, Γn (.), is a generalization of the gamma function defined as
+                                         Z
+                                                                         
+                                Γn (a) =     |S|a−(n+1)/2 exp − Tr(S) dS                                  (17)
+                                                    S>0
+
+where S > 0 means S is positive definite.
+In the following lemma we illustrate an explicit relationship between the multivariate gamma function and the
+gamma function.
+Lemma. [A]
+                                                                    n
+                                                                    Y                       
+                                             Γn (a) = π n(n−1)/4          Γ a + (1 − j)/2                (18)
+                                                                    j=1
+
+
+Proof.
+                            Z
+                                                            
+                 Γn (a) =           |S|a−(n+1)/2 exp − Tr(S) dS
+                            ZS>0
+                                     a−(n+1)/2                                            
+                        =           S11     exp − S11 |S22.1 |a−(n+1)/2 exp − Tr(S22.1 )
+                           S>0
+                                                                             −1
+                                                                                     
+                                                            × exp − Tr(S21 S11  S12 ) dS11 dS12 dS22.1
+                          Z
+                                                  a−(n+1)/2              
+                        =         (πS11 )(n−1)/2 S11          exp − S11 dS11
+                           S11 >0
+                                               Z
+                                                                                        
+                                             ×        |S22.1 |a−(n+1)/2 exp − Tr(S22.1 ) dS22.1
+                                                        S22.1
+                                (n−1)/2
+                        =π                Γ(a)Γn−1 (a − 1/2)
+
+This recursive relationship and the fact that Γ1 (b) = Γ(b) implies
+                                                        n
+                                                        Y
+                                             Γn (a) =         π (j−1)/2 Γ(a − (j − 1)/2)
+                                                        j=1
+                                                                    n
+                                                                    Y
+                                                   = π n(n−1)/4           Γ(a + (1 − j)/2)
+                                                                    j=1
+
+which is as required.
+
+A simple corollary of this result will be key later.
+Corollary. [B]
+                                                      Γn (a)         Γ(a)
+                                                                =                                        (19)
+                                                   Γn (a − 1/2)   Γ(a − n/2)
+
+
+C.2      Two Different Covariance Priors
+
+The two generative processes we are interested in are
+
+                                 r−1 ∼ Γ(ν/2, 1/2)                        Ω ∼ Wn (ν + n − 1, K −1 )
+                                   y1 ∼ Nn (0, (ν − 2)rK)                 y2 ∼ N(0, (ν − 2)Ω−1 )
+
+where n ∈ N, ν > 2 and K is a n × n symmetric, positive definite matrix.
+                                            Shah, Wilson, Ghahramani
+
+
+The marginal distribution for y1 is
+                        Z
+               p(y1 ) = p(y1 |r)p(r)dr
+                        Z                                 y > K −1 y 
+                                                                         1           exp(−1/(2r))
+                      = (2πr(ν − 2))−n/2 |K|−1/2 exp − 1                    r−ν/2−1 ν/2              dr
+                                                              2(ν − 2)r               2 Γ(ν/2)
+                                                  Z
+                        (2π(ν − 2))−n/2 |K|−1/2       −(ν+n)/2−1
+                                                                                y1> K −1 y1  
+                      =                             r              exp     −  1 +              /2r dr
+                               2ν/2 Γ(ν/2)                                          (ν − 2)
+                                                                         −(ν+n)/2
+                        (2π(ν − 2))−n/2 |K|−1/2         y1> K −1 y1                              
+                      =                             1 +                /2            Γ (ν +   n)/2
+                               2ν/2 Γ(ν/2)                 (ν − 2)
+                                                                                         
+                                   −n/2    −1/2      y1 K y1 −(ν+n)/2 Γ (ν + n)/2
+                                                       > −1
+                      = (π(ν − 2))      |K|       1+                                        .             (20)
+                                                       (ν − 2)                  Γ(ν/2)
+
+The marginal distribution for y1 is
+                          Z
+                 p(y2 ) = p(y2 |Ω)p(Ω)dΩ
+                          Z                         
+                                        −n/2 1/2      y > Ωy2 
+                        =     2π(ν − 2)      |Ω| exp − 2
+                                                      2(ν − 2)
+                                                                              1             
+                                      × cn (ν + n − 1, K −1 )|Ω|(ν−2)/2 exp − Tr KΩ dΩ
+                                                                                    2
+                                      −n/2                    −1
+                         = 2π(ν − 2)        cn (ν + n − 1, K )
+                                        Z                                                
+                                                                  1         y2 y2>  
+                                      × |Ω|(ν−1)/2 exp − Tr K +                       Ω dΩ
+                                                                  2           ν−2
+                                      −n/2
+                         = 2π(ν − 2)        cn (ν + n − 1, K −1 )
+                                                                     −1
+                                                            y2 y2> −1
+                                      × cn ν + n, K +
+                                                            ν−2
+                                      −n/2  −(ν+n−1)/2 (ν+n−1)n/2                            −1
+                         = 2π(ν − 2)          |K|              2           Γn ((ν + n − 1)/2)
+                                                    y > K −1 y2 −(ν+n)/2 (ν+n)n/2
+                               × |K|−(ν+n)/2 1 + 2                         2          Γn ((ν + n)/2)
+                                                        ν−2
+                                                                                                
+                                     −n/2      −1/2       y2> K −1 y2 −(ν+n)/2 Γn (ν + n)/2
+                         = (π(ν − 2))     |K|         1+                                           .     (21)
+                                                             ν−2                Γn (ν + n − 1)/2
+
+Both marginal distributions are equivalent given the result in Corollary B.
+

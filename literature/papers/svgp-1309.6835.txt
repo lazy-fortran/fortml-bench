@@ -1,0 +1,496 @@
+                               Gaussian Processes for Big Data
+
+
+
+          James Hensman∗                           Nicolò Fusi∗                    Neil D. Lawrence∗
+       Dept. Computer Science                 Dept. Computer Science               Dept. Computer Science
+      The University of Sheffield            The University of Sheffield          The University of Sheffield
+            Sheffield, UK                          Sheffield, UK                        Sheffield, UK
+
+
+
+                      Abstract                              Even to accommodate these data sets, various approx-
+                                                            imate techniques are required. One approach is to par-
+                                                            tition the data set into separate groups [e.g. Snelson
+    We introduce stochastic variational inference
+                                                            and Ghahramani, 2007, Urtasun and Darrell, 2008].
+    for Gaussian process models. This enables
+                                                            An alternative is to build a low rank approximation
+    the application of Gaussian process (GP)
+                                                            to the covariance matrix based around ‘inducing vari-
+    models to data sets containing millions of
+                                                            ables’ [see e.g. Csató and Opper, 2002, Seeger et al.,
+    data points. We show how GPs can be vari-
+                                                            2003, Quiñonero Candela and Rasmussen, 2005, Tit-
+    ationally decomposed to depend on a set
+                                                            sias, 2009]. These approaches lead to a computational
+    of globally relevant inducing variables which
+                                                            complexity of O(nm2 ) and storage demands of O(nm)
+    factorize the model in the necessary manner
+                                                            where m is a user selected parameter governing the
+    to perform variational inference. Our ap-
+                                                            number of inducing variables. However, even these
+    proach is readily extended to models with
+                                                            reduced storage are prohibitive for big data, where
+    non-Gaussian likelihoods and latent variable
+                                                            n can be many millions or billions. For parametric
+    models based around Gaussian processes. We
+                                                            models, stochastic gradient descent is often applied to
+    demonstrate the approach on a simple toy
+                                                            resolve this storage issue, but in the GP domain, it
+    problem and two real world data sets.
+                                                            hasn’t been clear how this should be performed. In
+                                                            this paper we show how recent advances in variational
+                                                            inference [Hensman et al., 2012, Hoffman et al., 2012]
+1   Introduction                                            can be combined with the idea of inducing variables
+                                                            to develop a practical algorithm for fitting GPs using
+Gaussian processes [GPs, Rasmussen and Williams,            stochastic variational inference (SVI).
+2006] are perhaps the dominant approach for inference
+on functions. They underpin a range of algorithms
+for regression, classification and unsupervised learn-      2    Sparse GPs Revisited
+ing. Unfortunately, when applying a Gaussian process
+to a data set of size n exact inference has complexity      We start with a succinct rederivation of the variational
+O(n3 ) with storage demands of O(n2 ). This hinders         approach to inducing variables of Titsias [2009]. This
+the application of these models for many domains. In        allows us to introduce notation and derive expressions
+particular, large spatiotemporal data sets, video, large    which allow for the formulation of a SVI algorithm.
+social network data (e.g. from Facebook), population        Consider a data vector1 y, where each entry yi is a
+scale medical data sets, models that correlate across       noisy observation of the function f (xi ), for all the
+multiple outputs or tasks (for these models complex-        points X = {xi }ni=1 . We consider the noise to be in-
+ity is O(n3 p3 ) and storage is O(n2 p2 ) where p is the    dependent Gaussian with precision β. Introducing a
+number of outputs or tasks). Collectively we can think      Gaussian process prior over f (·), let the vector f con-
+of these applications as belonging to the domain of ‘big    tain values of the function at the points X. We shall
+data’.                                                      also introduce a set of inducing variables: let the vec-
+Traditionally in Gaussian process a large data set is       tor u contain values of the function f at the points
+one that contains over a few thousand data points.          Z = {zi }mi=1 which live in the same space as X. Us-
+
+    ∗                                                          1
+     Also at Sheffield Institute for Translational Neuro-        Our derivation trivially extends to multiple indepen-
+science, SITraN                                             dent output dimensions, but we omit them here for clarity.
+ing standard Gaussian process methodologies, we can           the KL divergence and ensures that Z are distributed
+write                                                         amongst the training data X such that all k̃i,i are
+                                                              small. In practice this means that the expectations in
+          p(y | f ) =N y|f , β −1 I ,
+                                   
+                                                              (1) are only taken across a narrow domain (k̃i,i is the
+                                                              marginal variance of p(fi |u)), keeping Jensen’s bound
+                                         
+          p(f | u) =N f |Knm K−1   mm u, K
+                                         e ,
+                                                              tight.
+              p(u) =N (u|0, Kmm ) ,
+                                                              Before deriving the expressions for stochastic varia-
+where Kmm is the covariance function evaluated be-            tional inference using L1 , we recover the bound of Tit-
+tween all the inducing points and Knm is the covari-          sias [2009] by marginalising the inducing variables,
+ance function between all inducing points and train-
+                                                                                     Z
+ing points and we have defined with K  e = Knn −                   log p(y | X) = log p(y | u)p(u) du
+       −1
+Knm Kmm Kmn .                                                                        Z
+                                                                                ≥ log exp {L1 } p(u) du , L2 ,     (3)
+We first apply Jensen’s inequality on the conditional
+probability p(y | u):                                         which with some linear algebraic manipulation leads
+                                                              to
+        log p(y | u) = log hp(y | f )ip(f | u)                                                         1     
+                                                              L2 = log N y|0, Knm K−1 mm Kmn + β
+                                                                                                  −1
+                                                                                                     I − βtr K e ,
+                     ≥ hlog p(y | f )ip(f | u) , L1 .   (1)                                             2
+                                                              matching the result of Titsias, with the implicit ap-
+where h·ip(x) denotes an expectation under p(x). For          proximating distribution q(u) having precision
+Gaussian noise taking the expectation inside the log
+is tractable, but it results in an expression containing               Λ = βK−1          −1    −1
+                                                                             mm Kmn Knm Kmm + Kmm
+K−1nn , which has a computational complexity of O(n ).
+                                                      3
+                                                              and mean
+Bringing the expectation outside the log gives a lower                        û = βΛ−1 K−1
+                                                                                         mm Kmn y.
+bound, L1 , which can be computed with has complex-
+ity O(m3 ). Further, when p(y|f ) factorises across the
+data,
+                                                              3   SVI for GPs
+                            Yn
+                  p(y|f ) =     p(yi |fi ),                   One of the novelties of the Titsias bound was that,
+                             i=1                              rather than explicitly representing a variational distri-
+then this lower bound can be shown to be separable            bution for q(u), these variables are ‘collapsed’ [Hens-
+across y giving                                               man et al., 2012]. However, for stochastic variational
+                                                              inference to work on Gaussian processes, it turns out
+                n
+                                                              we need to maintain an explicit representation of these
+                                               
+              Y                        1
+                  N yi |µi , β −1 exp − β k̃i,i
+                                 
+   exp(L1 ) =                                     (2)         inducing variables.
+              i=1
+                                       2
+                                                              Stochastic variational inference (SVI) allows varia-
+where µ = Knm K−1   mm u and k̃i,i is the ith diagonal        tional inference for very large data sets, but it can
+element of K. Note that the difference between our
+             e                                                only be applied to probabilistic models which have a
+bound and the original log likelihood is given by the         set of global variables, and which factorise in the ob-
+Kullback Leibler (KL) divergence between the poste-           servations and latent variables as Figure 1(a). Gaus-
+rior over the mapping function given the data and the         sian Processes do not have global variables and exhibit
+inducing variables and the posterior of the mapping           no such factorisation (Figure 1(b)). By introducing
+function given the inducing variables only,                   inducing variables u, we have an appropriate model
+                                                              for SVI (Figure 1(c)). Unfortunately, marginalising u
+                KL (p(f |u) k p(f |u, y)) .                   re-introduces dependencies between the observations,
+                                                              and eliminates the global parameters. In the following,
+This KL divergence is minimized when there are
+                                                              we derive a lower bound on L2 which includes an ex-
+m = n inducing variables and they are placed at
+                                                              plicit variational distribution q(u), enabling SVI. We
+the training data locations. This means that u = f ,
+                                                              then derive the required natural gradients and discuss
+Kmm =Knm =Knn meaning that K=0.    e      In this case
+                                                              how latent variables might be used.
+we recover exp(L1 ) = p(y|f ) and the bound becomes
+equality because p(f |u) is degenerate. However, since        Because there are a fixed number of inducing variables
+m = n and that there would be no computational                (specified by the user at algorithm design time) we
+or storage advantage from the representation. When            can perform stochastic variational inference, greatly
+m < n the bound can be maximised with respect to              increasing the size of data sets to which we can apply
+Z (which are variational parameters). This minimises          Gaussian processes.
+            (a) Requirements for SVI       (b) Gaussian Process regression      (c) Variational GP regression
+
+Figure 1: Graphical models showing (a) the reqired form for a probabilistic model for SVI (reproduced from
+[Hoffman et al., 2012]), with global variables g and latent variables z. (b) The graphical model corresponding to
+Gaussian process regression, where connectivity between the values of the function fi is denoted by a loop around
+the plate. (c) The graphical model corresponding to the sparse GP model, with inducing variables u working as
+global variables, and the term L1 acting as log p(yi | u, xi ). Marginalisation of u leads to the variational DTC
+formulation, introducing dependencies between the observations.
+
+
+3.1   Global Variables                                      3.2   Natural Gradients
+
+To apply stochastic variational inference to a Gaussian     Stochastic variational inference works by taking steps
+process model, we must have a set of global variables.      in the direction of the approximate natural gradient
+The variables u will perform this role, and we intro-       g
+                                                            e(θ), which is given by the usual gradient re-scaled
+duce a variational distribution q(u), and use it to lower   by the inverse Fisher information: g  e(θ)=G(θ)−1 ∂L∂θ .
+bound the quantity p(y | X).                                To work with the natural gradients of the distribution
+                                                            q(u), we first recall the canonical and expectation pa-
+  log p(y | X) ≥ hL1 + log p(u) − log q(u)iq(u) , L3 .
+                                                            rameters
+From the above we know that the optimal distribu-                                               1
+                                                                            θ 1 =S−1 m, θ 2 =− S−1
+tion is Gaussian, and we parametrise it as q(u) =                                               2
+N (u | m, S). The bound L3 becomes                          and
+               n 
+              X                                                               η 1 =m,   η 2 =mm> +S.
+                   log N yi |k>  −1      −1
+                                            
+        L3 =                  i Kmm m, β
+              i=1
+                                                           In the exponential family, properties of the Fisher in-
+                     1 e      1                             formation reveal the following simplification of the nat-
+                    − βk i,i − tr (SΛi )
+                     2        2                             ural gradient [Hensman et al., 2012],
+                    − KL (q(u) k p(u))               (4)
+                                                                                             ∂L3   ∂L3
+                                th                                           e(θ) = G(θ)−1
+                                                                             g                   =     .         (6)
+with ki being a vector of the i column of Kmn and                                            ∂θ    ∂η
+Λi = βK−1        > −1
+          mm ki ki Kmm . The gradients of L3 with re-
+spect to the parameters of q(u) are                         A step of length ` in the natural gradient direction,
+                                                            using θ (t+1) = θ (t) + ` dL
+                                                                                      dη , yields
+                                                                                         3
+             ∂L3
+                   = βK−1mm Kmn y − Λm,
+             ∂m                                                           1
+             ∂L3      1       1                               θ 2(t+1) = − S−1
+                   = S−1 − Λ.                     (5)                     2 (t+1) 
+              ∂S      2       2                                           1 −1       1   1 −1
+                                                                                              
+Setting the derivatives to zero recovers the optimal                   = − S(t) + ` − Λ + S(t) ,
+                                                                          2          2   2
+solution found in the previous section, namely S=Λ−1 ,
+m=û. It follows that L2 ≥ L3 , with equality at this         θ 1(t+1) = S−1
+                                                                          (t+1) m(t+1)
+                                                                                                            
+unique maximum.                                                        = S−1             −1          −1
+                                                                          (t) m(t) + ` βKmm Kmn y − S(t) m(t) ,
+The key propery of L3 is that is can be written as
+a sum of n terms, each corresponding to one input-          and taking a step of unit length then recovers the same
+output pair {xi , yi }: we have induced the necessary       solution as above by either (3) or (5). This confirms
+factorisation to perform stochastic gradient methods        the result discussed in Hensman et al. [2012], Hoffman
+on the distribution q(u).                                   et al. [2012], that taking this unit step is the same as
+performing a VB update. We can now obtain stochas-         3.4   Non-Gaussian likelihoods
+tic approximations to the natural gradient by consid-
+ering the data either individually or in mini-batches.     Another advantage of the factorisation of (4) is that
+                                                           it enables a simple routine for inference with non-
+We note the convenient result that the naturalPgradi-      Gaussian likelihoods. The usual procedure for fitting
+                                            −1
+ent for θ 2 is positive definite (note Λ = Kmm + i Λi ).   GPs with non-Gaussian likelihoods is to approximate
+This means that taking a step in that direction always     the likelihood using either a local variational lower
+leads to a positive definite matrix, and our implemen-     bound [Gibbs and MacKay, 2000], or by expectation
+tation need not parameterise S in any way so as to         propagation [Kuss and Rasmussen, 2005]. These ap-
+ensure positive-definiteness, cf. standard gradient ap-    proximations to the likelihood are required because of
+proaches on covariance matrices.                           the connections between the variables f .
+To optimise the kernel hyper-parameters and noise          In L3 , the bound factorises in such a way that some
+precision β, we take derivatives of the bound L3 and       non-Gaussian likelihoods may be marginalised exactly,
+perform standard stochastic gradient descent along-        given the existing approximations. To see this, con-
+side the variational parameters. An illustration is pre-   sider that we are presented not with the vector y, but
+sented in Figure 2.                                        by a binary         t with ti ∈ {0, 1}, and the likelihood
+                                                                      Qvector
+                                                                         n
+                                                           p(t | y) = i=1 σ(yi )ti (1−σ(yi ))(1−ti ) , as in the case of
+3.3   Latent Variables                                     classification. We
+                                                                            R can bound the marginal likelihood
+                                                           using p(t | X) ≥ p(t | y) exp{L3 } dy which involves n
+The above derivations enable online learning for Gaus-     independent one dimensional integrals due to the fac-
+sian process regression using SVI. Several GP based        torising nature of L3 . For the probit likelihood each
+models involve inference of X, such as the GP latent       of these integrals is tractable.
+variable model [Lawrence, 2005, Titsias and Lawrence,
+2010] and its extensions [e.g. Damianou et al., 2011,      This kind of approximation, where the likelihood is in-
+2012].                                                     tegrated exactly is amenable to SVI in the same man-
+                                                           ner as the regression case above through computation
+To perform stochastic variational inference with latent    of the natural gradient.
+variables, we require a factorisation as illustrated by
+Figure 1(a): this factorisation is provided by (4). To
+get a model like the Bayesian GPLVM, we need a lower       4     Experiments
+bound on log p(y). In Titsias and Lawrence [2010] this
+was achieved through approximate marginalisation of        4.1   Toy Data
+L2 , w.r.t. X, which leads to an expression depending
+only on the parameters of q(X). However this formu-        To demonstrate our algorithm we begin with two sim-
+lation scales poorly, and the variables of the optimisa-   ple toy datasets based on sinusoidal functions. In the
+tion are closely connected due to the marginalisation      first experiment we show how the approximation con-
+of u. The above enables a lower bound to which SVI         verges towards the true solution as mini-batches are
+is immediately applicable:                                 included. Figure 2 shows the nature of our approxi-
+                                                           mation: the variational approximation to the inducing
+                                                           function variables is shown.
+                 Z
+   log p(y) = log p(y | X)p(X) dX
+              Z                                            The second toy problem (Figure 3) illustrates the con-
+                     
+            ≥ q(X) L3 + log p(X) − log q(X) dX.            vergence of the algorithm on a two dimensional prob-
+                                                           lem, again based on sinusoids. Here, we start with
+                                                           a random initialisation for q(u), and the model con-
+It is straightforward to introduce p output dimensions     verges after 2000 iterations. We found empirically that
+for the data Y, and following Titsias and Lawrence         holding the covariance parameters fixed for the first
+[2010],
+Qn       we use a factorising normal distribution q(X) =   epoch results in more reliable convergence, as can be
+   i=1 q(xi ).  The relevant expectations of L3 are        seen in Figure 4
+tractable for various choices of covariance function.
+To perform SVI in this model, we now alternate be-         4.2   UK Apartment Price Data
+tween selecting a minibatch of data, and optimisting
+the relevant variables of q(X) with q(u) fixed, and up-    Our first large scale Gaussian process mod-
+dating q(u) using the approximate natural gradient.        els the changing cost of apartments in the
+We note that the form of (4) means that each of the        UK. We downloaded the monthly price paid
+latent variable distributions may be updated individ-      data for the period February to October
+ually, enabling parallelisation across the minibatch.      2012     from    http://data.gov.uk/dataset/
+Figure 2: Stochastic variational inference on a trivial GP regression problem. Each pane shows the posterior of
+the GP after a batch of data, marked as solid points. Previoulsy seen (and discarded) data are marked as empty
+points, the distribution q(u) is represented by vertical errorbars.
+
+
+
+
+                  (a) Initial condition                              (b) Condition at 2000 iterations
+
+Figure 3: A two dimensional toy demo, showing the initial condition and final condition of the model. Data are
+marked as colored points, and the model’s prediction is shown as (similarly colored) contour lines. The positions
+of the inducing variables are marked as empty circles.
+Figure 4: Convergence of the SVIGP algorithm on the
+two dimensional toy data
+
+                                                           Figure 5: Variability of apartment price (logarithmi-
+land-registry-monthly-price-paid-data/, which              cally!) throughout England and Wales.
+covers England and Wales, and filtered for apart-
+ments. This resulted in a data set with 75,000 entries,    ted a GP with the same covariance function as our
+which we cross referenced against a postcode database      stochastic GP. Parameters of the covariance function
+to get lattitude and longitude, on which we regressed      were optimised using type-II maximum likelihood for
+the normalised logarithm of the apartment prices.          each batch. Table 1 reports the mean squared error in
+Randomly selecting 10,000 data as a test set, we build     our model’s prediction of the held out prices, as well
+a GP as described with a covariance function k(·, ·)       as the same for the random sub-set approach (along
+consisting of four parts: two squared exponential co-      with two standard deviations of the inter-sub-set vari-
+variances, initialised with different length scales were   ability).
+used to account for national and regional variations in
+property prices, a constant (or ’bias’) term allowed for
+                                                           Table 1: Mean squared errors in predicting the log-
+non-zero mean data, and a noise variance accounted
+                                                           apartment prices across England and Wales by latti-
+for variation that could not be modelled using simply
+                                                           tude and longitude
+latitude and longitude.
+                                                                                            Mean square Error
+We selected 800 inducing input sites using a k-means
+algorithm, and optimised the parameters of the co-
+                                                                     SVIGP                         0.426
+variance function alongside the variational parameters.
+                                                             Random sub-set (N=500)           0.522 +/- 0.018
+We performed some manual tuning of the learning
+                                                             Random sub-set (N=800)           0.510 +/- 0.015
+rates: empirically we found that the step length should
+                                                             Random sub-set (N=1000)          0.503 +/- 0.011
+be much higher for the variational parameters of q(u)
+                                                             Random sub-set (N=1200)          0.502 +/- 1.012
+than for the values of the covariance function parame-
+ters. We used 0.01 and 1 × 10−5 . Also, we included a
+momentum term for the covariance function parame-
+ters (set to 0.9). We tried including momentum terms       4.3   Airline Delays
+for the variational parameters, but we found this hin-
+                                                           The second large scale dataset we considered consists
+dered performance. A large mini-batch size (1000) re-
+                                                           of flight arrival and departure times for every commer-
+duced the stochasticity of the gradient computations.
+                                                           cial flight in the USA from January 2008 to April 2008.
+We judged that the algorithm had converged after 750
+                                                           This dataset contains extensive information about al-
+iterations, as the stochastic estimate of the marginal
+                                                           most 2 million flights, including the delay (in minutes)
+lower bound on the marginal likelihood failed to in-
+                                                           in reaching the destination. The average delay of a
+crease further.
+                                                           flight in the first 4 months of 2008 was of 30 minutes.
+For comparison to our model, we constructed a se-          Of course, much better estimates can be given by ex-
+ries of GPs on subsets of the training data. Splitting     ploiting the enourmous wealth of data available, but
+the data into sets of 500, 800, 1000 and 1200, we fit-     rich models are often overlooked in these cases due
+                                                            Figure 8: Root mean square errors for models with
+                                                            different numbers of inducing variables.
+
+  Figure 6: Posterior variance of apartment prices.
+
+
+to the sheer size of the dataset. We randomly selected
+800,000 datapoints 2 , using a random subset of 700,000
+samples to train the model and 100,000 to test it. We
+chose to include into our model 8 of the many variables
+available for this dataset: the age of the aircraft (num-
+ber of years since deployment), distance that needs to
+be covered, airtime, departure time, arrival time, day
+of the week, day of the month and month.
+We built a Gaussian process with a squared exponen-
+tial covariance function with a bias and noise term.
+In order to discard irrelevant input dimensions, we al-
+lowed a separate lengthscale for each input. For our
+experiments, we used m = 1000 inducing inputs and
+                                                            Figure 9: Automatic relevance determination param-
+a mini-batch size of 5000. The learning rate for the
+                                                            eters for the features used for predicting flight delays.
+variational parameters of q(u) was set to 0.01, while
+the learning rate for the covariance function parame-
+ters was set to 1 × 10−5 . We also used a momentum
+                                                            runs.
+term of 0.9 for the covariance parameters.
+                                                            One of the main advantages of the approach presented
+For the purpose of comparison, we fitted several GPs
+                                                            here is that the computational complexity is indepen-
+with an identical covariance function on subsets of the
+                                                            dent from the number of samples n. This allowed us
+data. We split the data into sets of 800, 1000 and 1200
+                                                            to use a much larger number of inducing inputs than
+samples and optimised the parameters using type-II
+                                                            has traditionally been possible. Conventional sparse
+maximum likelihood. We repeated this procedure 10
+                                                            GPs have a computational complexity of O(nm2 ), so
+times.
+                                                            for large n the typical upper bound for m is between 50
+The left pane of Figure 7 shows the root mean squared       and 100. The impact on the prediction performance is
+error (RMSE) obtained by fitting GPs on subsets of          quite significant, as highlighted in Figure 8, where we
+the data. The right pane of figure 7 shows the RMSE         fit several SVI GPs using different numbers of inducing
+obtained by fitting 10 SVI GPs as a function of the         inputs.
+iteration. The individual runs are shown in light gray,
+                                                            Looking at the inverse lengthscales in Figure 9, it’s
+while the blue line shows the average RMSE across
+                                                            possible to get a better idea of the relevance of the
+   2
+    Subsampling wasn’t technically necessary, but we        different features available in this dataset. The most
+didn’t want to overburden the memory of a shared compute    relevant variable turned out to be the time of departure
+node just before a submission deadline.                     of the flight, closely followed by the distance that needs
+       Figure 7: Root mean squared errors in predicting flight delays using information about the flight.
+
+
+to be covered. Distance and airtime should in theory        this framework fits with other Gaussian process based
+be correlated, but they have very different relevances.     models such as the GPLVM and GP classification. We
+This can be intuitively explained by considering that       leave the details of these implementations to future
+on longer flights it’s easier to make up for delays at      work.
+departure.
+                                                            In all our experiments our algorithm was run on a
+                                                            single CPU using the GPy Gaussian process toolkit
+5   Discussion                                              https://github.com/SheffieldML/GPy.
+
+
+We have presented a method for inference in Gaussian        References
+process models using stochastic variational inference.      Mauricio A. Álvarez and Neil D. Lawrence. Compu-
+These expressions allow for the transfer of a multitude      tationally efficient convolved multiple output Gaus-
+of Gaussian process techniques to big data.                  sian processes. Journal of Machine Learning Re-
+We note several interesting results. First, the our          search, 12:1425–1466, May 2011.
+derivation disusses the bound on p(y | u) in detail,        Lehel Csató and Manfred Opper. Sparse on-line Gaus-
+showing that it becomes tight when Z = X.                     sian processes. Neural Computation, 14(3):641–668,
+Also, we have that there is a unique solution for the pa-     2002.
+rameters of q(u) such that the bound associated with        Andreas Damianou, Michalis K. Titsias, and Neil D.
+the standard variational sparse GP [Titsias, 2009] is        Lawrence. Variational Gaussian process dynamical
+recovered.                                                   systems. In Peter Bartlett, Fernando Peirrera, Chris
+                                                             Williams, and John Lafferty, editors, Advances in
+Further, since the complexity of our model is now
+                                                             Neural Information Processing Systems, volume 24,
+O(m3 ) rather than O(nm2 ), we are free to increase
+                                                             Cambridge, MA, 2011. MIT Press.
+m to much greater values than the sparse GP repre-
+sentation. The effect of this is that we can have much      Andreas Damianou, Carl Henrik Ek, Michalis K. Tit-
+richer models: for a squared exponential covariance          sias, and Neil D. Lawrence. Manifold relevance de-
+function, we have far more basis-functions with which        termination. In John Langford and Joelle Pineau,
+to model the data. In our UK apartment price exam-           editors, Proceedings of the International Conference
+ple, we had no difficulty setting m to 800, much higher      in Machine Learning, volume 29, San Francisco, CA,
+than experience tells us is feasible with the sparse GP.     2012. Morgan Kauffman. To appear.
+
+The ability to increase the number of inducing vari-        Mark N. Gibbs and David J. C. MacKay. Variational
+ables and the applicability to unlimited data make our       Gaussian process classifiers. IEEE Transactions on
+method suitable for multiple output GPs [Álvarez and        Neural Networks, 11(6):1458–1464, 2000.
+Lawrence, 2011]. We have also briefly discussed how         James Hensman, Magnus Rattray, and Neil D.
+  Lawrence. Fast variational inference in the expo-
+  nential family. NIPS 2012, 2012.
+Matthew Hoffman, David M. Blei, Chong Wang, and
+ John Paisley. Stochastic variational inference. arXiv
+ preprint arXiv:1206.7051, 2012.
+Malte Kuss and Carl Edward Rasmussen. Assess-
+ ing approximate inference for binary Gaussian pro-
+ cess classification. Journal of Machine Learning Re-
+ search, 6:1679–1704, 2005.
+Neil D. Lawrence. Probabilistic non-linear principal
+  component analysis with Gaussian process latent
+  variable models. Journal of Machine Learning Re-
+  search, 6:1783–1816, 11 2005.
+Joaquin Quiñonero Candela and Carl Edward Ras-
+  mussen. A unifying view of sparse approximate
+  Gaussian process regression. Journal of Machine
+  Learning Research, 6:1939–1959, 2005.
+Carl Edward Rasmussen and Christopher K. I.
+  Williams. Gaussian Processes for Machine Learn-
+  ing. MIT Press, Cambridge, MA, 2006. ISBN 0-
+  262-18253-X.
+Matthias Seeger, Christopher K. I. Williams, and
+ Neil D. Lawrence. Fast forward selection to speed
+ up sparse Gaussian process regression. In Christo-
+ pher M. Bishop and Brendan J. Frey, editors, Pro-
+ ceedings of the Ninth International Workshop on Ar-
+ tificial Intelligence and Statistics, Key West, FL, 3–6
+ Jan 2003.
+Edward Snelson and Zoubin Ghahramani. Local and
+  global sparse Gaussian process approximations. In
+  Marina Meila and Xiaotong Shen, editors, Proceed-
+  ings of the Eleventh International Workshop on Ar-
+  tificial Intelligence and Statistics, San Juan, Puerto
+  Rico, 21-24 March 2007. Omnipress.
+Michalis K. Titsias. Variational learning of inducing
+ variables in sparse Gaussian processes. In David
+ van Dyk and Max Welling, editors, Proceedings of
+ the Twelfth International Workshop on Artificial In-
+ telligence and Statistics, volume 5, pages 567–574,
+ Clearwater Beach, FL, 16-18 April 2009. JMLR
+ W&CP 5.
+Michalis K. Titsias and Neil D. Lawrence. Bayesian
+ Gaussian process latent variable model.          In
+ Yee Whye Teh and D. Michael Titterington, editors,
+ Proceedings of the Thirteenth International Work-
+ shop on Artificial Intelligence and Statistics, vol-
+ ume 9, pages 844–851, Chia Laguna Resort, Sar-
+ dinia, Italy, 13-16 May 2010. JMLR W&CP 9.
+Raquel Urtasun and Trevor Darrell. Local probabilis-
+  tic regression for activity-independent human pose
+  inference. In Proceedings of the IEEE Computer So-
+  ciety Conference on Computer Vision and Pattern
+  Recognition, Anchorage, Alaska, 2008.
+

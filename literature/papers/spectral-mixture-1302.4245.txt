@@ -1,0 +1,644 @@
+                                           Gaussian Process Kernels for Pattern Discovery and Extrapolation
+
+
+                                          Andrew Gordon Wilson                                                                         agw38@cam.ac.uk
+                                          Department of Engineering, University of Cambridge, Cambridge, UK
+                                          Ryan Prescott Adams                                                            rpa@seas.harvard.edu
+                                          School of Engineering and Applied Sciences, Harvard University, Cambridge, USA
+
+
+
+
+arXiv:1302.4245v3 [stat.ML] 31 Dec 2013
+                                                               Abstract                              works research, triggered by Neal (1996), who observed
+                                              Gaussian processes are rich distributions over         that Bayesian neural networks became Gaussian pro-
+                                              functions, which provide a Bayesian nonpara-           cesses as the number of hidden units approached in-
+                                              metric approach to smoothing and interpola-            finity. Neal (1996) conjectured that “there may be
+                                              tion. We introduce simple closed form ker-             simpler ways to do inference in this case”.
+                                              nels that can be used with Gaussian pro-               These simple inference techniques became the corner-
+                                              cesses to discover patterns and enable extrap-         stone of subsequent Gaussian process models for ma-
+                                              olation. These kernels are derived by mod-             chine learning (Rasmussen & Williams, 2006). These
+                                              elling a spectral density – the Fourier trans-         models construct a prior directly over functions, rather
+                                              form of a kernel – with a Gaussian mixture.            than parameters. Assuming Gaussian noise, one can
+                                              The proposed kernels support a broad class             analytically infer a posterior distribution over these
+                                              of stationary covariances, but Gaussian pro-           functions, given data. Gaussian process models have
+                                              cess inference remains simple and analytic.            become popular for non-linear regression and classifi-
+                                              We demonstrate the proposed kernels by dis-            cation (Rasmussen & Williams, 2006), and often have
+                                              covering patterns and performing long range            impressive empirical performance (Rasmussen, 1996).
+                                              extrapolation on synthetic examples, as well
+                                              as atmospheric CO2 trends and airline pas-             The properties of likely functions under a GP, e.g.,
+                                              senger data. We also show that it is possible          smoothness, periodicity, etc., are controlled by a posi-
+                                              to reconstruct several popular standard co-            tive definite covariance kernel 1 , an operator which de-
+                                              variances within our framework.                        termines the similarity between pairs of points in the
+                                                                                                     domain of the random function. The choice of ker-
+                                                                                                     nel profoundly affects the performance of a Gaussian
+                                          1. Introduction                                            process on a given task – as much as the choice of
+                                                                                                     architecture, activation functions, learning rate, etc.,
+                                          Machine learning is fundamentally about pattern dis-       can affect the performance of a neural network.
+                                          covery. The first machine learning models, such as the
+                                          perceptron (Rosenblatt, 1962), were based on a simple      Gaussian processes are sometimes used as expressive
+                                          model of a neuron (McCulloch & Pitts, 1943). Papers        statistical tools, where the pattern discovery is per-
+                                          such as Rumelhart et al. (1986) inspired hope that it      formed by a human, and then hard coded into para-
+                                          would be possible to develop intelligent agents with       metric kernels. Often, however, the squared exponen-
+                                          models like neural networks, which could automati-         tial (Gaussian) kernel is used by default. In either
+                                          cally discover hidden representations in data. Indeed,     case, GPs are used as smoothing interpolators with
+                                          machine learning aims not only to equip humans with        a fixed (albeit infinite) set of basis functions. Such
+                                          tools to analyze data, but to fully automate the learn-    simple smoothing devices are not a realistic replace-
+                                          ing and decision making process.                           ment for neural networks, which were envisaged as in-
+                                                                                                     telligent agents that could discover hidden features in
+                                          Research on Gaussian processes (GPs) within the ma-        data2 via adaptive basis functions (MacKay, 1998).
+                                          chine learning community developed out of neural net-
+                                                                                                        1
+                                                                                                          The terms covariance kernel, covariance function, ker-
+                                          Proceedings of the 30 th International Conference on Ma-   nel function, and kernel are used interchangeably.
+                                          chine Learning, Atlanta, Georgia, USA, 2013. JMLR:            2
+                                                                                                          In this paper, we refer to representations, features and
+                                          W&CP volume 28. Copyright 2013 by the author(s).           patterns interchangeably. In other contexts, the term fea-
+                      Gaussian Process Kernels for Pattern Discovery and Extrapolation
+
+However, Bayesian nonparametrics can help build au-            to stationary kernels, meaning that covariances are in-
+tomated intelligent systems that reason and make de-           variant to translations in the input space.
+cisions. It has been suggested that the human ability
+                                                               In this paper, we explore flexible classes of kernels that
+for inductive reasoning – concept generalization with
+                                                               go beyond composition of simple analytic forms, while
+remarkably few examples – could derive from a prior
+                                                               maintaining the useful inductive bias of stationarity.
+combined with Bayesian inference (Yuille & Kersten,
+                                                               We propose new kernels which can be used to automat-
+2006; Tenenbaum et al., 2011; Steyvers et al., 2006).
+                                                               ically discover patterns and extrapolate far beyond the
+Bayesian nonparametric models, and Gaussian pro-
+                                                               available data. This class of kernels contains many sta-
+cesses in particular, are an expressive way to encode
+                                                               tionary kernels, but has a simple closed form that leads
+prior knowledge, and also reflect the belief that the
+                                                               to straightforward analytic inference. The simplicity
+real world is infinitely complex (Neal, 1996).
+                                                               of these kernels is one of their strongest qualities. In
+With more expressive kernels, one could use Gaus-              many cases, these kernels can be used as a drop in re-
+sian processes to learn hidden representations in data.        placement for the popular squared exponential kernel,
+Expressive kernels have been developed by combining            with benefits in performance and expressiveness. By
+Gaussian processes in a type of Bayesian neural net-           learning features in data, we not only improve predic-
+work structure (Salakhutdinov & Hinton, 2008; Wilson           tive performance, but we can more deeply understand
+et al., 2012; Damianou & Lawrence, 2012). However,             the structure of the problem at hand – greenhouse
+these approaches, while promising, typically 1) are            gases, air travel, heart physiology, brain activity, etc.
+designed to model specific types of structure (e.g.,
+                                                               After a brief review of Gaussian processes in Section
+input-dependent correlations between different tasks);
+                                                               2, we derive the new kernels in Section 3 by modelling
+2) make use of component GPs with simple interpo-
+                                                               a spectral density with a mixture of Gaussians. We
+lating kernels; 3) indirectly induce complicated ker-
+                                                               focus our experiments in Section 4 on elucidating the
+nels that do not have a closed form and are difficult
+                                                               fundamental differences between the proposed kernels
+to interpret; and 4) require sophisticated approximate
+                                                               and the popular alternatives in Rasmussen & Williams
+inference techniques that are much more demanding
+                                                               (2006). In particular, we show how the proposed ker-
+than that required by simple analytic kernels.
+                                                               nels can automatically discover patterns and extrap-
+Sophisticated kernels are most often achieved by com-          olate on the CO2 dataset in Rasmussen & Williams
+posing together a few standard kernel functions (Ar-           (2006), on a synthetic dataset with strong negative
+chambeau & Bach, 2011; Durrande et al., 2011; Gönen           covariances, on a difficult synthetic sinc pattern, and
+& Alpaydın, 2011; Rasmussen & Williams, 2006).                 on airline passenger data. We also use our framework
+Tight restrictions are typically enforced on these com-        to reconstruct several popular standard kernels.
+positions and they are hand-crafted for specialized
+applications. Without such restrictions, complicated           2. Gaussian Processes
+compositions of kernels can lead to overfitting and
+unmanageable hyperparameter inference. Moreover,               A Gaussian process is a collection of random variables,
+while some compositions (e.g., addition) have an in-           any finite number of which have a joint Gaussian dis-
+terpretable effect, many other operations change the           tribution. Using a Gaussian process, we can define a
+distribution over functions in ways that are difficult to      distribution over functions f (x),
+identify. It is difficult, therefore, to construct an effec-
+                                                                              f (x) ∼ GP(m(x), k(x, x0 )) ,                (1)
+tive inductive bias for kernel composition that leads
+to automatic discovery of the appropriate statistical          where x ∈ RP is an arbitrary input variable, and the
+structure, without human intervention.                         mean function m(x) and covariance kernel k(x, x0 ) are
+                                                               defined as
+This difficulty is exacerbated by the fact that it is chal-
+lenging to say anything about the covariance function                            m(x) = E[f (x)] ,                         (2)
+of a stochastic process from a single draw if no as-                                 0                      0
+                                                                              k(x, x ) = cov(f (x), f (x )) .              (3)
+sumptions are made. If we allow the covariance be-
+tween any two points in the input space to arise from          Any collection of function values has a joint Gaussian
+any positive definite function, with equal probability,        distribution
+then we gain essentially no information from a single                  [f (x1 ), f (x2 ), . . . , f (xN )]> ∼ N (µ, K) ,   (4)
+realization. Most commonly one assumes a restriction
+                                                               where the N × N covariance matrix K has en-
+tures sometimes specifically means low dimensional repre-
+                                                               tries Kij = k(xi , xj ), and the mean µ has en-
+sentations of data, like neurons in a neural network.
+                                                               tries µi = m(xi ). The properties of the functions –
+                      Gaussian Process Kernels for Pattern Discovery and Extrapolation
+
+smoothness, periodicity, etc. – are determined by the        Fourier duals (Chatfield, 1989):
+kernel function.                                                                  Z
+                                                                                              >
+
+The popular squared exponential (SE) kernel has the                        k(τ ) = S(s)e2πis τ ds ,                          (7)
+form                                                                              Z
+                                                                                                >
+                                                                           S(s) = k(τ )e−2πis τ dτ .                         (8)
+         kSE (x, x0 ) = exp(−0.5||x − x0 ||2 /`2 ) .   (5)
+                                                             In other words, a spectral density entirely determines
+Functions drawn from a Gaussian process with this
+                                                             the properties of a stationary kernel. Substituting the
+kernel function are infinitely differentiable, and can
+                                                             squared exponential kernel of (5) into (8), we find its
+display long range trends. GPs with a squared expo-
+                                                             spectral density is SSE (s) = (2π`2 )P/2 exp(−2π 2 `2 s2 ).
+nential kernel are simply smoothing devices: the only
+                                                             Therefore SE kernels, and mixtures of SE kernels, are
+covariance structure that can be learned from data
+                                                             a very small corner of the set of possible stationary
+is the length-scale `, which determines how quickly
+                                                             kernels, as they correspond only to Gaussian spectral
+a Gaussian process function varies with x.
+                                                             densities centered on the origin.
+Assuming Gaussian noise, one can analytically infer
+                                                             However, by using a mixture of Gaussians that have
+a posterior predictive distribution over Gaussian pro-
+                                                             non-zero means, one can achieve a much wider range of
+cess functions, and analytically derive a marginal like-
+                                                             spectral densities. Indeed, mixtures of Gaussians are
+lihood of the observed function values y given only
+                                                             dense in the set of all distribution functions (Kostanti-
+hyperparameters θ, and the input locations {xn }N  n=1 ,     nos, 2000). Therefore, the dual of this set is also dense
+p(y|θ, {xn }N
+            n=1 ). This marginal  likelihood can be  op-
+                                                             in stationary covariances. That is, we can approximate
+timised to estimate hyperparameters such as `, or
+                                                             any stationary covariance kernel to arbitrary precision,
+used to integrate out the hyperparameters via Markov
+                                                             given enough mixture components in the spectral rep-
+chain Monte Carlo (Murray & Adams, 2010). De-
+                                                             resentation. This observation motivates our approach,
+tailed Gaussian process references include Rasmussen
+                                                             which is to model GP covariance functions via spectral
+& Williams (2006), Stein (1999), and Cressie (1993).
+                                                             densities that are scale-location mixtures of Gaussians.
+                                                             We first consider a simple case, where
+3. Kernels for Pattern Discovery
+                                                                                     1     1
+In this section we introduce a class of kernels that can      φ(s ; µ, σ 2 ) = √               (s − µ)2 },
+                                                                                             exp{−                     and (9)
+discover patterns, extrapolate, and model negative co-                              2πσ 2 2σ 2
+variances. This class contains a large set of stationary             S(s) = [φ(s) + φ(−s)]/2 ,                              (10)
+kernels. Roughly, a kernel measures the similarity be-
+tween data points. As in Equation (3), the covariance        noting that spectral densities are symmetric (Ras-
+kernel of a GP determines how the associated random          mussen & Williams, 2006). Substituting S(s) into
+functions will tend to vary with inputs (predictors)         equation (7), we find
+x ∈ RP . A stationary kernel is a function of τ = x−x0 ,
+                                                                         k(τ ) = exp{−2π 2 τ 2 σ 2 } cos(2πτ µ) .           (11)
+i.e., it is invariant to translation of the inputs.
+Any stationary kernel (aka covariance function) can          If φ(s) is instead a mixture of Q Gaussians
+be expressed as an integral using Bochner’s theorem          on RP , where the q th component has mean
+                                                                             (1)         (P )
+(Bochner, 1959; Stein, 1999):                                vector µq = (µq , . . . , µq ) and covariance ma-
+                                                                              (1)         (P )
+                                                             trix Mq = diag(vq , . . . , vq ), and τp is the pth com-
+Theorem 3.1 (Bochner) A complex-valued function              ponent of the P dimensional vector τ = x − x0 , then
+k on RP is the covariance function of a weakly sta-
+                                                                         Q          P
+tionary mean square continuous complex-valued ran-                       X          Y
+dom process on RP if and only if it can be represented         k(τ ) =         wq         exp{−2π 2 τp2 vq(p) } cos(2πτp µ(p)
+                                                                                                                          q ).
+                                                                         q=1        p=1
+as
+                     Z
+                             >
+                                                                                                                            (12)
+             k(τ ) =    e2πis τ ψ(ds) ,            (6)
+                         RP                                  The integral in (7) is tractable even when the spec-
+                                                             tral density is an arbitrary Gaussian mixture, allow-
+where ψ is a positive finite measure.
+                                                             ing us to derive3 the exact closed form expressions in
+If ψ has a density S(s), then S is called the spec-             3
+                                                                  Detailed derivations of Eqs. (11) and (12) are in the
+tral density or power spectrum of k, and k and S are         supplementary material (Wilson & Adams, 2013).
+                    Gaussian Process Kernels for Pattern Discovery and Extrapolation
+
+Eqs. (11) and (12), and to perform analytic inference      timize the marginal likelihood without converging to
+with Gaussian processes. Moreover, this class of ker-      undesirable local optima. For a fully Bayesian treat-
+nels is expressive – containing many stationary kernels    ment, the spectral density could alternatively be inte-
+– but nevertheless has a simple form.                      grated out using Markov chain Monte Carlo (Murray
+                                                           & Adams, 2010), rather than choosing a point esti-
+These kernels are easy to interpret, and provide drop-
+                                                           mate. However, we wish to emphasize that the SM
+in replacements for kernels in Rasmussen & Williams
+                                                           kernel can be successfully used in the same way as
+(2006). The weights wq specify the relative con-
+                                                           other popular kernels, without additional inference ef-
+tribution of each mixture component. The inverse
+                                                           forts.
+means 1/µq are the component periods, and the in-
+                             √
+verse standard deviations 1/ vq are length-scales, de-     We compare with the popular squared exponential
+termining how quickly a component varies with the in-      (SE), Matérn (MA), rational quadratic (RQ), and pe-
+puts x. The kernel in Eq. (12) can also be interpreted     riodic (PE) kernels. In each comparison, we attempt
+through its associated spectral density. In Section 4,     to give these alternative kernels fair treatment: we
+we use the learned spectral density to interpret the       initialise hyperparameters at values that give high
+number of discovered patterns in the data and how          marginal likelihoods and which are well suited to the
+these patterns generalize. Henceforth, we refer to the     datasets, based on features we can already see in the
+kernel in Eq. (12) as a spectral mixture (SM) kernel.      data. Conversely, we randomly initialise the param-
+                                                           eters for the SM kernel. Training runtimes are on
+4. Experiments                                             the order of minutes for all tested kernels. In these
+                                                           examples, comparing with multiple kernel learning
+We show how the SM kernel in Eq. (12) can be used          (MKL) (Gönen & Alpaydın, 2011) has limited addi-
+to discover patterns, extrapolate, and model negative      tional value. MKL is not typically intended for pat-
+covariances. We contrast the SM kernel with pop-           tern discovery, and often uses mixtures of SE kernels.
+ular kernels in, e.g., Rasmussen & Williams (2006)         Mixtures of SE kernels correspond to scale-mixtures of
+and Abrahamsen (1997), which typically only provide        Gaussian spectral densities, and do not perform well
+smooth interpolation. Although the SM kernel gen-          on these data, which are described by highly multi-
+erally improves predictive likelihood over popular al-     modal non-Gaussian spectral densities.
+ternatives, we focus on clearly visualizing the learned
+kernels and spectral densities, examining patterns and     4.1. Extrapolating Atmospheric CO2
+predictions, and discovering structure in the data. Our
+objective is to elucidate the fundamental differences      Keeling & Whorf (2004) recorded monthly average at-
+between the proposed SM kernel and the alternatives.       mospheric CO2 concentrations at the Mauna Loa Ob-
+                                                           servatory, Hawaii. The data are shown in Figure 1.
+In all experiments, Gaussian noise is assumed, so that     The first 200 months are used for training (in blue),
+marginalization over the unknown function can be per-      and the remaining 301 months (≈ 25 years) are used
+formed in closed form. Kernel hyperparameters are          for testing (in green).
+trained using nonlinear conjugate gradients to opti-
+mize the marginal likelihood p(y|θ, {xn }N                 This dataset was used in Rasmussen & Williams
+                                            n=1 ) of the
+data y given hyperparameters θ, as described in Sec-       (2006), and is frequently used in Gaussian process tu-
+tion 2, assuming a zero mean GP. A type of “auto-          torials, to show how GPs are flexible statistical tools:
+matic relevance determination” (MacKay et al., 1994;       a human can look at the data, recognize patterns, and
+Tipping, 2004) takes place during training, minimizing     then hard code those patterns into covariance kernels.
+the effect of extraneous components in the proposed        Rasmussen & Williams (2006) identify, by looking at
+model, through the complexity penalty in the marginal      the blue and green curves in Figure 1a, a long term
+likelihood (Rasmussen & Williams, 2006). The com-          rising trend, seasonal variation with possible decay
+plexity penalty in the log marginal likelihood is a log    away from periodicity, medium term irregularities, and
+determinant which can be written as a sum of eigenval-     noise, and hard code a stationary covariance kernel to
+ues of a covariance matrix. Extraneous weights shrink      represent each of these features.
+towards zero, since they will increase the eigenvalues     However, in this view of GP modelling, all of the in-
+of this covariance matrix, without significantly improv-   teresting pattern discovery is done by the human user,
+ing the model fit. Moreover, the exponential terms in      and the GP is used simply as a smoothing device, with
+the SM kernel of Eq. (12) have an annealing effect on      the flexibility to incorporate human inferences in the
+the marginal likelihood, reducing multimodality in the     prior. Our contention is that such pattern recognition
+frequency parameters, making it easier to naively op-      can also be performed algorithmically. To discover
+                     Gaussian Process Kernels for Pattern Discovery and Extrapolation
+
+
+
+
+Figure 1. Mauna Loa CO2 Concentrations. a) Forecasting       Figure 2. Recovering popular correlation functions (nor-
+CO2 . The training data are in blue, the testing data in     malised kernels), with τ = x − x0 . The true correlation
+green. Mean forecasts made using the SM kernel are in        function underlying the data is in green, and SM, SE, and
+black, with 2 stdev about the mean (95% of the predictive    empirical correlation functions are in dashed black, red,
+mass) in gray shade. Predictions using the Matérn (MA),     and magenta, respectively. Data are generated from a) a
+squared exponential (SE), rational quadratic (RQ), and pe-   Matérn kernel, and b) a sum of RQ and periodic kernels.
+riodic kernels (PE) are in cyan, dashed red, magenta, and
+orange, respectively. b) The log spectral densities of the
+learned SM and squared exponential kernels are in black      it does not affect performance in these examples – we
+and red, respectively.                                       have not used such restrictions here. Finally, we see
+                                                             other peaks corresponding to periods of 6 months, 4
+                                                             months, 3 months and 1 month. The width of each
+these patterns without encoding them a priori into           peak reflects the model’s uncertainty about the corre-
+the GP, we use the spectral mixture kernel in Eq. (12),      sponding feature in the data. In red, we show the spec-
+with Q = 10. The results are shown in Figure 1a.             tral density for the learned SE kernel, which misses
+                                                             many of the frequencies identified as important using
+In the training region, predictions using each kernel        the SM kernel.
+are essentially equivalent, and entirely overlap with
+the training data. However, unlike the other kernels,        All SE kernels have a Gaussian spectral density cen-
+the SM kernel (in black) is able to discover patterns        tred on zero. Since a mixture of Gaussians centred
+in the training data and accurately extrapolate over a       on the origin is a poor approximation to many density
+long range. The 95% high predictive density (HPD)            functions, combinations of SE kernels have limited ex-
+region contains the true CO2 measurements for the            pressive power. Indeed the spectral density learned by
+duration of the measurements.                                the SM kernel in Figure 1b is highly non-Gaussian.
+                                                             The test predictive performance using the SM, SE,
+We can see the structure discovered by the SM ker-           MA, RQ, and PE kernels is given in Table 1, under
+nel in the learned log spectral density in Figure 1b.        the heading CO2 .
+Of the Q = 10 components, only seven were used – an
+example of automatic relevance determination during          4.2. Recovering Popular Kernels
+training. Figure 1b is a good example of aliasing in
+the spectral density. The sharp peak at a frequency          The SM class of kernels contains many stationary ker-
+near 1.08 corresponds to the period of 12 months, re-        nels, since mixtures of Gaussians can be used to con-
+lating to pronounced yearly variations in CO2 read-          struct a wide range of spectral densities. Even with
+ings. Since 1.08 is greater than the sampling rate of        a small number of mixture components, e.g., Q ≤ 10,
+the data, 1/month, it will be aliased back to 0.08, and      the SM kernel can closely recover popular stationary
+1/0.08 = 12 months. Since there is little width to the       kernels catalogued in Rasmussen & Williams (2006).
+peak, the model is confident that this feature (yearly
+                                                             As an example, we start by sampling 100 points from a
+periodicity) should extrapolate long into the future.
+                                                             one-dimensional GP with a Matérn kernel with degrees
+There is another large peak at a frequency of 1, equal
+                                                             of freedom ν = 3/2:
+to the sampling rate of the data. This peak corre-
+sponds to an aliasing of a mean function, and can also                                 √            √
+                                                                                         3τ           3τ
+be related to noise aliasing. In these examples, alias-               kMA (τ ) = a(1 +      ) exp(−      ),    (13)
+                                                                                        `            `
+ing will not hurt predictions, but can affect the inter-
+pretability of results. It is easy to stop aliasing, for     where ` = 5 and a = 4. Sample functions from a
+example, by restricting the learned frequencies to be        Gaussian process with this Matérn kernel are far less
+less than the Nyquist frequency (1/2 of the sampling         smooth (only once-differentiable) than Gaussian pro-
+rate of the data). For pedagogical reasons – and since       cess functions with a squared exponential kernel.
+                       Gaussian Process Kernels for Pattern Discovery and Extrapolation
+
+We attempt to reconstruct the kernel underlying the
+data by training an SM kernel with Q = 10. After
+training, only Q = 4 components are used. The log
+marginal likelihood of the data – having integrated
+away the Gaussian process – using the trained SM ker-
+nel is −133, compared to −138 for the Matérn kernel
+that generated the data. Training the SE kernel in (5)
+gives a log marginal likelihood of −140.
+Figure 2a shows the learned SM correlation func-
+tion4 , compared to the generating Matérn correlation
+function, the empirical autocorrelation function, and
+learned squared exponential correlation function. Al-
+though often used in geostatistics to guide choices
+of GP kernels (and parameters) (Cressie, 1993), the
+empirical autocorrelation function tends to be un-
+reliable, particularly with a small amount of data
+(e.g., N < 1000), and at high lags (for τ > 10). In Fig-
+ure 2a, the empirical autocorrelation function is erratic        Figure 3. Negative Covariances. a) Observations of a dis-
+and does not resemble the Matérn kernel for τ > 10.             crete time autoregressive (AR) series with negative covari-
+Moreover, the squared exponential kernel cannot cap-             ances. b) The SM learned kernel is shown in black, while
+ture the heavy tails of the Matérn kernel, no matter            the true kernel of the AR series is in green, with τ = x−x0 .
+                                                                 c) The spectral density of the learned SM kernel is in black.
+what length-scale it has. Even though the SM ker-
+nel is infinitely differentiable, it can closely approx-
+imate processes which are finitely differentiable, be-
+cause mixtures of Gaussians can closely approximate
+the spectral densities of these processes, even with a
+small number of components, as in Figure 2a.                     shown in Figure 2b. The heavy tails of the RQ kernel
+Next, we reconstruct a mixture of the rational                   are modelled by two components with large periods
+quadratic (RQ) and periodic kernels (PE) in Ras-                 (essentially aperiodic), and one short length-scale and
+mussen & Williams (2006):                                        one large length-scale. The third component has a rel-
+                                                                 atively short length-scale, and a period of 20. There
+                               τ2                                is not enough information in the 100 sample points
+          kRQ (τ ) = (1 +            )−α ,               (14)
+                            2 α `2RQ                             to justify using more than Q = 3 components, and so
+                                                                 the fourth component in the SM kernel has no effect,
+          kPE (τ ) = exp(−2 sin2 (π τ ω)/`2P E ) .       (15)
+                                                                 through the complexity penalty in the marginal like-
+                                                                 lihood. The empirical autocorrelation function some-
+The rational quadratic kernel in (14) is derived                 what captures the periodicity in the data, but signif-
+as a scale mixture of squared exponential kernels                icantly underestimates the correlations. The squared
+with different length-scales.   The standard peri-               exponential kernel learns a long length-scale: since the
+odic kernel in (15) is derived by mapping the two                SE kernel is highly misspecified with the true generat-
+dimensional variable u(x) = (cos(x), sin(x)) through             ing kernel, the data are explained as noise.
+the squared exponential kernel in (5).        Deriva-
+tions for both the RQ and PE kernels in (14) and                 4.3. Negative Covariances
+(15) are in Rasmussen & Williams (2006). Ra-
+tional quadratic and Matérn kernels are also dis-               All of the stationary covariance functions in the
+cussed in Abrahamsen (1997). We sample 100 points                standard machine learning Gaussian process ref-
+from a Gaussian process with kernel 10kRQ + 4kPE ,               erence Rasmussen & Williams (2006) are ev-
+with α = 2, ω = 1/20, `RQ = 40, `P E = 1.                        erywhere positive, including the periodic ker-
+                                                                 nel, k(τ ) = exp(−2 sin2 (π τ ω)/`2 ). While positive co-
+We reconstruct the kernel function of the sampled pro-           variances are often suitable for interpolation, captur-
+cess using an SM kernel with Q = 4, with the results             ing negative covariances can be essential for extrapo-
+   4
+     A correlation function        c(x, x0 ) is a nor-           lating patterns: for example, linear trends have long-
+malised       covariance p kernel         k(x, x0 ),      such   range negative covariances. We test the ability of the
+           0          0
+that c(x, x ) = k(x, x )/ k(x, x)k(x0 , x0 ) and c(x, x) = 1.    SM kernel to learn negative covariances, by sampling
+                      Gaussian Process Kernels for Pattern Discovery and Extrapolation
+
+400 points from a simple AR(1) discrete time GP:
+
+           y(x + 1) = −e−0.01 y(x) + σ(x) ,           (16)
+                (x) ∼ N (0, 1) ,                      (17)
+
+which has kernel
+                                    0
+     k(x, x0 ) = σ 2 (−e−.01 )|x−x | /(1 − e−.02 ) .   (18)
+
+The process in Eq. (16) is shown in Figure 3a. This
+process follows an oscillatory pattern, systematically
+switching states every x = 1 unit, but is not periodic
+and has long range covariances: if we were to only view
+every second data point, the resulting process would
+vary rather slowly and smoothly.
+We see in Figure 3b that the learned SM covariance
+function accurately reconstructs the true covariance
+function. The spectral density in Figure 3c) shows a
+sharp peak at a frequency of 0.5, or a period of 2. This
+feature represents the tendency for the process to os-
+cillate from positive to negative every x = 1 unit. In
+this case Q = 4, but after automatic relevance deter-
+mination in training, only 3 components were used.
+Using the SM kernel, we forecast 20 units ahead and
+compare to other kernels in Table 1 (NEG COV).
+
+4.4. Discovering the Sinc Pattern
+The sinc function is defined as sinc(x) = sin(πx)/(πx).
+We created a pattern combining three sinc functions:
+
+  y(x) = sinc(x + 10) + sinc(x) + sinc(x − 10) .       (19)   Figure 4. Discovering a sinc pattern. a) The training data
+                                                              are shown in blue. The goal is to fill in the missing region
+This is a complex oscillatory pattern. Given only the         x ∈ [−4.5, 4.5]. b) The training data are in blue, the testing
+points shown in Figure 4a, we wish to complete the            data in green. The mean of the predictive distribution
+pattern for x ∈ [−4.5, 4.5]. Unlike the CO2 example           using the SM kernel is shown in dashed black. The mean of
+in Section 4.1, it is perhaps even difficult for a human      the predictive distributions using the squared exponential,
+to extrapolate the missing pattern from the training          Matérn, rational quadratic, and periodic kernels, are in red,
+                                                              cyan, magenta, and orange. c) The learned SM correlation
+data. It is an interesting exercise to focus on this fig-
+                                                              function (normalised kernel) is shown in black, and the
+ure, identify features, and fill in the missing part.
+                                                              learned Matérn correlation function is in red, with τ =
+Notice that there is complete symmetry about the ori-         x − x0 . d) The log spectral densities of the SM and SE
+gin x = 0, peaks at x = −10 and x = 10, and destruc-          kernels are in black and red, respectively.
+tive interference on each side of the peaks facing the
+origin. We therefore might expect a peak at x = 0 and
+a symmetric pattern around x = 0.
+As shown in Figure 4b, the SM kernel with Q = 10
+reconstructs the pattern in the region x ∈ [−4.5, 4.5]
+almost perfectly from the 700 training points in blue.
+Moreover, using the SM kernel, 95% of the poste-
+rior predictive mass entirely contains the true pat-
+tern in x ∈ [−4.5, 4.5]. GPs using Matérn, SE, RQ,
+and periodic kernels are able to predict reasonably
+within x = 0.5 units of the training data, but entirely
+miss the pattern in x ∈ [−4.5, 4.5].
+                    Gaussian Process Kernels for Pattern Discovery and Extrapolation
+
+Figure 4c shows the learned SM correlation function
+(normalised kernel). For τ ∈ [0, 10] there is a local
+pattern, roughly representing the behaviour of a sin-
+gle sinc function. For τ > 10 there is a repetitive pat-
+tern representing a new sinc function every 10 units –
+an extrapolation a human might make. With a sinc
+functions centred at x = −10, 0, 10, we might expect
+more sinc patterns every 10 units. The learned Matérn
+correlation function is shown in red in Figure 4c – un-
+able to discover complex patterns in the data, it simply   Figure 5. Predicting airline passenger numbers. a) The
+assigns high correlation to nearby points.                 training and testing data are in blue and green, respec-
+                                                           tively. The mean of the predictive distribution using the
+Figure 4d shows the (highly non-Gaussian) spec-
+                                                           SM kernel is shown in black, with 2 standard deviations
+tral density of the SM kernel, with peaks at
+                                                           about the mean (95% of the predictive probability mass)
+0.003, 0.1, 0.2, 0.3, 0.415, 0.424, 0.492. In this case,   shown in gray shade. The mean of the predictive distri-
+only 7 of the Q = 10 components are used. The peak         bution using the SM kernel is shown in black. The mean
+at 0.1 represents a period of 10: every 10 units, a        of the predictive distributions using the squared exponen-
+sinc function is repeated. The variance of this peak is    tial, Matérn, rational quadratic, and periodic kernels, are
+small, meaning the method will extrapolate this struc-     in red, cyan, magenta, and orange, respectively. In the
+ture over long distances. By contrast, the squared ex-     training region, the SM and Matérn kernels are not shown,
+ponential spectral density simply has a broad peak,        since their predictions essentially overlap with the training
+centred at the origin. The predictive performance for      data. b) The log spectral densities of the SM and squared
+recovering the missing 300 test points (in green) is       exponential kernels are in black and red, respectively.
+given in Table 1 (SINC).
+
+4.5. Airline Passenger Data                                data, and generalizes the long term trend better than
+Figure 5a shows airline passenger numbers, recorded        the SE kernel, but interpolates poorly.
+monthly, from 1949 to 1961 (Hyndman, 2005). Based          By contrast, the SM kernel interpolates nicely (over-
+on only the first 96 monthly measurements, in blue,        lapping with the data in the training region), and is
+we wish to forecast airline passenger numbers for the      able to extrapolate complex patterns far beyond the
+next 48 months (4 years); the corresponding 48 test        data, capturing the true airline passenger numbers for
+measurements are in green.                                 years after the data ends, within a small band contain-
+There are several features apparent in these data:         ing 95% of the predictive probability mass.
+short seasonal variations, a long term rising trend, and   Of the Q = 10 initial components specified for the SM
+an absence of white noise artifacts. Many popular ker-     kernel, 7 were used after training. The learned spectral
+nels are forced to make one of two choices: 1) Model       density in Figure 5b shows a large sharp low frequency
+the short term variations and ignore the long term         peak (at about 0.00148). This peak corresponds to
+trend, at the expense of extrapolation. 2) Model the       the rising trend, which generalises well beyond the
+long term trend and treat the shorter variations as        data (small variance peak), is smooth (low frequency),
+noise, at the expense of interpolation.                    and is important for describing the data (large rela-
+As seen in Figure 5a, the Matérn kernel is more           tive weighting). The next largest peak corresponds to
+inclined to model the short term trends than the           the yearly trend of 12 months, which again generalises,
+smoother SE or RQ kernels, resulting in sensible in-       but not to the extent of the smooth rising trend, since
+terpolation (predicting almost identical values to the     the variance of this peak is larger than for the peak
+training data in the training region), but poor extrap-    near the origin. The higher frequency peak at x = 0.34
+olation – moving quickly to the prior mean, having         (period of 3 months) corresponds to the beginnings of
+learned no structure to generalise beyond the data.        new seasons, which can explain the effect of seasonal
+The SE kernel interpolates somewhat sensibly, but ap-      holidays on air traffic.
+pears to underestimate the magnitudes of peaks and         A more detailed study of these features and their prop-
+troughs, and treats repetitive patterns in the data as     erties – frequencies, variances, etc. – could isolate less
+noise. Extrapolation using the SE kernel is poor. The      obvious features affecting airline passenger numbers.
+RQ kernel, which is a scale mixture of SE kernels,         Table 1 (AIRLINE) shows predictive performance for
+is more able to manage different length-scales in the      forecasting 48 months of airline passenger numbers.
+                     Gaussian Process Kernels for Pattern Discovery and Extrapolation
+
+                                                            References
+Table 1. We compare the test performance of the proposed
+spectral mixture (SM) kernel with squared exponential       Abrahamsen, P. A review of Gaussian random fields
+(SE), Matérn (MA), rational quadratic (RQ), and periodic    and correlation functions. Norweigan Computing
+(PE) kernels. The SM kernel consistently has the lowest      Center Technical report, 1997.
+mean squared error (MSE) and highest log likelihood (L).
+                                                            Archambeau, C. and Bach, F. Multiple Gaussian pro-
+                  SM       SE      MA      RQ        PE       cess models. arXiv preprint arXiv:1110.5238, 2011.
+ CO2
+                                                            Bochner, Salomon. Lectures on Fourier Integrals.(AM-
+ MSE              9.5    1200     1200     980     1200       42), volume 42. Princeton University Press, 1959.
+ L                170    −320     −240    −100    −1800
+ NEG COV                                                    Chatfield, C. Time Series Analysis: An Introduction.
+ MSE              62      210      210     210      210       London: Chapman and Hall, 1989.
+ L               −25      −70      −70     −70      −70
+                                                            Cressie, N.A.C. Statistics for Spatial Data (Wi-
+ SINC
+                                                              ley Series in Probability and Statistics). Wiley-
+ MSE        0.000045      0.16    0.10    0.11      0.05      Interscience, 1993.
+ L              3900      2000    1600    2000       600
+ AIRLINE                                                    Damianou, A.C. and Lawrence, N.D. Deep Gaussian
+ MSE             460     43000   37000    4200    46000      processes. arXiv preprint arXiv:1211.0358, 2012.
+ L              −190     −260    −240     −280    −370
+                                                            Durrande, N., Ginsbourger, D., and Roustant, O. Ad-
+                                                             ditive kernels for Gaussian process modeling. arXiv
+                                                             preprint arXiv:1103.4023, 2011.
+5. Discussion
+                                                            Gönen, M. and Alpaydın, E. Multiple kernel learning
+We have derived expressive closed form kernels and we
+                                                              algorithms. Journal of Machine Learning Research,
+have shown that these kernels, when used with Gaus-
+                                                              12:2211–2268, 2011.
+sian processes, can discover patterns in data and ex-
+trapolate over long ranges. The simplicity of these ker-    Hyndman, R.J. Time series data library. 2005.
+nels is one of their strongest properties: they can be       http://www-personal.buseco.monash.edu.au/
+used as drop-in replacements for popular kernels such
+                                                             ~hyndman/TSDL/.
+as the squared exponential kernel, with major bene-
+fits in expressiveness and performance, while retaining     Keeling, C. D. and Whorf, T. P. Atmospheric CO2
+simple training and inference procedures.                     records from sites in the SIO air sampling network.
+Gaussian processes have proven themselves as power-           Trends: A Compendium of Data on Global Change.
+ful smoothing interpolators. We believe that pattern          Carbon Dioxide Information Analysis Center, 2004.
+discovery and extrapolation is an exciting new direc-
+                                                            Kostantinos, N. Gaussian mixtures and their appli-
+tion for Bayesian nonparametric approaches, which
+                                                             cations to signal processing. Advanced Signal Pro-
+can capture rich variations in data. Here we have
+                                                             cessing Handbook: Theory and Implementation for
+shown how Bayesian nonparametric models can nat-
+                                                             Radar, Sonar, and Medical Imaging Real Time Sys-
+urally be used to generalise a pattern from a small
+                                                             tems, 2000.
+number of examples.
+We have only begun to explore what could be done            MacKay, David J.C. Introduction to Gaussian pro-
+with such pattern discovery methods. In future work,         cesses. In Christopher M. Bishop, editor (ed.), Neu-
+one could integrate away a spectral density, using re-       ral Networks and Machine Learning, chapter 11, pp.
+cently developed efficient Markov chain Monte Carlo          133–165. Springer-Verlag, 1998.
+for GP hyperparameters (Murray & Adams, 2010).
+Moreover, recent Toeplitz methods (Saatchi, 2011)           MacKay, D.J.C. et al. Bayesian nonlinear modeling for
+could be applied to the SM kernel for significant            the prediction competition. Ashrae Transactions,
+speedup in inference and predictions.                        100(2):1053–1062, 1994.
+
+Acknowledgements We thank Richard E. Turner,                McCulloch, W.S. and Pitts, W. A logical calculus of
+Carl Edward Rasmussen, David A. Knowles, and Neil            the ideas immanent in nervous activity. Bulletin of
+D. Lawrence, for interesting discussions.                    mathematical biology, 5(4):115–133, 1943.
+                    Gaussian Process Kernels for Pattern Discovery and Extrapolation
+
+Murray, Iain and Adams, Ryan P. Slice sampling co-        Wilson, Andrew Gordon, Knowles, David A, and
+ variance hyperparameters in latent Gaussian mod-          Ghahramani, Zoubin. Gaussian process regression
+ els. In Advances in Neural Information Processing         networks. arXiv preprint arXiv:1110.4411, 2011.
+ Systems 23, 2010.
+                                                          Yuille, A. and Kersten, D. Vision as Bayesian infer-
+Neal, R.M. Bayesian Learning for Neural Networks.           ence: analysis by synthesis? Trends in Cognitive
+  Springer Verlag, 1996. ISBN 0387947248.                   Sciences, 10(7):301–308, 2006.
+
+Rasmussen, Carl Edward. Evaluation of Gaussian
+  Processes and Other Methods for Non-linear Regres-
+  sion. PhD thesis, University of Toronto, 1996.
+
+Rasmussen, Carl Edward and Williams, Christo-
+  pher K.I. Gaussian processes for Machine Learning.
+  The MIT Press, 2006.
+
+Rosenblatt, F. Principles of Neurodynamics. Spartan
+  Book, 1962.
+
+Rumelhart, D.E., Hinton, G.E., and Williams, R.J.
+ Learning representations by back-propagating er-
+ rors. Nature, 323(6088):533–536, 1986.
+
+Saatchi, Yunus. Scalable Inference for Structured
+  Gaussian Process Models. PhD thesis, University
+  of Cambridge, 2011.
+
+Salakhutdinov, R. and Hinton, G. Using deep belief
+  nets to learn covariance kernels for Gaussian pro-
+  cesses. Advances in Neural Information Processing
+  Systems, 20:1249–1256, 2008.
+
+Stein, M.L. Interpolation of Spatial Data: Some The-
+  ory for Kriging. Springer Verlag, 1999.
+
+Steyvers, M., Griffiths, T.L., and Dennis, S. Proba-
+  bilistic inference in human semantic memory. Trends
+  in Cognitive Sciences, 10(7):327–334, 2006.
+
+Tenenbaum, J.B., Kemp, C., Griffiths, T.L., and
+  Goodman, N.D. How to grow a mind: Statis-
+  tics, structure, and abstraction. Science, 331(6022):
+  1279–1285, 2011.
+
+Tipping, M. Bayesian inference: An introduction to
+  principles and practice in machine learning. Ad-
+  vanced Lectures on Machine Learning, pp. 41–62,
+  2004.
+
+Wilson, A.G. and Adams, R.P. Gaussian process ker-
+ nels for pattern discovery and extrapolation supple-
+ mentary material and code. 2013. http://mlg.eng.
+ cam.ac.uk/andrew/smkernelsupp.pdf.
+
+Wilson, Andrew G., Knowles, David A., and Ghahra-
+ mani, Zoubin. Gaussian process regression net-
+ works. In Proceedings of the 29th International Con-
+ ference on Machine Learning (ICML), 2012.
+

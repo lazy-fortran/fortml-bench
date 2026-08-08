@@ -1,0 +1,70 @@
+{
+  "fetched_at": "2026-08-08T06:45:13.983137+00:00",
+  "note": "Read, not ported. FortBO derives its closed forms through FortSym and writes its implementations against the definitions here.",
+  "entries": [
+    {
+      "kind": "paper",
+      "key": "student-t-process",
+      "arxiv_id": "1402.4306",
+      "title": "Student-t Processes as Alternatives to Gaussian Processes",
+      "needed_for": "The Student-t process: its predictive marginals, how the degrees of freedom update on conditioning, and \u2014 the part most easily got wrong from memory \u2014 which of its properties actually differ from a GP's rather than merely looking as though they should.",
+      "consumed_by": [
+        "src/gp/fortml_student_t_process.f90"
+      ],
+      "path": "papers/student-t-process-1402.4306.pdf",
+      "status": "fetched",
+      "bytes": 1280185,
+      "url": "https://arxiv.org/pdf/1402.4306",
+      "text": "papers/student-t-process-1402.4306.txt",
+      "title_verified": true
+    },
+    {
+      "kind": "paper",
+      "key": "svgp",
+      "arxiv_id": "1309.6835",
+      "title": "Gaussian Processes for Big Data",
+      "needed_for": "The stochastic variational sparse GP, its ELBO, and the sense in which its predictive variance is not the exact posterior's.",
+      "consumed_by": [
+        "src/gp/fortml_sparse_gp.f90"
+      ],
+      "path": "papers/svgp-1309.6835.pdf",
+      "status": "fetched",
+      "bytes": 1469906,
+      "url": "https://arxiv.org/pdf/1309.6835",
+      "text": "papers/svgp-1309.6835.txt",
+      "title_verified": true
+    },
+    {
+      "kind": "paper",
+      "key": "ski",
+      "arxiv_id": "1503.01057",
+      "title": "Kernel Interpolation for Scalable Structured Gaussian Processes",
+      "needed_for": "The structured kernel interpolation approximation and the conditions under which its error is controlled.",
+      "consumed_by": [
+        "src/gp/fortml_ski_gp.f90"
+      ],
+      "path": "papers/ski-1503.01057.pdf",
+      "status": "fetched",
+      "bytes": 1773271,
+      "url": "https://arxiv.org/pdf/1503.01057",
+      "text": "papers/ski-1503.01057.txt",
+      "title_verified": true
+    },
+    {
+      "kind": "paper",
+      "key": "spectral-mixture",
+      "arxiv_id": "1302.4245",
+      "title": "Gaussian Process Kernels for Pattern Discovery and Extrapolation",
+      "needed_for": "The spectral mixture kernel's closed form and its parameterization, which FortML's derivative-observation path also has to differentiate.",
+      "consumed_by": [
+        "src/gp/fortml_kernels.f90"
+      ],
+      "path": "papers/spectral-mixture-1302.4245.pdf",
+      "status": "fetched",
+      "bytes": 911362,
+      "url": "https://arxiv.org/pdf/1302.4245",
+      "text": "papers/spectral-mixture-1302.4245.txt",
+      "title_verified": true
+    }
+  ]
+}
