@@ -41,7 +41,7 @@ def revision(repository: Path, ignored: tuple[Path, ...] = ()) -> str:
     return head + ("+dirty" if dirty else "")
 
 
-def independent_oracle() -> tuple[int, float, float]:
+def independent_oracle() -> tuple[int, float, float, float]:
     x = np.array(
         [[0.2, 0.8], [-0.4, 1.1], [0.7, -0.3], [0.1, 0.6], [-0.5, -0.9]],
         dtype=np.float64,
@@ -60,6 +60,11 @@ def independent_oracle() -> tuple[int, float, float]:
         np.cos(np.exp(theta[1]) * x[:, 1]),
     ])
     value = main + residual
+    reference = np.empty_like(value)
+    reference[:, 0] = x[:, 0] + np.sin(0.7 * x[:, 0])
+    reference[:, 1] = x[:, 0] ** 2 + np.cos(0.7 * x[:, 0])
+    reference[:, 2] = x[:, 1] + np.sin(1.2 * x[:, 1])
+    reference[:, 3] = x[:, 1] ** 2 + np.cos(1.2 * x[:, 1])
     frequencies = np.exp(theta)
     argument_dot = frequencies * (x_dot + x * theta_dot)
     main_dot = np.column_stack([
@@ -89,7 +94,61 @@ def independent_oracle() -> tuple[int, float, float]:
 
     finite_difference = (evaluate(x_plus, theta_plus) -
                          evaluate(x_minus, theta_minus)) / (2.0 * h)
-    return value.shape[1], float(np.max(np.abs(direction - finite_difference))), 0.0
+
+    u = (0.03 * np.arange(value.size, dtype=np.float64) - 0.17).reshape(value.shape)
+
+    def vjp(xv: np.ndarray, tv: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        av = np.exp(tv)
+        zv0 = av[0] * xv[:, 0]
+        zv1 = av[1] * xv[:, 1]
+        q0 = np.cos(zv0) * u[:, 0] - np.sin(zv0) * u[:, 1]
+        q1 = np.cos(zv1) * u[:, 2] - np.sin(zv1) * u[:, 3]
+        theta_bar = np.array([
+            np.sum(av[0] * xv[:, 0] * q0),
+            np.sum(av[1] * xv[:, 1] * q1),
+        ])
+        x_bar = np.empty_like(xv)
+        x_bar[:, 0] = u[:, 0] + 2.0 * xv[:, 0] * u[:, 1] + av[0] * q0
+        x_bar[:, 1] = u[:, 2] + 2.0 * xv[:, 1] * u[:, 3] + av[1] * q1
+        return theta_bar, x_bar
+
+    theta_bar, x_bar = vjp(x, theta)
+    adjoint_error = abs(np.sum(u * direction) -
+                        (np.dot(theta_bar, theta_dot) + np.sum(x_bar * x_dot)))
+    frequencies = np.exp(theta)
+    z0 = frequencies[0] * x[:, 0]
+    z1 = frequencies[1] * x[:, 1]
+    q0 = np.cos(z0) * u[:, 0] - np.sin(z0) * u[:, 1]
+    q1 = np.cos(z1) * u[:, 2] - np.sin(z1) * u[:, 3]
+    q0_dot = -(frequencies[0] * (x_dot[:, 0] + x[:, 0] * theta_dot[0])) * (
+        np.sin(z0) * u[:, 0] + np.cos(z0) * u[:, 1])
+    q1_dot = -(frequencies[1] * (x_dot[:, 1] + x[:, 1] * theta_dot[1])) * (
+        np.sin(z1) * u[:, 2] + np.cos(z1) * u[:, 3])
+    theta_hvp = np.array([
+        (frequencies[0] * theta_dot[0] * x[:, 0] + frequencies[0] * x_dot[:, 0]) * q0
+        + frequencies[0] * x[:, 0] * q0_dot,
+        (frequencies[1] * theta_dot[1] * x[:, 1] + frequencies[1] * x_dot[:, 1]) * q1
+        + frequencies[1] * x[:, 1] * q1_dot,
+    ]).sum(axis=1)
+    x_hvp = np.empty_like(x)
+    x_hvp[:, 0] = 2.0 * x_dot[:, 0] * u[:, 1] + (
+        frequencies[0] * theta_dot[0]) * q0 + frequencies[0] * q0_dot
+    x_hvp[:, 1] = 2.0 * x_dot[:, 1] * u[:, 3] + (
+        frequencies[1] * theta_dot[1]) * q1 + frequencies[1] * q1_dot
+    theta_bar_plus, x_bar_plus = vjp(x_plus, theta_plus)
+    theta_bar_minus, x_bar_minus = vjp(x_minus, theta_minus)
+    theta_hvp_fd = (theta_bar_plus - theta_bar_minus) / (2.0 * h)
+    x_hvp_fd = (x_bar_plus - x_bar_minus) / (2.0 * h)
+    hvp_error = max(
+        float(np.max(np.abs(theta_hvp - theta_hvp_fd))),
+        float(np.max(np.abs(x_hvp - x_hvp_fd))),
+    )
+    return (
+        value.shape[1],
+        float(np.max(np.abs(direction - finite_difference))),
+        float(adjoint_error),
+        max(float(np.max(np.abs(value - reference))), hvp_error),
+    )
 
 
 def main() -> None:
@@ -103,10 +162,13 @@ def main() -> None:
     fortml = args.fortml.resolve()
     output = args.output if args.output.is_absolute() else root / args.output
     output = output.resolve()
-    n_features, derivative_error, oracle_error = independent_oracle()
-    if derivative_error > 2.0e-10 or oracle_error > 1.0e-14:
+    n_features, derivative_error, adjoint_error, oracle_error = independent_oracle()
+    if (derivative_error > 2.0e-10 or adjoint_error > 2.0e-12 or
+            oracle_error > 2.0e-8):
         raise RuntimeError(
-            f"independent residual oracle failed: derivative={derivative_error}"
+            "independent residual oracle failed: "
+            f"derivative={derivative_error}, adjoint={adjoint_error}, "
+            f"hvp/value={oracle_error}"
         )
 
     started = time.perf_counter()
@@ -135,7 +197,8 @@ def main() -> None:
             fortml / "test_mlp_radam_checkpoint.txt",
         )),
         "benchmark_revision": revision(root, ignored), "compiler": "gfortran",
-        "flags": "-O3", "oracle": "independent NumPy residual-sum and finite-difference direction",
+        "flags": "-O3",
+        "oracle": "independent NumPy value/JVP/VJP/HVP residual-sum oracle",
         "notes": note,
     }
     rows = [{
@@ -143,7 +206,7 @@ def main() -> None:
         "backend": "fortml", "device": "cpu", "status": "pass" if passed else "failed",
         "seconds_per_operation": elapsed, "metric": "gate_seconds",
         "value": 1.0 if passed else 0.0,
-        "max_abs_error": max(derivative_error, oracle_error), **metadata,
+        "max_abs_error": max(derivative_error, adjoint_error, oracle_error), **metadata,
     }]
     device_metadata = dict(metadata)
     device_metadata.update({
@@ -158,7 +221,9 @@ def main() -> None:
     })
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:
-        csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n").writerows(rows)
+        writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
     print(f"wrote {len(rows)} rows to {output}")
     if not passed:
         raise SystemExit(1)
