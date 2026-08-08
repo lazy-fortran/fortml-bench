@@ -1663,6 +1663,17 @@ The same release protocol now checks regression margins, binary positive-class
 probabilities, multiclass simplex probabilities, staged raw margins, and
 normalized gain feature importance after every boosting stage.
 
+The validation-aware LightGBM warm-start lane independently replays weighted
+validation losses and patience, then checks restore-best/retain-all continuation,
+transactional malformed-validation refusal, and the typed CUDA boundary:
+
+```bash
+python -B scripts/bench_lightgbm_validation_warm_start.py \
+  --fortml ../fortml --output results/lightgbm_validation_warm_start.csv
+```
+
+See [`results/LIGHTGBM_VALIDATION_WARM_START.md`](results/LIGHTGBM_VALIDATION_WARM_START.md).
+
 The Poisson count-objective lane independently reconstructs a one-tree
 log-link Newton fixture and then records exact CPU fit/predict and weighted
 histogram timings on a larger deterministic count workload:
