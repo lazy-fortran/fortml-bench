@@ -21,14 +21,14 @@ fixture. The Python harness checks this before recording timings.
 | --- | --- | ---: | ---: |
 | contract oracle | NumPy/CPU | 0 | maximum error 0 |
 | oracle | FortML/CPU | 0 | maximum error 0 |
-| fit | FortML/CPU | 8.670000e-4 | weighted fit wall time |
-| predict | FortML/CPU | 1.500000e-5 | weighted MSE 5.126846e-2 |
-| staged | FortML/CPU | 1.500000e-5 | final stage max error 0 |
-| warm start | FortML/CPU | 4.330000e-4 | four-to-eight-tree staged max error 0 |
+| fit | FortML/CPU | 9.660000e-4 | weighted fit wall time |
+| predict | FortML/CPU | 1.900000e-5 | weighted MSE 5.126846e-2 |
+| staged | FortML/CPU | 2.200000e-5 | final stage max error 0 |
+| warm start | FortML/CPU | 5.360000e-4 | four-to-eight-tree staged max error 0 |
 | warm start refusal | FortML/CPU | not timed | non-growing target status 1 |
-| contributions | FortML/CPU | 1.300000e-5 | margin reconstruction max error 0 |
-| slice | FortML/CPU | 5.000000e-6 | four-tree prefix max error 0 |
-| persistence | FortML/CPU | 6.980000e-4 | text round-trip max error 0 |
+| contributions | FortML/CPU | 2.000000e-5 | margin reconstruction max error 0 |
+| slice | FortML/CPU | 7.000000e-6 | four-tree prefix max error 0 |
+| persistence | FortML/CPU | 9.890000e-4 | text round-trip max error 0 |
 | persistence refusal | FortML/CPU | not timed | trailing record status 1 |
 | binary | FortML/CPU | not timed | accuracy 0.994792 |
 | predict | FortML/CUDA | unavailable | typed `FORTNUM_NOT_IMPLEMENTED` |
