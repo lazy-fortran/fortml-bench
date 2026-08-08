@@ -1,0 +1,50 @@
+{
+  "config": {
+    "n_train": 400,
+    "n_query": 4000,
+    "dimension": 8,
+    "lengthscale": 0.8,
+    "signal_variance": 1.4,
+    "noise_variance": 0.04
+  },
+  "note": "Pinned model, not fitted. Inputs reconstructed from the same closed forms on both sides rather than shipped.",
+  "results": {
+    "fortml": {
+      "time_fit": 0.008108849986456335,
+      "time_predict": 0.042269271973054856,
+      "value_mean_sum": 16748.049619882244,
+      "value_variance_sum": 2939.911117341361,
+      "value_mean_first": 5.131548561445555,
+      "value_variance_first": 0.5595628934186611
+    },
+    "sklearn": {
+      "time_fit": 0.009838570025749505,
+      "time_predict": 0.051744436961598694,
+      "value_mean_sum": 16748.049619882222,
+      "value_variance_sum": 2939.9111173413576,
+      "value_mean_first": 5.131548561445554,
+      "value_variance_first": 0.5595628934186605
+    },
+    "gpytorch": {
+      "unavailable": "No module named 'botorch'"
+    }
+  },
+  "comparison": [
+    {
+      "against": "sklearn",
+      "stage": "fit",
+      "fortml_seconds": 0.008108849986456335,
+      "other_seconds": 0.009838570025749505,
+      "speedup": 1.2133126204310358,
+      "values_agree": true
+    },
+    {
+      "against": "sklearn",
+      "stage": "predict",
+      "fortml_seconds": 0.042269271973054856,
+      "other_seconds": 0.051744436961598694,
+      "speedup": 1.2241620105163844,
+      "values_agree": true
+    }
+  ]
+}
