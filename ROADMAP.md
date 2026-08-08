@@ -652,6 +652,12 @@ a different workload, precision, device, or residency policy.
   oracles. `results/spectral_mixture.csv` records the two-mixture CPU release
   app and typed resident-CUDA refusal; the protocol is documented in
   `results/SPECTRAL_MIXTURE.md`.
+- [x] Add the periodic derivative-GP mixed-observation HVP lane. The
+  independent NumPy dense oracle central-differences the likelihood gradient
+  for all packed logarithmic kernel/noise coordinates; the FortML app checks
+  the analytic radial fourth-input product and records CPU timing plus the
+  typed resident-CUDA refusal in `results/derivative_gp_periodic_hvp.csv`.
+  The protocol is documented in `results/DERIVATIVE_GP_PERIODIC_HVP.md`.
 - [x] Add the locally-periodic exact-GP lane with separate vectorized and
   scalar-loop covariance oracles, exact posterior moments, input and
   logarithmic parameter products, and an explicit static-operator/CUDA

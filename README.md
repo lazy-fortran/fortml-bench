@@ -209,6 +209,19 @@ FO_SCAN_FALLBACK=regex python -B scripts/bench_local_periodic_gp.py \
 
 See [`results/LOCAL_PERIODIC_GP.md`](results/LOCAL_PERIODIC_GP.md).
 
+The periodic derivative-GP HVP lane independently assembles mixed
+value/first-derivative covariance blocks and central-differences the dense
+likelihood gradient in NumPy. It checks all three logarithmic kernel
+coordinates and log noise against the analytic FortML CPU HVP, including
+coincident training rows; CUDA remains an explicit resident-graph refusal:
+
+```bash
+FO_SCAN_FALLBACK=regex python -B scripts/bench_derivative_gp_periodic_hvp.py \
+  --fortml ../fortml --output results/derivative_gp_periodic_hvp.csv
+```
+
+See [`results/DERIVATIVE_GP_PERIODIC_HVP.md`](results/DERIVATIVE_GP_PERIODIC_HVP.md).
+
 The change-point GP lane checks a gated RBF-plus-constant covariance, exact-GP
 posterior moments, and packed parameter JVP/VJP/HVP products against an
 independent NumPy covariance and central-difference oracle. The Fortran gate
