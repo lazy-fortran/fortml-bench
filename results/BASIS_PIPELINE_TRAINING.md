@@ -15,7 +15,7 @@ python -B scripts/bench_basis_pipeline_training.py \
   --fortml ../fortml --output results/basis_pipeline_training.csv
 ```
 
-The fixed-ridge fixture has seven rows and four packed parameters. The
+The fixed-ridge fixture has seven training samples and four packed parameters. The
 optimized-ridge fixture appends one nonnegative scalar coordinate (five packed
 parameters). Its exact fitted residual is zero and its ridge contribution is
 `0.0312`. The CSV is a correctness record. Empty timing fields are intentional
