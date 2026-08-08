@@ -11,7 +11,7 @@ categories, and one numeric nuisance feature.  The target is zero for codes
 therefore has an independent three-node partition oracle.  The harness checks
 the complete prediction vector and the reported fit diagnostic against this
 NumPy oracle, then records repeated fixed-tree prediction timing.  The CPU
-rows use FortML revision `96a9b00`; the observed independent-oracle error is
+rows use FortML revision `c8ee155`; the observed independent-oracle error is
 zero.  The CUDA row is intentionally `unavailable`: no resident CUDA
 categorical-tree kernel is linked, so the device contract is a typed refusal.
 
