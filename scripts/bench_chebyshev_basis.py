@@ -129,7 +129,9 @@ def parse(stdout: str) -> dict[str, float | int]:
         records[f"{phase}_n_inputs"] = int(fields[2])
         records[f"{phase}_degree"] = int(fields[3])
         records[f"{phase}_seconds"] = float(fields[4])
-        records[f"{phase}_sum"] = float(fields[5])
+        # VJP/HVP also report the zero-length parameter block before the
+        # input-product checksum; compare the nonempty input block.
+        records[f"{phase}_sum"] = float(fields[-1])
     expected = {"value", "jvp", "vjp", "hvp"}
     missing = expected.difference({key.removesuffix("_n_samples") for key in records
                                    if key.endswith("_n_samples")})
