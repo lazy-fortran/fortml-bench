@@ -5,7 +5,9 @@ reference against an independent NumPy implementation of scalar one-dimensional
 RBF covariance derivatives. The fixture mixes value, first-derivative, and
 second-derivative observations and queries. It records posterior mean/variance,
 dense latent joint covariance, input JVP finite-difference error, and input VJP
-duality. The FortML test is run before the public-contract timing row and also
+duality. The JVP row compares an independently coded order-five analytic
+derivative with a central difference. The FortML test is run before the
+public-contract timing row and also
 checks malformed orders, non-RBF kernels, and the typed CUDA refusal.
 
 ```bash
