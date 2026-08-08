@@ -132,12 +132,15 @@ def main() -> None:
         jvp_error = float(np.max(np.abs(observed_jvp - expected_jvp)))
         gradient_observed = float(records["gp_categorical_likelihood_gradient"][0][0])
         gradient_error = abs(gradient_observed - expected_gradient)
-        error = max(probability_error, jvp_error, gradient_error)
+        tangent = float(records["gp_categorical_likelihood_jvp"][0][0])
+        tangent_error = abs(tangent - expected_gradient)
+        error = max(probability_error, jvp_error, gradient_error, tangent_error)
         if error > 3.0e-9:
             raise RuntimeError(f"categorical likelihood oracle mismatch: {error:.3e}")
         iterations = int(records["gp_categorical_likelihood_iterations"][0][0])
         fit_seconds = float(records["gp_categorical_likelihood_fit_seconds"][0][0])
-        tangent = float(records["gp_categorical_likelihood_jvp"][0][0])
+        if tangent_error > 3.0e-9:
+            raise RuntimeError(f"categorical ELBO JVP mismatch: {tangent_error:.3e}")
     else:
         probability_error = jvp_error = gradient_error = error = float("nan")
         iterations = 0
@@ -153,7 +156,8 @@ def main() -> None:
     add(phase="probability_products", status=status, seconds_per_operation=elapsed,
         metric="probability_and_jvp_max_abs", value=error, max_abs_error=error,
         oracle="NumPy variance-corrected softmax and exact log-temperature JVP",
-        notes=f"probability_error={probability_error:.3e}; jvp_error={jvp_error:.3e}; {notes}")
+        notes=f"probability_error={probability_error:.3e}; jvp_error={jvp_error:.3e}; "
+        f"elbo_jvp_error={tangent_error:.3e}; {notes}")
     add(phase="elbo_products", status=status, metric="elbo_jvp", value=tangent,
         max_abs_error=gradient_error, oracle="NumPy categorical ELBO log-temperature derivative",
         notes=notes)
