@@ -16,8 +16,8 @@ classes, fitted parameters, predictions, and probabilities before timing.
 
 | Backend | Fit (s) | Predict (s) | Accuracy | Max probability error | Max parameter error | Simplex error |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| NumPy oracle | 2.2208e-3 | 3.4463e-5 | 0.953125 | 0 | 0 | 2.22e-16 |
-| FortML CPU | 8.2500e-5 | 6.6563e-6 | 0.953125 | 2.58e-12 | 1.73e-10 | 2.22e-16 |
+| NumPy oracle | 1.0442e-3 | 3.0485e-5 | 0.953125 | 0 | 0 | 2.22e-16 |
+| FortML CPU | 9.6125e-5 | 6.4922e-6 | 0.953125 | 2.58e-12 | 1.73e-10 | 2.22e-16 |
 
 The fixture contains 192 rows, three classes (`-4`, `17`, `91`), and positive
 deterministic sample weights.  All four smooth products (input JVP/VJP and
@@ -27,7 +27,7 @@ explicit device-capability row in the CSV.
 
 ## Provenance
 
-- FortML source: `00ab3fa59bae3589f72edd3b3c0d2ccc3da8dd73`
+- FortML source: `e1359ce1ab3d0b491dca1568f0fe545f84c6a560`
 - Benchmark generator: `cb6261754a0360ffbef15fc8f2c1ead8301058f6`
 - Compiler: `gfortran`; flags: `-O3`; threads: `OMP_NUM_THREADS=1`
 - Python `3.14.6`; NumPy `2.5.1`
