@@ -274,6 +274,12 @@ a different workload, precision, device, or residency policy.
   before its CPU timing is retained. Near-zero sign branches and CUDA remain
   explicit typed refusals. The raw record is
   `results/mlp_lion_hypergradient.csv`.
+- [x] Add the optimizer-group trajectory workload over log learning rate, log
+  regularization, and one log multiplier per contiguous group. Its independent
+  NumPy oracle checks post-SGD scaling, all four gradients, and a directional
+  JVP before retaining FortML timing; overlap validation and CUDA are explicit
+  refusals. The raw record is
+  `results/mlp_optimizer_group_hypergradient.csv`.
 - [x] Add a calibrated neural classifier lane with an independent fixture,
   sorted-class, probability-simplex, finite-bound, and prediction-domain
   oracle. The raw record is `results/mlp_calibrated_classifier.csv`; CPU fit
