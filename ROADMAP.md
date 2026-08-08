@@ -544,7 +544,7 @@ a different workload, precision, device, or residency policy.
   `missing_policy="learn"` scores both default directions, checks every
   prediction and split gain, and records fit/predict timings. The same CSV
   retains an explicit native-CUDA histogram refusal and LightGBM leaf-wise/
-  GOSS/EFB refusal rather than conflating CPU histogram growth with those
+  EFB refusal rather than conflating CPU histogram growth with those
   policies.
 - [x] Add correctness-gated weighted CPU histogram workloads for regression,
   binary logistic, and one-vs-rest multiclass XGBoost. The release app uses
@@ -672,8 +672,13 @@ a different workload, precision, device, or residency policy.
   checks an independent six-row weighted-Newton oracle, while the FortML app
   records weighted regression, binary-logistic, deterministic best-leaf CPU
   timings, and a typed CUDA refusal in `results/lightgbm_leafwise.csv`.
-  GOSS/EFB, categorical statistics, distributed workers, and resident GPU
+  EFB, categorical statistics, distributed workers, and resident GPU
   histograms remain open.
+- [x] Add the LightGBM GOSS lane. `scripts/bench_lightgbm_goss.py` independently
+  replays top-gradient retention, hash-ranked other-row sampling, and the
+  `(1-top_rate)/other_rate` gradient/Hessian correction. The raw
+  `results/lightgbm_goss.csv` records CPU fit/predict and seed-replay checks,
+  malformed-rate refusal, and typed CUDA refusal.
 - [ ] Add a matched full XGBoost lane when the optional dependency and a pinned
   release are available. The current exact depth-limited and weighted CPU
   histogram FortML lanes are recorded in `results/xgboost_workloads.csv`; both
