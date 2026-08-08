@@ -1583,9 +1583,23 @@ and the typed CUDA refusal are kept in a dedicated CSV:
   --fortml ../fortml --output results/lightgbm_leafwise.csv
 ```
 
-See [`results/LIGHTGBM_LEAFWISE.md`](results/LIGHTGBM_LEAFWISE.md). GOSS,
-EFB, categorical statistics, distributed workers, and resident GPU histograms
-remain explicit follow-up gaps.
+See [`results/LIGHTGBM_LEAFWISE.md`](results/LIGHTGBM_LEAFWISE.md). GOSS and
+bounded DART/dropout now have dedicated correctness lanes; EFB, categorical
+statistics, distributed workers, and resident GPU histograms remain explicit
+follow-up gaps.
+
+The bounded DART lane uses the same deterministic LightGBM tree core with a
+compiler-independent seeded dropout stream and persisted tree-normalisation
+scales. Its independent NumPy depth-one tree-walk oracle checks the final
+margin, per-tree scales, seed replay, schema-3 round trip, warm-start
+continuation, malformed-rate refusal, and typed CUDA refusal:
+
+```bash
+python3 -B scripts/bench_lightgbm_dart.py \
+  --fortml ../fortml --output results/lightgbm_dart.csv
+```
+
+See [`results/LIGHTGBM_DART.md`](results/LIGHTGBM_DART.md).
 
 The LightGBM validation lane independently replays the one-feature Newton
 recurrence for regression and binary logistic objectives. It checks patience,

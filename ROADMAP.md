@@ -679,6 +679,12 @@ a different workload, precision, device, or residency policy.
   `(1-top_rate)/other_rate` gradient/Hessian correction. The raw
   `results/lightgbm_goss.csv` records CPU fit/predict and seed-replay checks,
   malformed-rate refusal, and typed CUDA refusal.
+- [x] Add the bounded LightGBM DART/dropout lane. `scripts/bench_lightgbm_dart.py`
+  independently replays seeded prior-tree dropout and `1/(k+1)` tree
+  normalisation. `results/lightgbm_dart.csv` records the CPU prediction oracle,
+  deterministic scales, schema-3 persistence, warm-start parity, malformed-rate
+  refusal, and typed CUDA refusal; fit-time dropout derivatives remain an
+  explicit discrete-fit boundary.
 - [ ] Add a matched full XGBoost lane when the optional dependency and a pinned
   release are available. The current exact depth-limited and weighted CPU
   histogram FortML lanes are recorded in `results/xgboost_workloads.csv`; both
