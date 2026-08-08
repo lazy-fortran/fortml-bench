@@ -524,7 +524,13 @@ a different workload, precision, device, or residency policy.
   GPU histogram comparisons remain separate work. The CPU `rank:pairwise`
   objective now has its own independent gate in `results/xgboost_ranking.csv`;
   matched external ranking comparisons remain open. A stump benchmark is not
-  called XGBoost.
+ called XGBoost.
+- [x] Add the XGBoost interaction-constraint lane. The release app fits
+  unconstrained and separated-group depth-two trees, while
+  `scripts/bench_xgboost_interaction.py` independently reconstructs the
+  group-mean/path-mask oracle and checks the complete prediction vector,
+  diagnostics, and typed CUDA refusal. The raw record is
+  `results/xgboost_interaction.csv`; the CPU rows pass with zero error.
 - [ ] Add physics-informed, Hamiltonian, Lagrangian, and symplectic workloads
   with analytic harmonic-oscillator and manufactured-PDE oracles. Record
   trajectory error, energy drift, symplectic Jacobian defect, residual norms,

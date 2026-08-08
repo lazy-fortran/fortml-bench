@@ -1057,6 +1057,18 @@ weighted-histogram fixture, oracle boundary, and recorded timings. The
 optional package row never turns a different histogram or tree-growth policy
 into a bitwise comparison.
 
+The interaction-constraint lane fits an unconstrained and a separated-group
+depth-two tree. Its NumPy oracle replays the group-mean split and path mask,
+checks the complete prediction vector and fitted diagnostics, and records a
+typed CUDA refusal because no resident XGBoost tree kernel is linked:
+
+```bash
+python3 -B scripts/bench_xgboost_interaction.py \
+  --fortml ../fortml --output results/xgboost_interaction.csv
+```
+
+See [`results/XGBOOST_INTERACTION.md`](results/XGBOOST_INTERACTION.md).
+
 The separately named LightGBM-style lane records weighted regression and
 binary-logistic histogram boosting with deterministic globally best-leaf growth
 up to `num_leaves`. The six-sample weighted-Newton fixture is an independent
