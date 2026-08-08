@@ -1,7 +1,23 @@
 {
-  "fetched_at": "2026-08-08T06:45:13.983137+00:00",
+  "fetched_at": "2026-08-08T07:44:46.082266+00:00",
   "note": "Read, not ported. FortBO derives its closed forms through FortSym and writes its implementations against the definitions here.",
   "entries": [
+    {
+      "kind": "paper",
+      "key": "deep-kernel-learning",
+      "arxiv_id": "1511.02222",
+      "title": "Deep Kernel Learning",
+      "needed_for": "The composition itself, and the training story around it. The kernel is a base kernel evaluated on a neural feature map, k(x, x') = k_base(g(x, w), g(x', w)), with the network weights learned jointly with the base kernel's hyperparameters through the marginal likelihood rather than pretrained and frozen. What we need from the paper and cannot get from the one-line definition is which parts are load-bearing: that the base kernel keeps its own lengthscale on the feature space, and how the network output dimension interacts with it.",
+      "consumed_by": [
+        "fortml/src/gp/fortml_deep_kernel_gp.f90"
+      ],
+      "path": "papers/deep-kernel-learning-1511.02222.pdf",
+      "status": "fetched",
+      "bytes": 602217,
+      "url": "https://arxiv.org/pdf/1511.02222",
+      "text": "papers/deep-kernel-learning-1511.02222.txt",
+      "title_verified": true
+    },
     {
       "kind": "paper",
       "key": "student-t-process",
@@ -12,11 +28,8 @@
         "src/gp/fortml_student_t_process.f90"
       ],
       "path": "papers/student-t-process-1402.4306.pdf",
-      "status": "fetched",
-      "bytes": 1280185,
-      "url": "https://arxiv.org/pdf/1402.4306",
-      "text": "papers/student-t-process-1402.4306.txt",
-      "title_verified": true
+      "status": "cached",
+      "bytes": 1280185
     },
     {
       "kind": "paper",
@@ -28,11 +41,8 @@
         "src/gp/fortml_sparse_gp.f90"
       ],
       "path": "papers/svgp-1309.6835.pdf",
-      "status": "fetched",
-      "bytes": 1469906,
-      "url": "https://arxiv.org/pdf/1309.6835",
-      "text": "papers/svgp-1309.6835.txt",
-      "title_verified": true
+      "status": "cached",
+      "bytes": 1469906
     },
     {
       "kind": "paper",
@@ -44,11 +54,8 @@
         "src/gp/fortml_ski_gp.f90"
       ],
       "path": "papers/ski-1503.01057.pdf",
-      "status": "fetched",
-      "bytes": 1773271,
-      "url": "https://arxiv.org/pdf/1503.01057",
-      "text": "papers/ski-1503.01057.txt",
-      "title_verified": true
+      "status": "cached",
+      "bytes": 1773271
     },
     {
       "kind": "paper",
@@ -60,11 +67,22 @@
         "src/gp/fortml_kernels.f90"
       ],
       "path": "papers/spectral-mixture-1302.4245.pdf",
+      "status": "cached",
+      "bytes": 911362
+    },
+    {
+      "kind": "repository",
+      "key": "gpytorch",
+      "url": "https://github.com/cornellius-gp/gpytorch",
+      "ref": "main",
+      "licence": "MIT",
+      "needed_for": "Reference kernel and likelihood definitions, and the numerical safeguards a mature GP library applies where the closed forms are ill-conditioned \u2014 which is where an independently written implementation is most likely to differ silently.",
+      "consumed_by": [
+        "src/gp/fortml_kernels.f90"
+      ],
+      "path": "codes/gpytorch",
       "status": "fetched",
-      "bytes": 911362,
-      "url": "https://arxiv.org/pdf/1302.4245",
-      "text": "papers/spectral-mixture-1302.4245.txt",
-      "title_verified": true
+      "commit": "6272eda426c7d4115b0911efcf053a37ab956af9"
     }
   ]
 }

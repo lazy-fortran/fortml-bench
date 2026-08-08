@@ -1,0 +1,946 @@
+                                                                         Deep Kernel Learning
+
+                                                      Andrew Gordon Wilson∗                           Zhiting Hu∗
+                                                     Carnegie Mellon University                Carnegie Mellon University
+                                                       andrewgw@cs.cmu.edu                       zhitingh@cs.cmu.edu
+
+
+
+
+arXiv:1511.02222v1 [cs.LG] 6 Nov 2015
+                                                       Ruslan Salakhutdinov                           Eric P. Xing
+                                                        University of Toronto                  Carnegie Mellon University
+                                                     rsalakhu@cs.toronto.edu                      epxing@cs.cmu.edu
+
+
+                                                                                      Abstract
+                                                  We introduce scalable deep kernels, which combine the structural properties of deep
+                                              learning architectures with the non-parametric flexibility of kernel methods. Specifically,
+                                              we transform the inputs of a spectral mixture base kernel with a deep architecture, us-
+                                              ing local kernel interpolation, inducing points, and structure exploiting (Kronecker and
+                                              Toeplitz) algebra for a scalable kernel representation. These closed-form kernels can
+                                              be used as drop-in replacements for standard kernels, with benefits in expressive power
+                                              and scalability. We jointly learn the properties of these kernels through the marginal
+                                              likelihood of a Gaussian process. Inference and learning cost O(n) for n training points,
+                                              and predictions cost O(1) per test point. On a large and diverse collection of applica-
+                                              tions, including a dataset with 2 million examples, we show improved performance over
+                                              scalable Gaussian processes with flexible kernel learning models, and stand-alone deep
+                                              architectures.
+
+
+
+                                        1     Introduction
+
+                                        “How can Gaussian processes possibly replace neural networks? Have we thrown the baby
+                                        out with the bathwater?” questioned MacKay (1998). It was the late 1990s, and researchers
+                                        had grown frustrated with the many design choices associated with neural networks – re-
+                                        garding architecture, activation functions, and regularisation – and the lack of a principled
+                                        framework to guide in these choices.
+                                        Gaussian processes had recently been popularised within the machine learning community
+                                        by Neal (1996), who had shown that Bayesian neural networks with infinitely many hid-
+                                        den units converged to Gaussian processes with a particular kernel (covariance) function.
+                                        Gaussian processes were subsequently viewed as flexible and interpretable alternatives to
+                                        neural networks, with straightforward learning procedures. Where neural networks used
+                                        finitely many highly adaptive basis functions, Gaussian processes typically used infinitely
+                                        many fixed basis functions. As argued by MacKay (1998), Hinton et al. (2006), and Bengio
+                                            ∗ Equal contribution.
+
+
+
+                                                                                          1
+(2009), neural networks could automatically discover meaningful representations in high-
+dimensional data by learning multiple layers of highly adaptive basis functions. By contrast,
+Gaussian processes with popular kernel functions were used typically as simple smoothing
+devices.
+Recent approaches (e.g., Wilson, 2014; Wilson and Adams, 2013; Lloyd et al., 2014; Yang
+et al., 2015) have demonstrated that one can develop more expressive kernel functions,
+which are indeed able to discover rich structure in data without human intervention. Such
+methods effectively use infinitely many adaptive basis functions. The relevant question
+then becomes not which paradigm (e.g., kernel methods or neural networks) replaces the
+other, but whether we can combine the advantages of each approach. Indeed, deep neural
+networks provide a powerful mechanism for creating adaptive basis functions, with induc-
+tive biases which have proven effective for learning in many application domains, including
+visual object recognition, speech perception, language understanding, and information re-
+trieval (Krizhevsky et al., 2012; Hinton et al., 2012; Socher et al., 2011; Kiros et al., 2014;
+Xu et al., 2015).
+In this paper, we combine the non-parametric flexibility of kernel methods with the struc-
+tural properties of deep neural networks. In particular, we use deep feedforward fully-
+connected and convolutional networks, in combination with spectral mixture covariance
+functions (Wilson and Adams, 2013), inducing points (Quiñonero-Candela and Rasmussen,
+2005), structure exploiting algebra (Saatchi, 2011), and local kernel interpolation (Wilson
+and Nickisch, 2015; Wilson et al., 2015), to create scalable expressive closed form covari-
+ance kernels for Gaussian processes. As a non-parametric method, the information capacity
+of our model grows with the amount of available data, but its complexity is automati-
+cally calibrated through the marginal likelihood of the Gaussian process, without the need
+for regularization or cross-validation (Rasmussen and Ghahramani, 2001; Rasmussen and
+Williams, 2006; Wilson, 2014). The flexibility and automatic calibration provided by the
+non-parametric layer typically provides a high standard of performance, while reducing the
+need for extensive hand tuning from the user.
+We further build on the ideas in KISS-GP (Wilson and Nickisch, 2015) and extensions (Wil-
+son et al., 2015), so that our deep kernel learning model can scale linearly with the number
+of training instances n, instead of O(n3 ) as is standard with Gaussian processes, while re-
+taining a fully non-parametric representation. Our approach also scales as O(1) per test
+point allowing for very fast prediction times. Because KISS-GP creates an approximate ker-
+nel from a user specified kernel for fast computations, independently of a specific inference
+procedure, we can view the resulting kernel as a scalable deep kernel. We demonstrate the
+value of this scalability in the experimental results section, where it is the large datasets
+that provide the greatest opportunities for our model to discover expressive statistical rep-
+resentations.
+We begin by reviewing related work in section 2, and providing background material on
+Gaussian processes in section 3. In section 4 we derive scalable closed form deep kernels, and
+describe how to perform efficient automatic learning of these kernels through the Gaussian
+process marginal likelihood. In section 5, we show substantially improved performance
+over standard Gaussian processes, expressive kernel learning approaches, and deep neural
+
+                                              2
+networks, on a wide range of datasets. We also examine the structure of the kernels to gain
+new insights into our modelling problems.
+
+
+
+2    Related Work
+
+Given the intuitive value of combining kernels and neural networks, it is encouraging that
+various distinct forms of such combinations have been considered in different contexts.
+The Gaussian process regression network (Wilson et al., 2012) replaces all weight con-
+nections in a Bayesian neural network with Gaussian processes, allowing the authors to
+model input dependent correlations between multiple tasks. Alternatively, Damianou and
+Lawrence (2013) replace every activation function in a Bayesian neural network with a
+Gaussian process transformation, in an unsupervised setting. While promising, both mod-
+els are very task specific, and require sophisticated approximate Bayesian inference which is
+much more demanding than what is required by standard Gaussian processes or deep learn-
+ing models, and typically does not scale beyond a few thousand training points. Similarly,
+Salakhutdinov and Hinton (2008) combine deep belief networks (DBNs) with Gaussian pro-
+cesses, showing improved performance over standard GPs with RBF kernels, in the context
+of semi-supervised learning. However, their model is heavily relying on unsupervised pre-
+training of DBNs, with the GP component unable to scale beyond a few thousand training
+points. Likewise, Calandra et al. (2014) combine a feedforward neural network transforma-
+tion with a Gaussian process, showing an ability to learn sharp discontinuities. However,
+similar to many other approaches, the resulting model can only scale to at most a few
+thousand data points.
+In a frequentist setting, Yang et al. (2014) combine convolutional networks, with parameters
+pre-trained on ImageNet, with a scalable Fastfood (Le et al., 2013) expansion for the RBF
+kernel applied to the final layer. The resulting method is scalable and flexible, but the
+network parameters generally must first be trained separately from the Fastfood features,
+and the combined model remains parametric, due to the parametric expansion provided by
+Fastfood. Careful attention must still be paid to training procedures, regularization, and
+manual calibration of the network architecture. In a similar manner, Huang et al. (2015)
+and Snoek et al. (2015) have combined deep architectures with parametric Bayesian models.
+Huang et al. (2015) pursue an unsupervised pre-training procedure using deep autoencoders,
+showing improved performance over GPs using standard kernels. Snoek et al. (2015) show
+promising performance on Bayesian optimisation tasks, for tuning the parameters of a deep
+neural network.
+Our approach is distinct in that we combine deep feedforward and convolutional archi-
+tectures with spectral mixture covariances (Wilson and Adams, 2013), inducing points,
+Kronecker and Toeplitz algebra, and local kernel interpolation (Wilson and Nickisch, 2015;
+Wilson et al., 2015), to derive expressive and scalable closed form kernels, which can be
+trained jointly with a unified supervised objective, as part of a non-parametric Gaussian
+process framework, without requiring approximate Bayesian inference. Moreover, the sim-
+ple joint learning procedure in our approach can be applied in general settings. Indeed we
+
+                                             3
+show that the proposed model outperforms state of the art stand-alone deep learning archi-
+tectures and Gaussian processes with advanced kernel learning procedures on a wide range
+of datasets, demonstrating its practical significance. We achieve scalability while retaining
+non-parametric model structure by leveraging the very recent KISS-GP approach (Wilson
+and Nickisch, 2015) and extensions in Wilson et al. (2015) for efficiently representing kernel
+functions, to produce scalable deep kernels.
+
+
+3    Gaussian Processes
+
+We briefly review the predictive equations and marginal likelihood for Gaussian processes
+(GPs), and the associated computational requirements, following the notational conven-
+tions in Wilson et al. (2015). See, for example, Rasmussen and Williams (2006) for a
+comprehensive discussion of GPs.
+We assume a dataset D of n input (predictor) vectors X = {x1 , . . . , xn }, each of dimension
+D, which index an n × 1 vector of targets y = (y(x1 ), . . . , y(xn ))> . If f (x) ∼ GP(µ, kγ ),
+then any collection of function values f has a joint Gaussian distribution,
+
+                      f = f (X) = [f (x1 ), . . . , f (xn )]> ∼ N (µ, KX,X ) ,              (1)
+
+with a mean vector, µi = µ(xi ), and covariance matrix, (KX,X )ij = kγ (xi , xj ), determined
+from the mean function and covariance kernel of the Gaussian process. The kernel, kγ , is
+parametrized by γ. Assuming additive Gaussian noise, y(x)|f (x) ∼ N (y(x); f (x), σ 2 ), the
+predictive distribution of the GP evaluated at the n∗ test points indexed by X∗ , is given by
+
+                      f ∗ |X∗ ,X, y, γ, σ 2 ∼ N (E[f ∗ ], cov(f ∗ )) ,                      (2)
+                        E[f ∗ ] = µX∗ + KX∗ ,X [KX,X + σ 2 I]−1 y ,
+                     cov(f ∗ ) = KX∗ ,X∗ − KX∗ ,X [KX,X + σ 2 I]−1 KX,X∗ .
+
+KX∗ ,X , for example, is an n∗ × n matrix of covariances between the GP evaluated at X∗
+and X. µX∗ is the n∗ × 1 mean vector, and KX,X is the n × n covariance matrix evaluated
+at training inputs X. All covariance (kernel) matrices implicitly depend on the kernel
+hyperparameters γ.
+GPs with RBF kernels correspond to models which have an infinite basis expansion in a
+dual space, and have compelling theoretical properties: these models are universal approxi-
+mators, and have prior support to within an arbitrarily small epsilon band of any continuous
+function (Micchelli et al., 2006). Indeed the properties of the distribution over functions
+induced by a Gaussian process are controlled by the kernel function. For example, the
+popular RBF kernel,
+                                                   1
+                              kRBF (x, x0 ) = exp(− ||x − x0 ||/`2 )                        (3)
+                                                   2
+encodes the inductive bias that function values closer together in the input space, in the
+Euclidean sense, are more correlated. The complexity of the functions in the input space
+
+                                                   4
+is determined by the interpretable length-scale hyperparameter `. Shorter length-scales
+correspond to functions which vary more rapidly with the inputs x.
+The structure of our data is discovered through learning interpretable kernel hyperparam-
+eters. The marginal likelihood of the targets y, the probability of the data conditioned
+only on kernel hyperparameters γ, provides a principled probabilistic framework for kernel
+learning:
+                  log p(y|γ, X) ∝ −[y> (Kγ + σ 2 I)−1 y + log |Kγ + σ 2 I|] ,          (4)
+where we have used Kγ as shorthand for KX,X given γ. Note that the expression for the log
+marginal likelihood in Eq. (4) pleasingly separates into automatically calibrated model fit
+and complexity terms (Rasmussen and Ghahramani, 2001). Kernel learning can be achieved
+by optimizing Eq. (4) with respect to γ.
+The computational bottleneck for inference is solving the linear system (KX,X + σ 2 I)−1 y,
+and for kernel learning is computing the log determinant log |KX,X + σ 2 I| in the marginal
+likelihood. The standard approach is to compute the Cholesky decomposition of the n ×
+n matrix KX,X , which requires O(n3 ) operations and O(n2 ) storage. After inference is
+complete, the predictive mean costs O(n), and the predictive variance costs O(n2 ), per test
+point x∗ .
+
+
+
+4    Deep Kernel Learning
+
+In this section we show how we can contruct kernels which encapsulate the expressive power
+of deep architectures, and how to learn the properties of these kernels as part of a scalable
+probabilistic Gaussian process framework.
+Specifically, starting from a base kernel k(xi , xj |θ) with hyperparameters θ, we transform
+the inputs (predictors) x as
+
+                           k(xi , xj |θ) → k(g(xi , w), g(xj , w)|θ, w) ,                 (5)
+
+where g(x, w) is a non-linear mapping given by a deep architecture, such as a deep con-
+volutional network, parametrized by weights w. The popular RBF kernel (Eq. (3)) is a
+sensible choice of base kernel k(xi , xj |θ). For added flexibility, we also propose to use
+spectral mixture base kernels (Wilson and Adams, 2013):
+
+                           Q            1
+                                   |Σq | 2
+                                                                
+                  0
+                           X                     1 12
+         kSM (x, x |θ) =         aq      D exp  − ||Σq (x − x )|| coshx − x0 , 2πµq i .
+                                                             0 2
+                                                                                          (6)
+                                    (2π) 2       2
+                           q=1
+
+
+The parameters of the spectral mixture kernel θ = {aq , Σq , µq } are mixture weights, band-
+widths (inverse length-scales), and frequencies. The spectral mixture (SM) kernel, which
+forms an expressive basis for all stationary covariance functions, can discover quasi-periodic
+stationary structure with an interpretable and succinct representation, while the deep learn-
+ing transformation g(x, w) captures non-stationary and hierarchical structure.
+
+                                                 5
+                         W (1)
+                                         W (2)                           h1 (θ)
+              Input layer          (1)                     (L)
+                                  h1                   W
+                                                                                  Output layer
+                                             h1
+                                                 (2)   ...               ...
+                   x1                                             (L)
+                                                                 h1
+                                                                                      y1
+
+
+                 ...             ...       ...                   ...     ...         ...
+                                                                                      yP
+                   xD                                             (L)
+                                                                 hC
+                                                       ...               ...
+                                                 (2)
+                                             hB
+
+                                   (1)
+                                  hA
+                                                                         h∞ (θ)
+                                         Hidden layers
+                                                                        ∞ layer
+
+Figure 1: Deep Kernel Learning: A Gaussian process with a deep kernel maps D dimensional
+inputs x through L parametric hidden layers followed by a hidden layer with an infinite number of
+basis functions, with base kernel hyperparameters θ. Overall, a Gaussian process with a deep kernel
+produces a probabilistic mapping with an infinite number of adaptive basis functions parametrized
+by γ = {w, θ}. All parameters γ are learned through the marginal likelihood of the Gaussian
+process.
+
+
+We use the deep kernel of Eq. (5) as the covariance function of a Gaussian process to model
+data D = {xi , yi }ni=1 . Conditioned on all kernel hyperparameters, we can interpret our
+model as applying a Gaussian process with base kernel kθ to the final hidden layer of a
+deep network. Since a GP with (RBF or SM) base kernel kθ corresponds to an infinite basis
+function representation, our network effectively has a hidden layer with an infinite number
+of hidden units. The overall model is shown in Figure 1.
+
+We emphasize, however, that we jointly learn all deep kernel hyperparameters, γ = {w, θ},
+which include w, the weights of the network, and θ the parameters of the base kernel, by
+maximizing the log marginal likelihood L of the Gaussian process (see Eq. (4)). Indeed
+compartmentalizing our model into a base kernel and deep architecture is for pedagogical
+clarity. When applying a Gaussian process one can use our deep kernel, which operates as a
+single unit, as a drop-in replacement for e.g., standard ARD or Matérn kernels (Rasmussen
+and Williams, 2006), since learning and inference follow the same procedures.
+
+For kernel learning, we use the chain rule to compute derivatives of the log marginal likeli-
+hood with respect to the deep kernel hyperparameters:
+
+                        ∂L    ∂L ∂Kγ              ∂L    ∂L ∂Kγ ∂g(x, w)
+                           =         ,               =                  .
+                        ∂θ   ∂Kγ ∂θ               ∂w   ∂Kγ ∂g(x, w) ∂w
+
+The implicit derivative of the log marginal likelihood with respect to our n × n data covari-
+
+                                                       6
+ance matrix Kγ is given by
+
+                               ∂L  1
+                                  = (Kγ−1 yy> Kγ−1 − Kγ−1 ) ,                              (7)
+                              ∂Kγ  2
+
+where we have absorbed the noise covariance σ 2 I into our covariance matrix, and treat it as
+                                            ∂K
+part of the base kernel hyperparameters θ. ∂θγ are the derivatives of the deep kernel with
+respect to the base kernel hyperparameters (such as length-scale), conditioned on the fixed
+                                                    ∂Kγ
+transformation of the inputs g(x, w). Similarly, ∂g(x,w)  are the implicit derivatives of the
+deep kernel with respect to g, holding θ fixed. The derivatives with respect to the weight
+variables ∂g(x,w)
+            ∂w    are computed using standard backpropagation.
+For scalability, we replace all instances of Kγ with the KISS-GP covariance matrix (Wilson
+and Nickisch, 2015; Wilson et al., 2015)
+                                        deep
+                                Kγ ≈ M KU,U  M > := KKISS ,                                (8)
+
+where M is a sparse matrix of interpolation weights, containing only 4 non-zero entries per
+row for local cubic interpolation, and KU,U is a covariance matrix created from our deep
+kernel, evaluated over m latent inducing points U = [ui ]i=1...m . We place the inducing points
+over a regular multidimensional lattice, and exploit the resulting decomposition of KU,U into
+a Kronecker product of Toeplitz matrices for extremely fast matrix vector multiplications
+(MVMs), without requiring any grid structure in the data inputs X or the transformed
+inputs g(x, w). Because KISS-GP operates by creating an approximate kernel which admits
+fast computations, and is independent from a specific inference and learning procedure, we
+can view the KISS approximation applied to our deep kernels as a stand-alone kernel,
+                 deep
+k(x, z) = m> x KU,U mz , which can be combined with Gaussian processes or other kernel
+machines for scalable learning.
+
+
+
+
+                                              7
+Table 1: Comparative RMSE performance and runtime on UCI regression datasets, with n training points and d the input
+dimensions. The results are averaged over 5 equal partitions (90% train, 10% test) of the data ± one standard deviation. The
+best denotes the best-performing kernel according to Yang et al. (2015) (note that often the best performing kernel is GP-SM).
+Following Yang et al. (2015), as exact Gaussian processes are intractable on the large data used here, the Fastfood finite basis
+function expansions are used for approximation in GP (RBF, SM, Best). We verified on datasets with n < 10, 000 that exact
+GPs with RBF kernels provide comparable performance to the Fastfood expansions. For datasets with n < 6, 000 we used a
+fully-connected DNN with a [d-1000-500-50-2] architecture, and for n > 6000 we used a [d-1000-1000-500-50-2] architecture. We
+consider scalable deep kernel learning (DKL) with RBF and SM base kernels. For the SM base kernel, we set Q = 4 for datasets
+with n < 10, 000 training instances, and use Q = 6 for larger datasets.
+                                                                      RMSE                                                    Runtime(s)
+Datasets            n      d
+                                                 GP                                                DKL                              DKL
+                                                                                DNN                                   DNN
+                                      RBF             SM           best                        RBF              SM               RBF        SM
+Gas              2,565    128     0.21±0.07     0.14±0.08     0.12±0.07     0.11±0.05      0.11±0.05     0.09±0.06     7.43      7.80      10.52
+Skillcraft       3,338     19     1.26±3.14     0.25±0.02     0.25±0.02    0.25±0.00      0.25±0.00      0.25±0.00    15.79     15.91      17.08
+SML              4,137     26     6.94±0.51     0.27±0.03     0.26±0.04     0.25±0.02      0.24±0.01     0.23±0.01     1.09      1.48       1.92
+Parkinsons       5,875     20     3.94±1.31    0.00±0.00     0.00±0.00      0.31±0.04      0.29±0.04      0.29±0.04    3.21      3.44       6.49
+Pumadyn          8,192     32     1.00±0.00     0.21±0.00    0.20±0.00      0.25±0.02      0.24±0.02      0.23±0.02    7.50      7.88       9.77
+PoleTele        15,000     26      12.6±0.3      5.40±0.3      4.30±0.2     3.42±0.05      3.28±0.04     3.11±0.07     8.02      8.27      26.95
+Elevators       16,599     18     0.12±0.00   0.090±0.001   0.089±0.002   0.099±0.001   0.084±0.002    0.084±0.002     8.91      9.16      11.77
+Kin40k          40,000      8     0.34±0.01     0.19±0.02     0.06±0.00     0.11±0.01      0.05±0.00     0.03±0.01    19.82     20.73      24.99
+Protein         45,730      9     1.64±1.66     0.50±0.02     0.47±0.01     0.49±0.01      0.46±0.01     0.43±0.01    142.8     154.8      144.2
+KEGG            48,827     22     0.33±0.17     0.12±0.01     0.12±0.01     0.12±0.01      0.11±0.00     0.10±0.01    31.31     34.23      61.01
+CTslice         53,500    385     7.13±0.11     2.21±0.06     0.59±0.07     0.41±0.06      0.36±0.01     0.34±0.02    36.38     44.28      80.44
+KEGGU           63,608     27     0.29±0.12     0.12±0.00     0.12±0.00     0.12±0.00     0.11±0.00      0.11±0.00    39.54     42.97      41.05
+3Droad         434,874      3    12.86±0.09    10.34±0.19     9.90±0.10     7.36±0.07     6.91±0.04      6.91±0.04    238.7     256.1      292.2
+Song           515,345     90     0.55±0.00     0.46±0.00     0.45±0.00     0.45±0.02      0.44±0.00     0.43±0.01    517.7     538.5      589.8
+Buzz           583,250     77     0.88±0.01     0.51±0.01     0.51±0.01     0.49±0.00      0.48±0.00     0.46±0.01    486.4     523.3      769.7
+Electric     2,049,280     11   0.230±0.000   0.053±0.000   0.053±0.000   0.058±0.002    0.050±0.002   0.048±0.002     3458      3542       4881
+                         −1
+For inference we solve KKISS y using linear conjugate gradients (LCG), an iterative procedure
+for solving linear systems which only involves matrix vector multiplications (MVMs). The
+number of iterations required for convergence to within machine precision is j  n, and in
+practice j depends on the conditioning of the KISS-GP covariance matrix rather than the
+number of training points n. For estimating the log determinant in the marginal likelihood
+we follow the approach described in Wilson and Nickisch (2015) with extensions in Wilson
+et al. (2015).
+
+KISS-GP training scales as O(n+h(m)) (where h(m) is typically close to linear in m), versus
+conventional scalable GP approaches which require O(m2 n + m3 ) (Quiñonero-Candela and
+Rasmussen, 2005) computations and need m  n for tractability, which results in severe
+deteriorations in predictive performance. The ability to have large m ≈ n allows KISS-GP
+to have near-exact accuracy in its approximation (Wilson and Nickisch, 2015), retaining a
+non-parametric representation, while providing linear scaling in n and O(1) time per test
+point prediction (Wilson et al., 2015). We empirically demonstrate this scalability and
+accuracy in our experiments of section 5.
+
+
+
+
+5    Experiments
+
+We evaluate the proposed deep kernel learning method on a wide range of regression prob-
+lems, including a large and diverse collection of regression tasks from the UCI repository
+(section 5.1), orientation extraction from face patches (section 5.2), magnitude recovery of
+handwritten digits (section 5.3), and step function recovery (section 5.4). We show that
+the proposed algorithm substantially outperforms Gaussian processes with expressive ker-
+nel learning approaches, and deep neural networks, without any significant increases in
+computational overhead.
+
+All experiments were performed on a Linux machine with eight 4.0GHz CPU cores and 32GB
+RAM. We implemented DNNs based on Caffe (Jia et al., 2014), a general deep learning
+platform, and KISS-GP (Wilson and Nickisch, 2015; Wilson et al., 2015) leveraging GPML
+(Rasmussen and Nickisch, 2010) 1 .
+
+For our deep kernel learning model, we first train a deep neural network using SGD with the
+squared loss objective, and rectified linear activation functions. After the neural network
+has been pre-trained, a KISS-GP model was fitted using the top-level features of the DNN
+model as inputs. Using this pre-training initialization, our joint deep kernel learning (DKL)
+model of section 4 is then trained by optimizing all the hyperparameters γ of our deep
+kernel, by backpropagating derivatives through the marginal likelihood of the Gaussian
+process (see Eq. 7).
+
+    1 www.gaussianprocess.org/gpml
+
+
+
+                                             9
+        -43.10   36.15   17.35   -3.49   -19.81   Label
+
+                                                  Training data
+
+
+
+                                                  Test data
+
+
+
+
+Figure 2: Left: Randomly sampled examples of the training and test data. Right: The two
+dimensional outputs of the convolutional network on a set of test cases. Each point is shown using
+a line segment that has the same orientation as the input face.
+
+
+5.1   UCI regression tasks
+
+We consider a large set of UCI regression problems of varying sizes and properties. Table 1
+reports test root mean squared error (RMSE) for 1) many scalable Gaussian process kernel
+learning methods based on Fastfood (Yang et al., 2015); 2) stand-alone deep neural networks
+(DNNs); and 3) our proposed combined deep kernel learning (DKL) model using both RBF
+and SM base kernels.
+For smaller datasets, where the number of training examples n < 6, 000, we used a fully-
+connected neural network with a d-1000-500-50-2 architecture; for larger datasets we used
+a d-1000-1000-500-50-2 architecture2 .
+Table 1 shows that on most of the datasets, our DKL method strongly outperforms not
+only Gaussian processes with the standard RBF kernel, but also the best-performing kernels
+selected from a wide range of alternative kernel learning procedures (Yang et al., 2015).
+We further compared DKL to stand-alone deep neural networks which have the exact same
+architecture as the DNN component of DKL. By combining KISS-GP with DNNs as part of a
+joint DKL procedure, we obtain consistently better results than stand-alone deep learning
+over all 16 datasets. Moreover, using a spectral mixture base kernel (Eq. (6)) to create
+a deep kernel provides notable additional performance improvements. It is interesting to
+observe that by effectively learning the salient features from raw data, plain DNNs generally
+achieve competitive performance compared to expressive Gaussian processes. Combining
+the complementary advantages of these approaches into scalable deep kernels consistently
+brings substantial additional performance gains.
+We next investigate the runtime of DKL. Table 1, right panel, compares DKL with a
+stand-alone DNN in terms of runtime for evaluating the objective and derivatives (i.e. one
+forward and backpropagation pass for DNN; one computation of the marginal likelihood and
+all relevant derivatives for DNN-KISSGP). We see that in addition to improving accuracy,
+   2 We found [d-1000-1000-500-50] architectures provide a similar level of performance, but
+
+scalable Kronecker algebra is most effective if the network maps into D ≤ 5 dimensional
+spaces.
+
+                                                                  10
+Table 2: RMSE performance on the Olivetti and MNIST. For comparison, in the face orientation
+extraction, we trained DKL on the same amount (12,000) of training instances as with DBN-GP, but
+used all labels; whereas DBN-GP (as with GP) scaled to only 1,000 labeled images and modeled the
+remaining data through unsupervised pretraining of DBN. We used RBF base kernel within GPs.
+                        Datasets     GP     DBN-GP        CNN    DKL
+                        Olivetti   16.33           6.42   6.34   6.07
+                        MNIST       1.25           1.03   0.59   0.53
+
+
+combining KISS-GP with DNNs for deep kernels introduces only negligible runtime costs:
+KISS-GP imposes an additional runtime of about 10% (one order of magnitude less than)
+the runtime a DNN typically requires. Overall, these results show the general applicability
+and practical significance of our scalable DKL approach.
+
+
+5.2   Face orientation extraction
+
+We now consider the task of predicting the orientation of a face extracted from a gray-
+scale image patch, explored in Salakhutdinov and Hinton (2008). We investigate our DKL
+procedure for efficiently learning meaningful representations from high-dimensional highly-
+structured image data.
+The Olivetti face data set contains ten 64×64 images of forty different people, for 400
+images total. Following Salakhutdinov and Hinton (2008), we constructed datasets of 28×28
+images by randomly rotating (uniformly from −90◦ to +90◦ ), cropping, and subsampling
+the original 400 images. We then randomly select 30 people uniformly and collect their
+images as training data, while using the images of the remaining 10 people as test data.
+Figure 2 shows randomly sampled examples from the training and test data.
+For training DKL on the Olivetti face patches we used a convolutional network consisting
+of 2 convolutional layers followed by 4 fully-connected layers, mapping a face patch to
+a 2-dimensional feature vector, with a SM base kernel. We describe this convolutional
+architecture in detail in the appendix.
+Table 2 shows the RMSE of the predicted face orientations using four models. The DBN-
+GP model, proposed by Salakhutdinov and Hinton (2008), first extracts features from raw
+data using a Deep Belief Network (DBN), and then applies a Gaussian process with an
+RBF kernel. However, their approach could only handle up to a few thousand labelled
+datapoints, due to the O(n3 ) complexity of standard Gaussian processes. The remaining
+data were modeled through unsupervised learning of a DBN, leaving the large amount of
+available labels unused.
+Our proposed deep kernel methods, by contrast, scale linearly with the size of training
+data, and are capable of directly modeling the full labeled data to accurately recover salient
+patterns. Figure 2, right panel, shows that the deep kernel discovers features essential for
+orientation prediction, while filtering out irrelevant factors such as identities and scales.
+
+                                              11
+                                                                                                      350
+          6.4
+                                                                          CNN                                CNN
+                                                                          DKL−RBF                            DKL−RBF
+                                                                          DKL−SM                      300    DKL−SM
+          6.2
+
+                                                                                                      250
+
+
+
+
+                                                                                        Runtime (s)
+           6
+
+
+   RMSE
+                                                                                                      200
+          5.8
+
+
+                                                                                                      150
+          5.6
+
+
+          5.4                                                                                         100
+
+
+
+          5.2                                                                                          50
+             1   2      3                               4             5         6                        1      2         3        4         5    6
+                     #Training Instances                                       x 10
+                                                                                    4
+                                                                                                                       #Training Instances       x 10
+                                                                                                                                                      4
+
+
+
+
+                                                               4
+                                                            x 10
+
+                                                                   CNN
+                                                       10
+                                                                   DKL−RBF
+                                                                   DKL−SM
+
+
+
+
+                             Total Training Time (s)
+                                                       8
+
+
+
+                                                       6
+
+
+
+                                                       4
+
+
+
+                                                       2
+
+
+
+                                                       0
+                                                             1.2      2         3                       4      5         6
+                                                                             #Training Instances                        x 10
+                                                                                                                              4
+
+
+
+
+Figure 3: Left: RMSE vs. n, the number of training examples. Middle: Runtime vs n. Right:
+Total training time vs n. The dashed line in black indicates a slope of 1. Convolutional networks
+are used within DKL. We set Q = 4 for the SM kernel.
+
+
+Figure 3, left panel, further validates the benefit of scaling to large data. As more training
+data are used, our model continues to increase in accuracy. Indeed, it is the large datasets
+that will provide the greatest opportunities for our model to discover expressive statistical
+representations.
+In Figure 4 we show the spectral density (the Fourier transform) of the base kernels learned
+through our deep kernel learning method. The expressive spectral mixture (SM) kernel
+discovers a structure with two peaks in the frequency domain. The RBF kernel is only
+able to use a single Gaussian in the spectral domain, centred at the origin. In an attempt
+to capture the significant mass near a frequency of 25, the RBF kernel spectral density
+spreads itself across the whole frequency domain, missing the important local correlations
+near a frequency s = 0, thus erroneously discarding much of the network features as white
+noise, since a broad spectral peak corresponds to a short length-scale. This result provides
+intuition for why spectral mixture base kernels generally perform much better than RBF
+base kernels, despite the flexibility of the deep architecture.
+
+                                                                                      12
+                                                0
+
+
+
+
+                      Log Spectral Density
+                                             −200
+
+
+
+
+                                             −400
+
+
+
+
+                                             −600
+
+
+
+
+                                             −800
+                                                 0   10               20   30
+                                                          Frequency
+
+Figure 4: The log spectral densities of the DKL-SM and DKL-SE base kernels are in black and red,
+respectively.
+
+
+
+We further see the benefit of an SM base kernel in Figure 5, where we show the learned
+covariance matrices constructed from the whole deep kernels (composition of base kernel
+and deep architecture) for RBF and SM base kernels. The covariance matrix is evaluated
+on a set of test inputs, where we randomly sample 400 instances from the test set and sort
+them in terms of the orientation angles of the input faces. We see that the deep kernels with
+both RBF and SM base kernels discover that faces with similar rotation angles are highly
+correlated, concentrating their largest entries on the diagonal (i.e., face pairs with similar
+orientations). Deep kernel learning with an SM base kernel captures these correlations more
+strongly than the RBF base kernel, which is somewhat more diffuse.
+
+In Figure 5, right panel, we also show the learned covariance matrix for an RBF kernel
+with a standard Gaussian process applied to the raw data inputs. We see that the entries
+are very diffuse. In essence, through deep kernel learning, we can learn a metric where
+faces with similar rotation angles are highly correlated, and thus overcome the fundamental
+limitations of a Euclidean distance metric (used by standard kernels), where similar rotation
+angles are not particularly correlated, regardless of what hyper-parameters are learned with
+Euclidean kernels.
+
+We next measure the scalability of our model. Figure 3, middle panel, shows the runtimes
+in seconds, as a function of training instances, for evaluating the objective and any relevant
+derivatives. We see that, with the scalable KISS-GP, the joint model achieves a roughly
+linear asymptotic scaling, with a slope of 1. In Figure 3, right panel, we show how the
+total training time (i.e., the time for CNN pre-training plus the time for DKL with CNN
+architecture joint training) changes with varying the data size n. In addition to the linear
+scaling which is necessary for modeling large data, the added time in combining KISS-GP
+with CNNs is reasonable, especially considering the gains in performance and expressive
+power.
+
+                                                          13
+                                  0.2                                                                    300
+
+
+
+
+                                                                       2
+                                         100
+ 100                                                                       100
+
+
+                                  0.1                                                                    200
+
+
+
+
+                                         200                               200
+ 200
+
+
+                                                                       1
+
+                                  0                                                                      100
+
+ 300                                     300                               300
+
+
+
+
+ 400                              −0.1   400                           0   400                           0
+        100    200    300   400                100   200   300   400             100   200   300   400
+
+
+
+
+Figure 5: Left: The induced covariance matrix using DKL-SM kernel on a set of test cases, where
+the test samples are ordered according to the orientations of the input faces. Middle: The respective
+covariance matrix using DKL-RBF kernel. Right: The respective covariance matrix using regular
+RBF kernel. The models are trained with n = 12, 000. We set Q = 4 for the SM base kernel.
+
+
+
+5.3    Digit magnitude extraction
+
+
+We map images of handwritten digits to a single real-value that is as close as possible to
+the integer represented by the digit in the image, as in Salakhutdinov and Hinton (2008).
+The MNIST digit dataset contains 60,000 training data and 10,000 test 28 × 28 images of
+ten handwritten digits (0 to 9). We used a convolutional neural network with a similar
+architecture as the LeNet (LeCun et al., 1998) (detailed in the appendix). Table 2 shows
+that a CNN performs considerably better than GP and DBN-GP, and DKL (with CNN
+architecture) further improves over CNN.
+
+
+
+
+5.4    Step function recovery
+
+
+We have so far considered RMSE for comparison to alternative methods where posterior
+predictive distributions are not readily available, or on problems where RMSE has histor-
+ically been used as a benchmark. However, an advantage of DKL over stand-alone deep
+architectures is the ability to naturally produce a posterior predictive distribution, which is
+especially useful in applications such as reinforcement learning and Bayesian optimisation.
+In Figure 6, we consider an example where we use DKL to learn the posterior predictive
+distribution for a step function with many challenging discontinuities. This problem is par-
+ticularly difficult for conventional Gaussian process approaches, due to strong smoothness
+assumptions intrinsic to popular kernels.
+
+GPs with SM kernels improve upon RBF kernels, but neither can properly adapt to the
+many sharp changes in covariance structure. By contrast, the DKL-SM model accurately
+encodes the discontinuities of the function, and has reasonable uncertainty over the whole
+domain.
+
+                                                     14
+                              18
+                                                                  GP(RBF)
+                                                                  GP(SM)
+                              16                                  DKL−SM
+                                                                  Training data
+
+                              14
+
+
+
+
+                   Output Y
+                              12
+
+
+                              10
+
+
+                              8
+
+
+                              6
+
+
+                              4
+                              −1   −0.5           0         0.5                   1
+                                             Input X
+
+Figure 6: Recovering a step function. We show the predictive mean and 95% of the predictive
+probability mass for regular GPs with RBF and SM kernels, and DKL with SM base kernel. We set
+Q = 4 for SM kernels.
+
+
+6    Discussion
+
+We have explored scalable deep kernels, which combine the structural properties of deep
+architectures with the non-parametric flexibility of kernel methods. In particular, we trans-
+form the inputs of a base kernel with a deep architecture, and then leverage local kernel in-
+terpolation, inducing points, and structure exploiting algebra (e.g., Kronecker and Toeplitz
+methods) for a scalable kernel representation. These scalable kernels can then be combined
+with Gaussian process inference and learning procedures for O(n) training and O(1) testing
+time. Moreover, we use spectral mixture covariances as a base kernel, which provides a
+significant additional boost in representational power. Overall, our scalable deep kernels
+can be used in place of standard kernels, following the same inference and learning proce-
+dures, but with benefits in expressive power and efficiency. We show on a wide range of
+experiments the general applicability and practical significance of our approach, consistently
+outperforming scalable GPs with expressive kernels, and stand-alone DNNs.
+A major challenge in developing expressive kernel learning approaches is the Euclidean and
+absolute distance based metrics which are pervasive in most families of kernel functions,
+such as the ARD and Matérn kernels. Indeed, although intuitive in some cases, one cannot
+expect Euclidean and absolute distance as measures of similarity to be generally applicable,
+and they are especially problematic in high dimensional input spaces (Aggarwal et al.,
+2001). Modern approaches attempt to learn a flexible parametric family, for example,
+through weighted combinations of known kernels (e.g., Gönen and Alpaydın, 2011), but are
+still fundamentally limited to these standard notions of distance. As we have seen in the
+Olivetti faces examples, our approach allows for the whole functional form of the metric to
+be learned in a flexible manner, through expressive transformations of the input space. We
+
+                                             15
+expect such metric learning to be particularly valuable in high dimensional classification
+problems, which we view as a promising direction for future research. We hope that this
+work will help bring together research on neural networks and kernel methods, to inspire
+many new models and unifying perspectives which combine the complementary advantages
+of these approaches.
+
+
+References
+Aggarwal, C. C., Hinneburg, A., and Keim, D. A. (2001). On the surprising behavior of
+ distance metrics in high dimensional space. Springer.
+
+Bengio, Y. (2009). Learning deep architectures for AI. Foundations and Trends in Machine
+  Learning.
+
+Calandra, R., Peters, J., Rasmussen, C. E., and Deisenroth, M. P. (2014). Manifold gaussian
+  processes for regression. arXiv preprint arXiv:1402.5876.
+
+Damianou, A. and Lawrence, N. (2013). Deep Gaussian processes. In Artificial Intelligence
+ and Statistics.
+
+Gönen, M. and Alpaydın, E. (2011). Multiple kernel learning algorithms. Journal of Ma-
+  chine Learning Research, 12:2211–2268.
+
+Hinton, G. E., Deng, L., Yu, D., Dahl, G. E., rahman Mohamed, A., Jaitly, N., Senior,
+  A., Vanhoucke, V., Nguyen, P., Sainath, T. N., and Kingsbury, B. (2012). Deep neural
+  networks for acoustic modeling in speech recognition: The shared views of four research
+  groups. IEEE Signal Process. Mag., 29(6):82–97.
+
+Hinton, G. E., Osindero, S., and Teh, Y. W. (2006). A fast learning algorithm for deep
+  belief nets. Neural Computation, 18(7):1527–1554.
+
+Huang, W., Zhao, D., Sun, F., Liu, H., and Chang, E. (2015). Scalable gaussian process
+ regression using deep neural networks. In Proceedings of the 24th International Conference
+ on Artificial Intelligence, pages 3576–3582. AAAI Press.
+
+Jia, Y., Shelhamer, E., Donahue, J., Karayev, S., Long, J., Girshick, R., Guadarrama, S.,
+  and Darrell, T. (2014). Caffe: Convolutional architecture for fast feature embedding.
+  arXiv preprint arXiv:1408.5093.
+
+Kiros, R., Salakhutdinov, R., and Zemel, R. (2014). Unifying visual-semantic embeddings
+  with multimodal neural language models. TACL.
+
+Krizhevsky, A., Sutskever, I., and Hinton, G. (2012). Imagenet classification with deep
+  convolutional neural networks. In Advances in Neural Information Processing Systems.
+
+Le, Q., Sarlos, T., and Smola, A. (2013). Fastfood-computing Hilbert space expansions in
+  loglinear time. In Proceedings of the 30th International Conference on Machine Learning,
+  pages 244–252.
+
+                                            16
+LeCun, Y., Bottou, L., Bengio, Y., and Haffner, P. (1998). Gradient-based learning applied
+  to document recognition. Proceedings of the IEEE, 86(11):2278–2324.
+
+Lloyd, J. R., Duvenaud, D., Grosse, R., Tenenbaum, J. B., and Ghahramani, Z. (2014).
+  Automatic construction and Natural-Language description of nonparametric regression
+  models. In Association for the Advancement of Artificial Intelligence (AAAI).
+
+MacKay, D. J. (1998). Introduction to Gaussian processes. In Bishop, C. M., editor, Neural
+ Networks and Machine Learning, chapter 11, pages 133–165. Springer-Verlag.
+
+Micchelli, C. A., Xu, Y., and Zhang, H. (2006). Universal kernels. The Journal of Machine
+ Learning Research, 7:2651–2667.
+
+Neal, R. (1996). Bayesian Learning for Neural Networks. Springer Verlag.
+
+Quiñonero-Candela, J. and Rasmussen, C. (2005). A unifying view of sparse approximate
+ gaussian process regression. The Journal of Machine Learning Research, 6:1939–1959.
+
+Rasmussen, C. E. and Ghahramani, Z. (2001). Occam’s razor. In Neural Information
+  Processing Systems (NIPS).
+
+Rasmussen, C. E. and Nickisch, H. (2010). Gaussian processes for machine learning (GPML)
+  toolbox. Journal of Machine Learning Research (JMLR), 11:3011–3015.
+
+Rasmussen, C. E. and Williams, C. K. I. (2006). Gaussian processes for Machine Learning.
+  The MIT Press.
+
+Saatchi, Y. (2011). Scalable Inference for Structured Gaussian Process Models. PhD thesis,
+  University of Cambridge.
+
+Salakhutdinov, R. and Hinton, G. (2008). Using deep belief nets to learn covariance kernels
+  for Gaussian processes. Advances in Neural Information Processing Systems, 20:1249–
+  1256.
+
+Snoek, J., Rippel, O., Swersky, K., Kiros, R., Satish, N., Sundaram, N., Patwary, M., Ali,
+  M., and Adams, R. P. (2015). Scalable bayesian optimization using deep neural networks.
+  In International Conference on Machine Learning.
+
+Socher, R., Huang, E., Pennington, J., Ng, A., and Manning, C. (2011). Dynamic pooling
+  and unfolding recursive autoencoders for paraphrase detection. In Advances in Neural
+  Information Processing Systems 24, pages 801–809.
+
+Wilson, A. G. (2014). Covariance kernels for fast automatic pattern discovery and extrap-
+ olation with Gaussian processes. PhD thesis, University of Cambridge.
+ http://www.cs.cmu.edu/~andrewgw/andrewgwthesis.pdf.
+
+Wilson, A. G. and Adams, R. P. (2013). Gaussian process kernels for pattern discovery and
+ extrapolation. International Conference on Machine Learning (ICML).
+
+                                            17
+Wilson, A. G., Dann, C., and Nickisch, H. (2015). Thoughts on massively scalable Gaussian
+ processes. arXiv pre-print 1511.01870.
+ http://arxiv.org/abs/1511.01870.
+
+Wilson, A. G., Knowles, D. A., and Ghahramani, Z. (2012). Gaussian process regression
+ networks. In International Conference on Machine Learning (ICML), Edinburgh. Omni-
+ press.
+
+Wilson, A. G. and Nickisch, H. (2015). Kernel interpolation for scalable structured Gaussian
+ processes (KISS-GP). International Conference on Machine Learning (ICML).
+
+Xu, K., Ba, J., Kiros, R., Cho, K., Courville, A. C., Salakhutdinov, R., Zemel, R. S., and
+ Bengio, Y. (2015). Show, attend and tell: Neural image caption generation with visual
+ attention. ICML.
+
+Yang, Z., Moczulski, M., Denil, M., de Freitas, N., Smola, A., Song, L., and Wang, Z.
+  (2014). Deep fried convnets. arXiv preprint arXiv:1412.7149.
+
+Yang, Z., Smola, A. J., Song, L., and Wilson, A. G. (2015). A la carte - learning fast kernels.
+  Artificial Intelligence and Statistics.
+
+
+
+
+                                              18
+A     Appendix
+
+A.1    Convolutional network architecture
+
+Table 3 lists the architecture of the convolutional networks used in the tasks of face ori-
+entation extraction (section 5.2) and digit magnitude extraction (section 5.3). The CNN
+architecture is original from the LeNet LeCun et al. (1998) (for digit classification) and
+adapted to the above tasks with one or two more fully-connected layers for feature trans-
+formation.
+
+           Layer       conv1   pool1   conv2     pool2   full3   full4   full5   full6
+         kernel size    5×5     2×2     5×5       2×2      -       -       -       -
+           stride         1      2       1         2       -       -       -       -
+          channel        20      20      50        50    1000     500     50       2
+
+Table 3: The architecture of the convolutional network used in face orientation extraction.
+The CNN used in the MNIST digit magnitude regression has a similar architecture except
+that the full3 layer is omitted. Both pool1 and pool2 are max pooling layers. ReLU layer is
+placed after full3 and full4.
+
+
+
+
+                                            19
+
