@@ -12,6 +12,10 @@ outer HVP boundary is also exercised: FortML returns a zero product and
 `FORTNUM_NOT_IMPLEMENTED` (status code 3), while malformed products are
 covered by the release test.
 
+The source release test also runs the bounded FortOpt adapter with the fixed
+clip norm and checks a finite result. The benchmark reports derivative timing,
+not an optimizer throughput claim.
+
 Run it with:
 
 ```bash
