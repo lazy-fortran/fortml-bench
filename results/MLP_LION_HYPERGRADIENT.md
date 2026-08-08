@@ -18,7 +18,7 @@ python -B scripts/bench_mlp_lion_hypergradient.py \
 
 The recorded run has 18 rows: six NumPy-oracle rows, six passing FortML CPU
 rows, and six explicit CUDA-unavailable rows. FortML's value-gradient timing
-was `3.47955625e-05` seconds per operation on the recorded host. The largest
+was `3.6867625e-05` seconds per operation on the recorded host. The largest
 CPU oracle discrepancy was `5.69e-11`, below the `4e-10` gate. Lion is
 piecewise smooth; both the NumPy and FortML contracts refuse a configured
 near-zero sign branch rather than treating it as differentiable. CUDA remains
