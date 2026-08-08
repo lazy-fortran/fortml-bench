@@ -117,6 +117,11 @@ not completion gates.
   record is `results/multi_output_gp_batch.csv`; CPU shape/device gates and an
   explicit resident-CUDA refusal are documented in
   [`results/MULTI_OUTPUT_GP_BATCH.md`](results/MULTI_OUTPUT_GP_BATCH.md).
+- [x] Add exact multi-output prior-covariance parameter JVP/VJP products over
+  kernel/log-noise/coregionalization coordinates. The independent NumPy
+  Kronecker derivative oracle checks every packed direction, the release app
+  checks full-cotangent adjoint duality, and the raw record retains an explicit
+  CUDA refusal in `results/multi_output_gp_products.csv`.
 - [x] Add periodic and rational-quadratic kernel value, input-derivative, and
   logarithmic parameter JVP/VJP/HVP checks with release CPU timings and
   explicit CUDA capability-refusal rows. See

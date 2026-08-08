@@ -79,8 +79,8 @@ boundaries, plots, and the recorded machine results are in
 
 The dedicated multi-output product lane adds an independent dense
 intrinsic-coregionalization oracle for output-major posterior means, query
-input JVPs, packed kernel/noise/coregionalization parameter JVP/VJPs, and the
-explicit CUDA refusal:
+input JVPs, packed kernel/noise/coregionalization parameter JVP/VJPs, prior
+covariance parameter products, and the explicit CUDA refusal:
 
 ```bash
 python -B scripts/bench_multi_output_gp_products.py \

@@ -65,7 +65,7 @@ def fixture() -> tuple[np.ndarray, ...]:
     return x, y, query, direction, weights, independent
 
 
-def oracle() -> tuple[float, float]:
+def oracle() -> tuple[float, float, float]:
     x, y, query, direction, weights, independent = fixture()
     delta = x[:, None, :] - x[None, :, :]
     ktrain = 1.2 * np.exp(-0.5 * np.sum(delta * delta, axis=2) / 0.65**2)
@@ -92,7 +92,19 @@ def oracle() -> tuple[float, float]:
                 b[a, bb] * np.dot(gradient[i, j], direction[i]) * alpha[bb * N + j]
                 for bb in range(P) for j in range(N)
             )
-    return float(np.sum(mean)), float(np.linalg.norm(input_dot))
+    parameter_direction = 0.04 * np.sin(0.17 * np.arange(1, 2 + 1 + P * 2 + P + 1))
+    kdot = ktrain * (
+        parameter_direction[0]
+        + parameter_direction[1] * np.sum((x[:, None, :] - x[None, :, :]) ** 2, axis=2)
+        / 0.65**2
+    )
+    dweights = parameter_direction[3:3 + P * 2].reshape(P, 2)
+    dindependent = parameter_direction[3 + P * 2:3 + P * 2 + P]
+    bdot = dweights @ weights.T + weights @ dweights.T + np.diag(dindependent)
+    covariance_dot = np.kron(bdot, ktrain) + np.kron(b, kdot)
+    return float(np.sum(mean)), float(np.linalg.norm(input_dot)), float(
+        np.linalg.norm(covariance_dot)
+    )
 
 
 def main() -> None:
@@ -114,7 +126,7 @@ def main() -> None:
         "benchmark_revision": revision(root, ignored),
         "compiler": os.environ.get("FO_FC", "gfortran"), "flags": "-O3",
     }
-    expected_mean, expected_input = oracle()
+    expected_mean, expected_input, expected_covariance = oracle()
     if not args.no_build:
         subprocess.run(["fo", "build", "--flag", "-O3"], cwd=fortml, check=True)
     completed = subprocess.run(
@@ -128,7 +140,8 @@ def main() -> None:
         if len(fields) != 7 or fields[0] != "multi_output_gp":
             continue
         parsed[fields[1]] = (float(fields[5]), float(fields[6]))
-    for key in ("predict", "input_jvp", "parameter_jvp", "parameter_vjp"):
+    for key in ("predict", "input_jvp", "parameter_jvp", "parameter_vjp",
+                "covariance_parameter_jvp", "covariance_parameter_vjp"):
         if key not in parsed:
             raise RuntimeError(f"missing multi-output release row {key}")
 
@@ -165,6 +178,17 @@ def main() -> None:
         raise RuntimeError(f"multi-output parameter adjoint mismatch {actual:.3e}")
     add("parameter_vjp", "fortml_cpu", "cpu", "pass", timing, "adjoint_error", actual,
         actual, "packed kernel/noise/coregionalization VJP")
+    timing, actual = parsed["covariance_parameter_jvp"]
+    error = abs(actual - expected_covariance)
+    if error > 2.0e-10:
+        raise RuntimeError(f"multi-output covariance parameter JVP mismatch {error:.3e}")
+    add("covariance_parameter_jvp", "fortml_cpu", "cpu", "pass", timing,
+        "jvp_l2", actual, error, "independent prior ICM covariance oracle")
+    timing, actual = parsed["covariance_parameter_vjp"]
+    if actual > 2.0e-10:
+        raise RuntimeError(f"multi-output covariance parameter adjoint mismatch {actual:.3e}")
+    add("covariance_parameter_vjp", "fortml_cpu", "cpu", "pass", timing,
+        "adjoint_error", actual, actual, "full prior covariance cotangent")
     add("products", "fortml_cuda", "cuda", "unavailable", "", "typed_refusal", "",
         "", "FORTNUM_NOT_IMPLEMENTED until resident ICM kernels are linked")
 
