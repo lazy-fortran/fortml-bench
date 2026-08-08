@@ -109,8 +109,8 @@ def oracle() -> dict[str, float]:
     h = 2.0e-5
     mean_plus, variance_plus = prediction(query + h * direction)
     mean_minus, variance_minus = prediction(query - h * direction)
-    mean_dot = (mean_plus - mean_minus) / (2.0 * h)
-    variance_dot = (variance_plus - variance_minus) / (2.0 * h)
+    mean_dot_fd = (mean_plus - mean_minus) / (2.0 * h)
+    variance_dot_fd = (variance_plus - variance_minus) / (2.0 * h)
     mean_bar = np.array([0.3, -0.5, 0.2, 0.4])
     variance_bar = np.array([-0.2, 0.6, -0.1, 0.25])
     cross_dot = np.empty_like(cross)
@@ -121,18 +121,19 @@ def oracle() -> dict[str, float]:
             cross_dot[i, j] = direction[j] * ((-1.0) ** (int(order_right) + 1)) * distance_derivative(
                 base, difference, lengthscale, int(order_left + order_right + 1))
     solved_dot = np.linalg.solve(gram, cross_dot)
+    mean_dot_exact = cross_dot.T @ alpha
     variance_dot_exact = -np.sum(cross_dot * solved_cross, axis=0) - np.sum(cross * solved_dot, axis=0)
     x_bar = np.zeros(4)
     for j in range(4):
         cross_bar = alpha * mean_bar[j] - 2.0 * solved_cross[:, j] * variance_bar[j]
         x_bar[j] = np.sum(cross_bar * (cross_dot[:, j] / direction[j]))
-    duality_error = abs(float(x_bar @ direction - (mean_bar @ mean_dot + variance_bar @ variance_dot_exact)))
+    duality_error = abs(float(x_bar @ direction - (mean_bar @ mean_dot_exact + variance_bar @ variance_dot_exact)))
     return {
         "prediction_mean_max_abs_error": float(np.max(np.abs(mean - (cross.T @ alpha)))),
         "prediction_variance_max_abs_error": float(np.max(np.abs(posterior_variance - (prior_diag - np.sum(cross * solved_cross, axis=0))))),
         "joint_covariance_max_abs_error": float(np.max(np.abs(posterior_covariance - posterior_covariance.T))),
-        "input_jvp_fd_max_abs_error": float(max(np.max(np.abs(mean_dot - (mean_plus - mean_minus) / (2.0 * h))),
-                                                 np.max(np.abs(variance_dot - (variance_plus - variance_minus) / (2.0 * h))))),
+        "input_jvp_fd_max_abs_error": float(max(np.max(np.abs(mean_dot_exact - mean_dot_fd)),
+                                                 np.max(np.abs(variance_dot_exact - variance_dot_fd)))),
         "input_vjp_duality_abs_error": duality_error,
         "minimum_posterior_variance": float(np.min(posterior_variance)),
     }
