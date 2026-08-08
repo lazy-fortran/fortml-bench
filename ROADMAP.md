@@ -338,6 +338,11 @@ a different workload, precision, device, or residency policy.
 - [x] Add the joint basis-pipeline training correctness lane. The raw record is
   `results/basis_pipeline_training.csv`, with independent value/JVP/HVP and
   CUDA-refusal checks documented in `results/BASIS_PIPELINE_TRAINING.md`.
+- [x] Add the named basis fan-out/fan-in DAG correctness lane. The raw record is
+  `results/basis_fanout_pipeline.csv`; `test_basis_fanout_pipeline` supplies
+  independent feature, metadata, JVP/VJP, HVP, CPU-dispatch, and typed-CUDA
+  refusal checks. Residual, conditional, cyclic, and resident branch execution
+  remain separate open contracts.
 - [x] Add correctness-gated records for the model-agnostic objective trainer
   and XGBoost additive tree contributions. The raw record is
   `results/training_core.csv`; the rows are correctness wall times, not

@@ -1076,6 +1076,19 @@ python -B scripts/bench_basis_pipeline_training.py \
 
 See [`results/BASIS_PIPELINE_TRAINING.md`](results/BASIS_PIPELINE_TRAINING.md).
 
+The named fan-out/fan-in basis-DAG lane checks an independent two-branch
+quadratic/spectral feature construction, branch metadata and packed offsets,
+JVP/VJP duality, central-difference HVPs, CPU dispatch, and the typed CUDA
+refusal. Its wall time is the complete correctness gate, not a synthetic
+throughput claim:
+
+```bash
+python -B scripts/bench_basis_fanout_pipeline.py \
+  --fortml ../fortml --output results/basis_fanout_pipeline.csv
+```
+
+See [`results/BASIS_FANOUT_PIPELINE.md`](results/BASIS_FANOUT_PIPELINE.md).
+
 The scheduled-Adagrad lane checks exact fixed-trajectory value/gradient/JVP/VJP
 products, FortOpt L-BFGS-B integration, default schedule validation, malformed
 options, and the typed CUDA refusal:
