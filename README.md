@@ -688,6 +688,20 @@ dispatch wrappers return typed CUDA refusals. The multiclass focal row uses
 positive class factors and the same weighted scalar-composition HVP selected by
 the FortML MLP `focal_gamma` option.
 
+The pairwise metric-learning lane checks weighted contrastive value, JVP, VJP,
+and HVP products for deterministic paired embeddings against an independent
+NumPy Euclidean oracle:
+
+```bash
+python -B scripts/bench_contrastive_loss.py \
+    --fortml ../fortml --output results/contrastive_loss.csv
+```
+
+See [`results/CONTRASTIVE_LOSS.md`](results/CONTRASTIVE_LOSS.md). Exact
+non-matching zero-distance and margin-kink derivative requests are tested as
+typed boundaries; CUDA value dispatch is recorded as unavailable without a
+host fallback.
+
 The ordered-label lane fits a weighted cumulative-logit classifier with
 strictly increasing cut points. It checks the complete probability matrix and
 predicted labels against an independent SciPy L-BFGS-B oracle before timing:

@@ -278,6 +278,12 @@ a different workload, precision, device, or residency policy.
   exact Huber kinks, true-class focal underflow, and resident CUDA loss/MLP
   kernels remain explicit refusal boundaries. The raw record is
   `results/neural_losses.csv`.
+- [x] Add a correctness-gated pairwise contrastive metric-learning benchmark.
+  The independent NumPy Euclidean replay checks weighted value, JVP, VJP, and
+  HVP checksums for paired embeddings before retaining CPU timings; zero-
+  distance/margin derivative boundaries and the typed CUDA value refusal are
+  recorded in `results/contrastive_loss.csv` and
+  `results/CONTRASTIVE_LOSS.md`.
 - [x] Add a dense multilabel-indicator logistic lane with independent
   per-output Newton oracle checks, complete positive-probability and hard
   indicator outputs, contextual scikit-learn timing, and explicit CUDA

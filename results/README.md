@@ -28,6 +28,7 @@ Complete-call studies:
 - [Multiclass MLP probability parameter products](MLP_CLASSIFIER_PARAMETER_PRODUCTS.md)
 - [Differentiable multilabel MLP classifier](MLP_MULTILABEL_CLASSIFIER.md)
 - [Differentiable neural losses and weighted MLP objective](NEURAL_LOSSES.md)
+- [Pairwise contrastive metric loss](CONTRASTIVE_LOSS.md)
 - [Weighted ridge regression and derivative products](RIDGE.md)
 - [Weighted elastic-net regression and derivative products](ELASTIC_NET.md)
 - [RMSprop optimizer and MLP training](RMSPROP.md)
