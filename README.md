@@ -1535,6 +1535,19 @@ python3 -B scripts/bench_gp_variational_categorical.py \
 
 See [`results/GP_VARIATIONAL_CATEGORICAL.md`](results/GP_VARIATIONAL_CATEGORICAL.md).
 
+The categorical likelihood-temperature lane keeps the inducing posterior
+fixed, fits the positive softmax temperature through FortOpt, and independently
+recomputes the variance-corrected softmax, probability JVP, and ELBO derivative
+from the emitted latent moments.  It also records the typed CUDA likelihood
+product refusal:
+
+```bash
+python3 -B scripts/bench_gp_categorical_likelihood.py \
+  --fortml ../fortml --output results/gp_categorical_likelihood.csv
+```
+
+See [`results/GP_CATEGORICAL_LIKELIHOOD.md`](results/GP_CATEGORICAL_LIKELIHOOD.md).
+
 The XGBoost-style lane has its own workload and raw record. It checks squared,
 binary logistic, one-vs-rest multiclass, and learned-NaN default-direction
 depth-two boosting against independent recursive NumPy gradient/Hessian

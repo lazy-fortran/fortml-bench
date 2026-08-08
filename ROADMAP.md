@@ -519,6 +519,13 @@ a different workload, precision, device, or residency policy.
   refusal. The raw record is
   `results/gp_variational_classification_weights.csv`; resident weighted
   inducing solves remain unavailable.
+- [x] Add the coupled categorical variational-GP likelihood-temperature lane.
+  The independent NumPy oracle recomputes the positive softmax temperature,
+  probability JVP, and ELBO derivative from emitted latent moments; the raw
+  record is `results/gp_categorical_likelihood.csv` and the protocol is
+  documented in `results/GP_CATEGORICAL_LIKELIHOOD.md`. The CUDA likelihood
+  product row remains an explicit typed refusal until the inducing reduction is
+  resident.
 - [x] Add the shared binary GP likelihood value/JVP/VJP lane for logistic and
   probit signed margins, including a stable negative-tail oracle and an
   independent adjoint check. The raw record is `results/gp_likelihood.csv`;
