@@ -582,6 +582,11 @@ a different workload, precision, device, or residency policy.
   oracles. `results/spectral_mixture.csv` records the two-mixture CPU release
   app and typed resident-CUDA refusal; the protocol is documented in
   `results/SPECTRAL_MIXTURE.md`.
+- [x] Add the locally-periodic exact-GP lane with separate vectorized and
+  scalar-loop covariance oracles, exact posterior moments, input and
+  logarithmic parameter products, and an explicit static-operator/CUDA
+  refusal. The raw record is `results/local_periodic_gp.csv`; the protocol is
+  documented in `results/LOCAL_PERIODIC_GP.md`.
 - [ ] Add the remaining histogram/CART feature matrix: weighted missing-bin
   workloads, class weights, monotonic constraints, early stopping, feature
   importance, categorical inputs, and native GPU histograms. CPU weighted
