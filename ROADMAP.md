@@ -447,6 +447,10 @@ a different workload, precision, device, or residency policy.
   derivative, adjoint, separable-symplectic, and typed split-integrator-refusal
   gate in `results/hamiltonian_general.csv`; CUDA/OpenACC remains explicitly
   unavailable until a resident implicit-integrator graph exists.
+- [x] Add the canonical symplectic-form residual lane. An independent
+  velocity-Verlet Jacobian oracle checks the defect, value/JVP/VJP products,
+  reusable physics-constraint bridge, and typed CUDA refusal in
+  `results/symplectic_residual.csv`.
 - [ ] Add resident CUDA/OpenACC timing rows for kNN search, RMSprop
   optimizer/trainer state, AdamW trainer state, staged XGBoost diagnostics, and GP classification
   hyperparameter training. Native CUDA kNN and a direct RMSprop state-kernel
@@ -681,10 +685,10 @@ a different workload, precision, device, or residency policy.
   independently reconstructs the threshold-label fixture and rejects any
   hidden in-bag fallback. Raw evidence is `results/random_forest_oob.csv` and
   the protocol is documented in `results/RANDOM_FOREST_OOB.md`.
-- [ ] Add physics-informed, Hamiltonian, Lagrangian, and symplectic workloads
-  with analytic harmonic-oscillator and manufactured-PDE oracles. Record
-  trajectory error, energy drift, symplectic Jacobian defect, residual norms,
-  posterior calibration, optimizer evaluations, and long-horizon behavior.
+- [ ] Extend the existing physics-informed, Hamiltonian, and symplectic
+  workloads with manufactured-PDE, Lagrangian, posterior-calibration, and
+  long-horizon trajectory studies. The canonical harmonic-oscillator residual
+  and Jacobian-defect gate is recorded above.
 - [ ] Add physics-consistent GP, Ghosttasking, Monge-GP, and GP-initialized
   finite-network lanes when their public equations and reference data are
   pinned. Private project results must be accompanied by a reproducible data

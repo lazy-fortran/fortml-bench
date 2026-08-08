@@ -89,6 +89,30 @@ python -B scripts/bench_multi_output_gp_products.py \
 
 See [`results/MULTI_OUTPUT_GP_PRODUCTS.md`](results/MULTI_OUTPUT_GP_PRODUCTS.md).
 
+The fixed-state random-forest permutation lane checks accuracy-decrease
+importance and repeat dispersion against an independent NumPy
+Park--Miller/Fisher--Yates replay. It records transactional invalid-input and
+typed CUDA-refusal behavior:
+
+```bash
+python -B scripts/bench_random_forest_permutation.py \
+  --fortml ../fortml --output results/random_forest_permutation.csv
+```
+
+See [`results/RANDOM_FOREST_PERMUTATION.md`](results/RANDOM_FOREST_PERMUTATION.md).
+
+The canonical symplectic-form lane checks a harmonic-oscillator
+velocity-Verlet Jacobian, residual/value JVP/VJP products, the physics
+constraint bridge, and the explicit CUDA boundary against an independent
+NumPy oracle:
+
+```bash
+python -B scripts/bench_symplectic_residual.py \
+  --fortml ../fortml --output results/symplectic_residual.csv
+```
+
+See [`results/SYMPLECTIC_RESIDUAL.md`](results/SYMPLECTIC_RESIDUAL.md).
+
 The batched multi-output product lane checks independent query-set stacking,
 fixed-fit input JVP/VJP products, CPU dispatch, malformed-shape validation,
 and the typed CUDA boundary against a direct NumPy intrinsic-coregionalization
