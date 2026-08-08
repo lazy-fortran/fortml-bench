@@ -641,6 +641,19 @@ products (including one-cycle peak/final-rate tangents):
 See [`results/MLP_SCHEDULES.md`](results/MLP_SCHEDULES.md). CUDA schedule rows
 are explicit `unavailable` capability records, not host timings.
 
+The metric-aware plateau lane checks explicit minimizing and maximizing metric
+transitions, patience resets, `min_delta`, compounded reductions, base/factor
+derivatives, and comparison-state zeros against an independent Python oracle:
+
+```bash
+python3 -B scripts/bench_mlp_plateau_schedule.py \
+  --fortml ../fortml --output results/mlp_plateau_schedule.csv
+```
+
+See [`results/MLP_PLATEAU_SCHEDULE.md`](results/MLP_PLATEAU_SCHEDULE.md).
+The two CUDA rows are typed capability refusals because no resident
+metric-aware optimizer lowering is linked.
+
 The dense MLP activation lane checks the packed `8-32-4` forward path for
 linear, `tanh`, ReLU, GELU, SiLU, ELU, softplus, leaky ReLU, sigmoid, and Mish
 against an independent NumPy checksum oracle. Sigmoid uses a branch-stable

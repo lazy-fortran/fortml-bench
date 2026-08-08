@@ -196,6 +196,13 @@ a different workload, precision, device, or residency policy.
   emits all 180 values before its resident scalar timing is retained in
   `results/mlp_schedules.csv`. This gate does not claim neural training,
   OpenACC, or CUDA performance.
+- [x] Add a correctness-gated metric-aware plateau schedule lane. Independent
+  Python transitions cover minimizing and maximizing metrics, patience and
+  `min_delta` boundaries, compounded reductions, exact base/factor products,
+  and discrete comparison-state zeros. The FortML app emits 132 values for
+  each mode before timing, and the CSV records two explicit CUDA capability
+  refusals in `results/mlp_plateau_schedule.csv`; the protocol is documented
+  in `results/MLP_PLATEAU_SCHEDULE.md`.
 - [x] Add a dense MLP activation lane for linear, `tanh`, ReLU, GELU, SiLU,
   ELU, softplus, leaky ReLU, sigmoid, and Mish. Ten independent NumPy checksum
   rows and ten FortML CPU timings are retained alongside ten explicit CUDA

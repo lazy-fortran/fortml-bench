@@ -14,6 +14,7 @@ Complete-call studies:
 - [AdamW training and MLP hypergradients](ADAMW_HYPERGRADIENT.md)
 - [AdamW beta-logit hypergradients](ADAMW_BETA_HYPERGRADIENT.md)
 - [Typed MLP learning-rate schedules](MLP_SCHEDULES.md)
+- [Metric-aware MLP plateau schedule](MLP_PLATEAU_SCHEDULE.md)
 - [Dense MLP activation products](MLP_ACTIVATIONS.md)
 - [Scheduled MLP trajectory hypergradients](MLP_SCHEDULE_HYPERGRADIENT.md)
 - [Composable MLP module tree](MLP_CHAIN.md)
