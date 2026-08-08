@@ -362,6 +362,12 @@ a different workload, precision, device, or residency policy.
   CPU rows compare complete parameter norms and MLP losses, while resident
   AMSGrad CUDA state remains an explicit unavailable row. Fixed-trajectory
   hypergradients through the max active set remain open.
+- [x] Add the deterministic RAdam trainer/MLP lane. The independent NumPy
+  rho-threshold recurrence oracle is paired with `test_mlp_radam`'s exact
+  in-memory and formatted checkpoint continuation gate in `results/radam.csv`;
+  CPU rows compare complete parameter norms and MLP losses, while resident
+  RAdam CUDA state remains an explicit unavailable row. Optimizer-trajectory
+  hypergradients and FortOpt RAdam adapters remain open.
 - [x] Add the exact fixed full-batch unfactored Adafactor trajectory
   hypergradient lane. The independent NumPy recurrence checks the objective,
   all five packed hyperparameter derivatives, JVP, VJP, bounded L-BFGS-B path,
