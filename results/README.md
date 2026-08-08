@@ -71,6 +71,7 @@ Complete-call studies:
 - [Variational GP classification](GP_VARIATIONAL_CLASSIFICATION.md)
 - [Variational GP multiclass prediction and JVP](GP_VARIATIONAL_MULTICLASS_CLASSIFICATION.md)
 - [Coupled categorical variational GP classification](GP_VARIATIONAL_CATEGORICAL.md)
+- [Sparse-GP Gaussian likelihood noise products](GP_SPARSE_LIKELIHOOD_NOISE.md)
 - [Exact-GP seeded hyperparameter multistart](GP_HYPERPARAMETER_TRAINING.md)
 - [Trainable exact-GP constant and linear means](GP_MEAN.md)
 - [ARD RBF kernel and exact-GP products](GP_ARD.md)

@@ -1548,6 +1548,19 @@ python3 -B scripts/bench_gp_categorical_likelihood.py \
 
 See [`results/GP_CATEGORICAL_LIKELIHOOD.md`](results/GP_CATEGORICAL_LIKELIHOOD.md).
 
+The sparse-GP Gaussian likelihood lane checks the separate transformed
+`log(noise_variance)` coordinate. An independent dense NumPy sparse-ELBO
+oracle checks the gradient and HVP by central differences. The FortML gate
+checks fixed-state JVP/VJP/HVP products, transactional malformed and overflow
+refusals, and typed CPU/CUDA dispatch:
+
+```bash
+python3 -B scripts/bench_gp_sparse_likelihood_noise.py \
+  --fortml ../fortml --output results/gp_sparse_likelihood_noise.csv
+```
+
+See [`results/GP_SPARSE_LIKELIHOOD_NOISE.md`](GP_SPARSE_LIKELIHOOD_NOISE.md).
+
 The XGBoost-style lane has its own workload and raw record. It checks squared,
 binary logistic, one-vs-rest multiclass, and learned-NaN default-direction
 depth-two boosting against independent recursive NumPy gradient/Hessian

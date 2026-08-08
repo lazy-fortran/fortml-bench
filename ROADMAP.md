@@ -539,6 +539,14 @@ a different workload, precision, device, or residency policy.
   documented in `results/GP_CATEGORICAL_LIKELIHOOD.md`. The CUDA likelihood
   product row remains an explicit typed refusal until the inducing reduction is
   resident.
+- [x] Add the sparse-GP Gaussian-likelihood log-noise product lane. The
+  independent dense NumPy oracle assembles the inducing ELBO and checks the
+  transformed log-noise gradient and HVP against central differences. The
+  FortML gate checks fixed-state JVP/VJP/HVP products, transactional malformed
+  and overflow refusals, and typed CPU/CUDA dispatch. The raw record is
+  `results/gp_sparse_likelihood_noise.csv`, with protocol in
+  `results/GP_SPARSE_LIKELIHOOD_NOISE.md`; the resident inducing CUDA path
+  remains an explicit unavailable row.
 - [x] Add the shared binary GP likelihood value/JVP/VJP lane for logistic and
   probit signed margins, including a stable negative-tail oracle and an
   independent adjoint check. The raw record is `results/gp_likelihood.csv`;
