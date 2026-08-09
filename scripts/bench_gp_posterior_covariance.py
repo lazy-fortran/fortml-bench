@@ -239,7 +239,7 @@ def main() -> None:
         "reference, and selected CUDA returns `FORTNUM_NOT_IMPLEMENTED` without "
         "claiming a host fallback. The same lane checks the full-matrix "
         "hyperparameter JVP and VJP against independent NumPy solve-state "
-        "products; covariance derivative device calls have the same explicit "
+        "products. Covariance derivative device calls have the same explicit "
         "CUDA refusal.\n\n"
         f"Oracle covariance checksum: `{expected['covariance_checksum']:.16g}`, "
         f"variance checksum: `{expected['variance_checksum']:.16g}`.\n\n"
