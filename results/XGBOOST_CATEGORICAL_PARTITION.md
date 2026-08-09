@@ -6,8 +6,8 @@ The release executable is `fortml_bench_xgboost_categorical_partition`, rebuilt
 with `fo build --flag -O3` before a release run.
 
 The fixture has 256 rows, one integer-coded feature with four equally sized
-categories, and one numeric nuisance feature.  Codes 0 and 2 have target zero;
-codes 1 and 3 have target four.  The independent NumPy oracle enumerates every
+categories, and one numeric nuisance feature. Codes 0 and 2 have target zero.
+Codes 1 and 3 have target four. The independent NumPy oracle enumerates every
 canonical nontrivial subset and applies the weighted squared-loss Newton gain,
 so the expected left partition is `{0,2}` and the prediction error is zero to
 binary64 precision.  The release lane also checks the three-node diagnostic and
@@ -19,10 +19,9 @@ FortML returns `FORTNUM_NOT_IMPLEMENTED` rather than risking an unbounded or
 overflowing subset loop. The explicit `categorical_max_categories` metadata
 limit remains 2--64 for the ordered policy and for partition input validation.
 
-The CUDA row is intentionally `unavailable`: no resident CUDA categorical-tree
-kernel is linked, so FortML preserves the typed refusal instead of falling back
-to host execution.  Categorical input JVP/VJP products remain an explicit
-discrete-state refusal.
+The CUDA row is `unavailable` because no resident CUDA categorical-tree kernel
+is linked. FortML preserves the typed refusal. Categorical input JVP/VJP
+products remain an explicit discrete-state refusal.
 
 Run:
 
