@@ -614,3 +614,49 @@ python -B scripts/bench_xgboost_multioutput_validation_metadata.py \
 
 See [`results/XGBOOST_MULTIOUTPUT_VALIDATION_METADATA.md`](results/XGBOOST_MULTIOUTPUT_VALIDATION_METADATA.md)
 for the scalar oracle and pinned provenance.
+
+## Five-coordinate mini-batch Adam hypergradients
+
+This lane checks the deterministic coupled-L2 Adam trajectory over
+`[log_lr, log_l2, logit_beta1, logit_beta2, log_epsilon]`. An independent affine
+replay gates exact derivatives, while a nonlinear fixture checks finite
+differences, JVP/VJP duality, FortOpt L-BFGS-B convergence, and the typed CUDA
+boundary.
+
+```bash
+python -B scripts/bench_mlp_minibatch_adam_hypergradient.py \
+  --fortml ../fortml --output results/mlp_minibatch_adam_hypergradient.csv
+```
+
+See [`results/MLP_MINIBATCH_ADAM_HYPERGRADIENT.md`](results/MLP_MINIBATCH_ADAM_HYPERGRADIENT.md)
+for the 21-row oracle and provenance.
+
+## Fixed-latent ordinal-GP cut-point calibration
+
+This lane checks weighted ordered-probit/logistic cut-point calibration with a
+strict location-plus-log-gap transform, transactional FortOpt L-BFGS-B state,
+analytic gradient/HVP products, and prediction threshold JVP/VJP products.
+CUDA is a typed refusal until the ordinal graph is resident.
+
+```bash
+python -B scripts/bench_gp_ordinal_cutpoints.py \
+  --fortml ../fortml --output results/gp_ordinal_cutpoints.csv
+```
+
+See [`results/GP_ORDINAL_CUTPOINTS.md`](results/GP_ORDINAL_CUTPOINTS.md) for
+the independent SciPy/NumPy convergence oracle and provenance.
+
+## Weighted boosted-tree partial dependence and ICE
+
+This lane checks weighted partial-dependence and individual conditional
+expectation curves for XGBoost-style and LightGBM-style trees, including
+transformed predictions and raw margins. Weight aggregation is overflow-safe;
+invalid grids are transactional and CUDA is an explicit refusal.
+
+```bash
+python -B scripts/bench_boosted_partial_dependence.py \
+  --fortml ../fortml --output results/boosted_partial_dependence.csv
+```
+
+See [`results/BOOSTED_PARTIAL_DEPENDENCE.md`](results/BOOSTED_PARTIAL_DEPENDENCE.md)
+for the hand-computed/NumPy oracle and provenance.
