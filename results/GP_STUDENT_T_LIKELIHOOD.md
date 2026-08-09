@@ -8,4 +8,4 @@ Run:
 python -B scripts/bench_gp_student_t_likelihood.py --fortml ../fortml --output results/gp_student_t_likelihood.csv --report results/GP_STUDENT_T_LIKELIHOOD.md
 ```
 
-The recorded maximum product error is `1.445e-08` for 7 fixed latent rows. FortOpt decreased the negative log likelihood from `5.1133920696782367e+00` to `-1.4742870480566501e+00`. The release source revision is `6e767d13454e8323647a7f73f368fbbbe9e0e91c` and the benchmark revision is `c77924573ebddc08b990fc046f29d961540a8eb4`. CUDA is an explicit typed refusal until resident latent batches and special functions are linked; no GPU timing or hidden host fallback is claimed.
+The recorded maximum product error is `1.445e-08` for 7 fixed latent rows. FortOpt decreased the negative log likelihood from `5.1133920696782367e+00` to `-1.4742870480566501e+00`. The release source revision is `ba72eb13cdf15962ad593a7c5ca196767a6938dc` and the benchmark revision is `0e94ad4b3547b00d1fe2693ee1a465c9858bc0f7`. CUDA is an explicit typed refusal until resident latent batches and special functions are linked; no GPU timing or hidden host fallback is claimed.
