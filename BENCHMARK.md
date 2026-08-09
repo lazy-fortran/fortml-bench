@@ -106,6 +106,24 @@ python -B scripts/bench_robust_gp_poisson_products.py \
 
 See [`results/ROBUST_GP_POISSON_PRODUCTS.md`](results/ROBUST_GP_POISSON_PRODUCTS.md).
 
+## Fixed-latent Student-t GP likelihood products
+
+This lane checks the normalized Student-t observation density over stable
+`[log(scale),log(nu)]` coordinates. An independent NumPy scalar oracle checks
+value, gradient, JVP, VJP, and directional HVP products; the release probe also
+passes the negative-log-likelihood callback to FortOpt and records objective
+decrease. CUDA is an explicit typed refusal until resident latent batches and
+special functions are linked.
+
+```bash
+python -B scripts/bench_gp_student_t_likelihood.py \
+  --fortml ../fortml --output results/gp_student_t_likelihood.csv \
+  --report results/GP_STUDENT_T_LIKELIHOOD.md
+```
+
+See [`results/GP_STUDENT_T_LIKELIHOOD.md`](results/GP_STUDENT_T_LIKELIHOOD.md)
+for the fixture, tolerances, provenance, and refusal contract.
+
 ## Multiclass Laplace-GP log probabilities
 
 This lane checks sorted-label one-vs-rest `predict_log_proba`, input and packed
