@@ -647,6 +647,20 @@ python -B scripts/bench_random_forest_oob.py \
 
 See [`results/RANDOM_FOREST_OOB.md`](results/RANDOM_FOREST_OOB.md).
 
+The weighted random-forest regression lane independently replays the seeded
+Park--Miller bootstrap and exhaustive weighted CART split policy in NumPy. It
+checks scalar and multi-output predictions, staged prefix averages,
+split-frequency feature importance, fixed-state zero JVPs, release timings,
+and the typed resident-CUDA refusal:
+
+```bash
+python -B scripts/bench_random_forest_regression.py \
+  --fortml ../fortml --output results/random_forest_regression.csv \
+  --report results/RANDOM_FOREST_REGRESSION.md
+```
+
+See [`results/RANDOM_FOREST_REGRESSION.md`](results/RANDOM_FOREST_REGRESSION.md).
+
 The Extra-Trees lane exercises the seeded randomized-threshold classifier on
 the same separated fixture. A direct NumPy class-rule oracle checks all query
 labels and probability normalization; the CUDA row is a typed refusal until a
