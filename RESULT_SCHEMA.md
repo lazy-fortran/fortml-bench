@@ -12,8 +12,10 @@ oracle, fortml_revision, benchmark_revision, compiler, flags, notes`.
 The optional columns record workload shape and measurement detail:
 `variant, dimensions, n_samples, n_features, n_outputs, n_classes,
 n_train, n_validation, epochs, batch_size, evaluations, repetitions,
+compile_seconds, warmup_seconds, train_seconds, predict_seconds,
 seconds_per_operation, peak_host_bytes, peak_device_bytes, transfer_bytes,
-warmup_iterations, seed, python_version, numpy_version, scipy_version`.
+warmup_iterations, seed, hardware, python_version, numpy_version,
+scipy_version, fortad_revision, fortsym_revision, fortopt_revision`.
 
 `status` is one of `pass`, `failed`, `skipped`, `unavailable`, `refused`, or
 `conditional`. A passing row has a finite `max_abs_error` and names an
