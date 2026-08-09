@@ -85,6 +85,23 @@ python -B scripts/bench_basis_linear_regression.py \
 See [`results/BASIS_LINEAR_REGRESSION.md`](results/BASIS_LINEAR_REGRESSION.md)
 for the fixture and reproducibility details.
 
+## Wave 11 Poisson and affine-SGD derivative products
+
+This compact release lane records independent NumPy value/gradient/HVP
+oracles for the Poisson log-rate likelihood and the affine full-batch SGD
+optimizer-group objective.  The matching FortML behavioural tests must pass
+before rows are retained.  CUDA remains an explicit unavailable boundary;
+these rows claim no host fallback or GPU timing.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_wave11_derivative_products.py \
+  --fortml ../fortml --output results/wave11_derivative_products.csv
+```
+
+See [`results/WAVE11_DERIVATIVE_PRODUCTS.md`](results/WAVE11_DERIVATIVE_PRODUCTS.md)
+for the exact fixtures, independent oracles, and pinned revisions.
+
 ## PCA-seeded linear MLP initializer
 
 This lane checks the centered thin-SVD reconstruction used to initialize a
