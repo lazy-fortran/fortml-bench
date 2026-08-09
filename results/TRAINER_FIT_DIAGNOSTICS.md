@@ -2,8 +2,8 @@
 
 This lane gates the schema-7 generic trainer diagnostics against an independent NumPy quadratic oracle. The bounded FortOpt L-BFGS-B row records iteration, line-search, and curvature counters. A callback-stopped Adam row checks fit-call/update counters and the zero L-BFGS-B-specific boundary.
 
-FortML revision: 233edb720a12342f9ea46fe34d5f205287926f82
-Benchmark revision: b002753eba3ddf2b321944a58770c81659b1bd60+dirty
+FortML revision: 1cce8b438bb627e3c68671a98688a005c5d3c661
+Benchmark revision: 43a37a1718031bd152de39202a940c3f9d3862c9
 
 | phase | status | metric | value | max abs error |
 | --- | --- | --- | ---: | ---: |
