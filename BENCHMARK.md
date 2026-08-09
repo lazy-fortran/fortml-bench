@@ -72,3 +72,17 @@ python -B scripts/bench_robust_gp_poisson_products.py \
 ```
 
 See [`results/ROBUST_GP_POISSON_PRODUCTS.md`](results/ROBUST_GP_POISSON_PRODUCTS.md).
+
+## Multiclass Laplace-GP log probabilities
+
+This lane checks sorted-label one-vs-rest `predict_log_proba`, input and packed
+kernel-parameter products, and the typed CUDA boundary against an independent
+NumPy normalization oracle.
+
+```bash
+python -B scripts/bench_gp_multiclass_log_proba.py \
+  --fortml ../fortml --output results/gp_multiclass_log_proba.csv
+```
+
+See [`results/GP_MULTICLASS_LOG_PROBA.md`](results/GP_MULTICLASS_LOG_PROBA.md)
+for the fixture and reproducibility details.
