@@ -5,8 +5,8 @@ The policy starts at 8, grows by 2 after two finite updates, and backs
 off by 0.5 after an overflow. The FP64 trainer row checks persisted
 dynamic state. FP32 and CUDA rows record typed capability boundaries.
 
-FortML revision: `f1c8ac26c1510ce07dde5a8fd85c2c6aa12a0bd7`  
-Benchmark revision: `7a7135ec5a3e7b2e50c1ac08a2d079dfe0b16a28`
+FortML revision: `a1d9907d39fcf27b179a9816aaa64105f1baf927`  
+Benchmark revision: `e8234f74e6ab9a1134ce019019538de0e5c1c2b4`
 
 | phase | status | metric | value | max abs error |
 | --- | --- | --- | ---: | ---: |
