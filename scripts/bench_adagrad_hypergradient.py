@@ -3,10 +3,11 @@
 
 The NumPy implementation is an independent two-parameter linear-MSE
 trajectory.  It finite-differences the validation objective with respect to
-all three packed log hyperparameters and an independent directional JVP.  A
-FortML release timing is retained only after its complete value/gradient/JVP
-oracle agrees with those products.  CUDA rows are typed refusals because the
-complete MLP state-derivative trajectory is CPU-only today.
+all three packed log hyperparameters and an independent directional JVP/HVP
+oracle.  A FortML release timing is retained only after its complete
+value/gradient/JVP/HVP oracle agrees with those products.  CUDA rows are typed
+refusals because the complete MLP state-derivative trajectory is CPU-only
+today.
 """
 
 from __future__ import annotations
@@ -36,6 +37,8 @@ REPETITIONS = 16
 PARAMETERS = np.array([np.log(LEARNING_RATE), np.log(L2), np.log(EPSILON)])
 DIRECTION = np.array([0.31, -0.27, 0.19])
 ORACLE_TOLERANCE = 3.0e-10
+HVP_FD_STEP = 2.0e-5
+HVP_ORACLE_TOLERANCE = 2.0e-6
 
 FIELDS = (
     "workload", "phase", "variant", "backend", "device", "status",
@@ -117,11 +120,23 @@ def finite_difference_oracle() -> dict[str, Any]:
         gradient[index] = (trajectory(plus) - trajectory(minus)) / (2.0 * FD_STEP)
     tangent = (trajectory(PARAMETERS + FD_STEP * DIRECTION)
                - trajectory(PARAMETERS - FD_STEP * DIRECTION)) / (2.0 * FD_STEP)
+    def finite_difference_gradient(parameters: np.ndarray) -> np.ndarray:
+        result = np.empty(N_PARAMETERS, dtype=np.float64)
+        for index in range(N_PARAMETERS):
+            plus = parameters.copy()
+            minus = parameters.copy()
+            plus[index] += FD_STEP
+            minus[index] -= FD_STEP
+            result[index] = (trajectory(plus) - trajectory(minus)) / (2.0 * FD_STEP)
+        return result
+    hvp = (finite_difference_gradient(PARAMETERS + HVP_FD_STEP * DIRECTION)
+           - finite_difference_gradient(PARAMETERS - HVP_FD_STEP * DIRECTION)) / (2.0 * HVP_FD_STEP)
     elapsed = (time.perf_counter() - started) / REPETITIONS
-    if not np.all(np.isfinite(gradient)) or not np.isfinite(value) or not np.isfinite(tangent):
+    if (not np.all(np.isfinite(gradient)) or not np.isfinite(value) or
+            not np.isfinite(tangent) or not np.all(np.isfinite(hvp))):
         raise RuntimeError("Adagrad hypergradient NumPy oracle is nonfinite")
     return {"value": value, "gradient": gradient, "tangent": tangent,
-            "seconds": elapsed}
+            "hvp": hvp, "seconds": elapsed}
 
 
 def base(details: dict[str, str], **values: Any) -> dict[str, Any]:
@@ -160,6 +175,14 @@ def oracle_rows(details: dict[str, str], expected: dict[str, Any]) -> list[dict[
         oracle="independent central finite-difference directional product",
         notes=f"direction={DIRECTION.tolist()}; h={FD_STEP:g}",
     ))
+    for index, value in enumerate(expected["hvp"], start=1):
+        rows.append(base(
+            details, workload="mlp_adagrad_hypergradient", phase="hvp_component",
+            variant="one_layer_affine", backend="numpy_oracle", status="pass",
+            metric=f"hvp_{index}", value=float(value), max_abs_error=0.0,
+            oracle="independent central finite-difference of outer gradient",
+            notes=f"direction={DIRECTION.tolist()}; outer h={HVP_FD_STEP:g}",
+        ))
     return rows
 
 
@@ -172,6 +195,9 @@ def unavailable_rows(details: dict[str, str], device: str, status: str,
         ("gradient_component", "gradient_2"),
         ("gradient_component", "gradient_3"),
         ("jvp", "directional_validation_mse_derivative"),
+        ("hvp_component", "hvp_1"),
+        ("hvp_component", "hvp_2"),
+        ("hvp_component", "hvp_3"),
     ):
         rows.append(base(
             details, workload="mlp_adagrad_hypergradient", phase=phase,
@@ -219,16 +245,21 @@ def run_fortml(fortml: Path, target: str, details: dict[str, str],
         actual = read_oracle(oracle_path)
         required = {("value", 1), ("jvp", 1)} | {
             ("gradient", index) for index in range(1, N_PARAMETERS + 1)
-        }
+        } | {("hvp", index) for index in range(1, N_PARAMETERS + 1)}
         if set(actual) != required:
-            raise RuntimeError("FortML Adagrad app omitted a complete value/gradient/JVP array")
+            raise RuntimeError("FortML Adagrad app omitted a complete value/gradient/JVP/HVP array")
         errors = [abs(actual[("value", 1)] - expected["value"]),
                   abs(actual[("jvp", 1)] - expected["tangent"])]
         errors.extend(abs(actual[("gradient", index)] - expected["gradient"][index - 1])
                       for index in range(1, N_PARAMETERS + 1))
         error = float(max(errors))
-        if error > ORACLE_TOLERANCE:
-            raise RuntimeError(f"FortML Adagrad hypergradient oracle mismatch: {error:.3e}")
+        hvp_error = float(max(
+            abs(actual[("hvp", index)] - expected["hvp"][index - 1])
+            for index in range(1, N_PARAMETERS + 1)))
+        if error > ORACLE_TOLERANCE or hvp_error > HVP_ORACLE_TOLERANCE:
+            raise RuntimeError(
+                f"FortML Adagrad hypergradient oracle mismatch: value-gradient={error:.3e}; "
+                f"hvp={hvp_error:.3e}")
         timed = subprocess.run(["fo", "exec", "--no-build", target], cwd=fortml,
                                env=environment, capture_output=True, text=True)
     if timed.returncode != 0:
@@ -239,6 +270,11 @@ def run_fortml(fortml: Path, target: str, details: dict[str, str],
                    if line.startswith("adagrad_hypergradient_value_gradient,")), None)
     if timing is None:
         raise RuntimeError("FortML Adagrad app emitted no value-gradient timing")
+    hvp_timing = next((float(line.split(",", 1)[1].strip())
+                       for line in timed.stdout.splitlines()
+                       if line.startswith("adagrad_hypergradient_hvp,")), None)
+    if hvp_timing is None:
+        raise RuntimeError("FortML Adagrad app emitted no HVP timing")
     rows = [base(
         details, workload="mlp_adagrad_hypergradient", phase="value_gradient",
         variant="fixed_full_batch", backend="fortml", status="pass",
@@ -261,6 +297,15 @@ def run_fortml(fortml: Path, target: str, details: dict[str, str],
         max_abs_error=abs(actual[("jvp", 1)] - expected["tangent"]),
         oracle="independent NumPy trajectory and central-FD products", notes=target,
     ))
+    rows.extend(base(
+        details, workload="mlp_adagrad_hypergradient", phase="hvp_component",
+        variant="one_layer_affine", backend="fortml", status="pass",
+        seconds_per_operation=hvp_timing, metric=f"hvp_{index}",
+        value=actual[("hvp", index)],
+        max_abs_error=abs(actual[("hvp", index)] - expected["hvp"][index - 1]),
+        oracle="independent NumPy trajectory and central-FD outer Hessian-vector product",
+        notes=target,
+    ) for index in range(1, N_PARAMETERS + 1))
     return rows
 
 

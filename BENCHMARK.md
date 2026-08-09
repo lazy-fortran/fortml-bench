@@ -45,6 +45,21 @@ python -B scripts/bench_sgd_momentum_hypergradient.py \
 See
 [`results/SGD_MOMENTUM_HYPERGRADIENT_ACCUMULATION.md`](results/SGD_MOMENTUM_HYPERGRADIENT_ACCUMULATION.md).
 
+## Adagrad affine Hessian-vector products
+
+This lane checks fixed full-batch Adagrad value/gradient/JVP products and the
+exact outer HVP recurrence for a one-layer affine MLP.  The independent NumPy
+oracle uses central differences of the trajectory gradient and records the
+typed nonlinear-network and CUDA boundaries.
+
+```bash
+python -B scripts/bench_adagrad_hypergradient.py \
+  --fortml ../fortml --output results/adagrad_hypergradient_hvp.csv
+```
+
+See [`results/ADAGRAD_HYPERGRADIENT_HVP.md`](results/ADAGRAD_HYPERGRADIENT_HVP.md)
+for the fixture, tolerances, and timings.
+
 ## Weighted random-forest regression
 
 This lane replays the seeded weighted CART bootstrap ensemble in NumPy. It
