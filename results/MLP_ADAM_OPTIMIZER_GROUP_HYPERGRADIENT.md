@@ -18,4 +18,4 @@ an explicit typed-unavailable boundary because the complete resident Adam
 trajectory and derivative state are not implemented.
 
 Source revision: `41d0509f674cff5b89902c190a843a142e463ece`  
-Benchmark revision: `e8c6b4065fc446fb427ed06952501d102e9b4b53+dirty`
+Benchmark revision: `fca008da9b7342fa0a5c59b9e5cfa549d77665ef`
