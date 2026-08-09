@@ -223,7 +223,7 @@ def main() -> None:
         "Growth and overflow branches are discrete, so smooth HPO products are",
         "not claimed across a branch change.",
         "",
-        f"FortML revision: `{metadata['fortml_revision']}`  ",
+        f"FortML revision: `{metadata['fortml_revision']}`",
         f"Benchmark revision: `{metadata['benchmark_revision']}`",
         "",
         "| phase | status | metric | value | max abs error |",
