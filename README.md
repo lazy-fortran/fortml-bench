@@ -140,6 +140,18 @@ python -B scripts/bench_weighted_ols.py \
 
 See [`results/WEIGHTED_OLS.md`](results/WEIGHTED_OLS.md).
 
+The PINN structure-aware GP lane compares a named four-term physics objective
+and frozen-feature posterior mean with an independent NumPy oracle. It records
+hidden/structure defects and the typed CUDA refusal:
+
+```bash
+python -B scripts/bench_pinn_structure_gp.py \
+  --fortml ../fortml --output results/pinn_structure_gp.csv \
+  --report results/PINN_STRUCTURE_GP.md
+```
+
+See [`results/PINN_STRUCTURE_GP.md`](results/PINN_STRUCTURE_GP.md).
+
 The cross-validation scoring lane independently derives contiguous K-fold fold
 scores, weights, parameter gradients, and FortOpt orientation before accepting
 the Fortran release-app timing. It records a typed CUDA control-plane refusal:

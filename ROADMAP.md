@@ -919,6 +919,13 @@ a different workload, precision, device, or residency policy.
   release record is `results/linear_sgd.csv` with protocol in
   `results/LINEAR_SGD.md`; stochastic hypergradients and resident CUDA state
   remain explicit boundaries.
+- [x] Add the PINN structure-aware finite-feature GP lane.
+  `scripts/bench_pinn_structure_gp.py` independently replays the frozen MLP
+  feature map and named data/residual/boundary/conservation objective terms,
+  then checks prediction, zero hidden/structure defect, and the typed CUDA
+  refusal. The release record is `results/pinn_structure_gp.csv` with protocol
+  in `results/PINN_STRUCTURE_GP.md`; NNGP covariance, differential-operator
+  registration, collocation sampling, and resident CUDA remain open.
 - [x] Add transactional multi-output XGBoost and LightGBM regression adapters.
   `scripts/bench_xgboost_multioutput.py` computes an independent NumPy
   two-output one-tree Newton-stump oracle and checks matrix predictions,
