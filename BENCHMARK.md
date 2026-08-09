@@ -716,6 +716,63 @@ See [`results/GP_GAMMA_LIKELIHOOD.md`](results/GP_GAMMA_LIKELIHOOD.md) for
 the maximum product error (`1.399e-6`) and fit error (`4.274e-9`). The CSV was
 generated at clean benchmark revision `566fbc1` and recorded in `86c4bd9`.
 
+## OVR logistic partial-fit state
+
+This lane checks sorted arbitrary labels, deferred class completion,
+transactional malformed-batch rollback, deterministic replay, fixed-state
+products, and the explicit CUDA boundary for the shared OVR logistic state.
+The Python state machine is independent of the Fortran implementation.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_ovr_logistic_partial_fit.py \
+  --fortml ../fortml --output results/ovr_logistic_partial_fit.csv \
+  --report results/OVR_LOGISTIC_PARTIAL_FIT.md
+```
+
+See [`results/OVR_LOGISTIC_PARTIAL_FIT.md`](results/OVR_LOGISTIC_PARTIAL_FIT.md)
+for the replay error (zero), behavioral gate, and typed CUDA refusal. The
+clean evidence is pinned by benchmark commit `ea13ff1` and FortML revision
+`124a9b4`.
+
+## Weighted RMSprop trajectory hypergradients
+
+This lane checks a centered RMSprop trajectory with non-uniform training and
+validation weights, exact value/gradient/JVP/VJP products, an affine outer HVP,
+FortOpt L-BFGS-B callbacks, and the typed CUDA refusal. An independent NumPy
+recurrence is the behavioral oracle.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_mlp_rmsprop_weighted_hypergradient.py \
+  --fortml ../fortml --output results/mlp_rmsprop_weighted_hypergradient.csv \
+  --report results/MLP_RMSPROP_WEIGHTED_HYPERGRADIENT.md
+```
+
+See [`results/MLP_RMSPROP_WEIGHTED_HYPERGRADIENT.md`](results/MLP_RMSPROP_WEIGHTED_HYPERGRADIENT.md)
+for the maximum oracle error (`3.48e-9`) and CPU timings. The clean evidence
+is pinned by benchmark commit `c140039` and FortML revision `124a9b4`.
+
+## ICM multi-output GP likelihood products
+
+This lane assembles a dense intrinsic-coregionalization covariance and checks
+likelihood JVP, hyperparameter gradient, and directional HVP products against
+independent NumPy central differences. The focused Fortran oracle also checks
+all packed coordinates, transactional rollback, metadata, and the typed CUDA
+boundary.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_multi_output_gp_hypergradients.py \
+  --fortml ../fortml --output results/multi_output_gp_hypergradients.csv \
+  --report results/MULTI_OUTPUT_GP_HYPERGRADIENTS.md
+```
+
+See [`results/MULTI_OUTPUT_GP_HYPERGRADIENTS.md`](results/MULTI_OUTPUT_GP_HYPERGRADIENTS.md)
+for the gradient error (`2.20e-8`), HVP error (`3.17e-6`), timings, and typed
+CUDA refusal. The clean evidence is pinned by benchmark commit `59a66fc` (the
+oracle correction is `ca1bbf1`) and FortML revision `124a9b4`.
+
 ## Versioned result schema
 
 Release CSVs use the required provenance and correctness fields described in
