@@ -791,6 +791,62 @@ matching value (`0.8295009024012067`), zero maximum error, CPU timing, and
 CUDA status 3 refusal. The clean evidence is pinned by benchmark commit
 `70f25ab` and FortML revision `dfa3a92`.
 
+## Laplace GP-classifier implicit prediction JVP
+
+This lane differentiates latent means, latent variances, and logistic or probit
+probabilities through the converged weighted Laplace mode. Independent NumPy
+refits and central parameter differences certify all 18 output tangents. The
+CUDA path is an explicit typed refusal because the implicit Laplace graph is
+not resident.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_gp_classification_implicit_prediction.py \
+  --fortml ../fortml --output results/gp_classification_implicit_prediction.csv
+```
+
+See [`results/GP_CLASSIFICATION_IMPLICIT_PREDICTION.md`](results/GP_CLASSIFICATION_IMPLICIT_PREDICTION.md)
+for the maximum logistic error (`3.58e-10`), probit error (`9.61e-10`), CPU
+timings, and CUDA refusal. The clean evidence is pinned by benchmark commit
+`0327e94` and FortML revision `9c1dbdf`.
+
+## MLP optimizer-group checkpoint identity
+
+This lane checks that named optimizer groups survive formatted checkpoint
+round-trips and that resume rejects identity drift even when ranges and
+multipliers match. The CUDA row records the typed refusal for the non-resident
+grouped hypergradient path.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_mlp_optimizer_group_registry.py \
+  --fortml ../fortml --output results/mlp_optimizer_group_registry.csv \
+  --report results/MLP_OPTIMIZER_GROUP_REGISTRY.md
+```
+
+See [`results/MLP_OPTIMIZER_GROUP_REGISTRY.md`](results/MLP_OPTIMIZER_GROUP_REGISTRY.md)
+for the round-trip, name-drift, and device rows. The clean evidence is pinned
+by benchmark commit `6874dc9` and FortML revision `c50511c`.
+
+## Resident numeric XGBoost dispatch
+
+This lane routes numeric fixed-topology XGBoost trees through the resident
+CUDA plan when native support is available. It checks a NumPy leaf-walk oracle,
+CPU dispatch parity, learned missing-value routing, split-boundary behavior,
+and the explicit categorical/unavailable refusal. Timing rows separate the
+ordinary plan gate from the native resident execution.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_cuda_boosted_tree.py \
+  --fortml ../fortml --output results/cuda_boosted_tree.csv \
+  --report results/CUDA_BOOSTED_TREE.md
+```
+
+See [`results/CUDA_BOOSTED_TREE.md`](results/CUDA_BOOSTED_TREE.md) for the
+zero-error CPU oracle, native CUDA row, and typed boundary. The clean evidence
+is pinned by benchmark commit `186d186` and FortML revision `c50511c`.
+
 ## Versioned result schema
 
 Release CSVs use the required provenance and correctness fields described in
