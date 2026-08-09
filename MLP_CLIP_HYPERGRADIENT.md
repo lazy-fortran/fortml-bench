@@ -20,6 +20,7 @@ hypergradient state share one device graph.
 Run the benchmark from this repository:
 
 ```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
 python -B scripts/bench_mlp_clip_hypergradient.py \
     --fortml ../fortml \
     --output results/mlp_clip_hypergradient.csv

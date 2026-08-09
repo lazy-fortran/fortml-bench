@@ -688,6 +688,7 @@ is compared with the production MLP path, FortOpt L-BFGS-B, and typed kink,
 outer-HVP, and CUDA boundaries.
 
 ```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
 python -B scripts/bench_mlp_clip_hypergradient.py \
   --fortml ../fortml --output results/mlp_clip_hypergradient.csv
 ```
@@ -705,6 +706,7 @@ value, gradient, JVP, VJP, and directional HVP products. A bounded FortOpt
 fit is compared with SciPy and CUDA is recorded as a typed refusal.
 
 ```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
 python -B scripts/bench_gp_gamma_likelihood.py \
   --fortml ../fortml --output results/gp_gamma_likelihood.csv \
   --report results/GP_GAMMA_LIKELIHOOD.md
