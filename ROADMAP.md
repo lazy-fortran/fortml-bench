@@ -781,6 +781,13 @@ a different workload, precision, device, or residency policy.
   `results/mlp_last_layer_gp_posterior.csv` and
   `results/MLP_LAST_LAYER_GP_POSTERIOR.md`; NNGP covariance and full
   structure-aware GP initialization remain open.
+- [x] Add the ordinary fixed-depth structure-aware MLP GP initializer lane.
+  NumPy independently solves the frozen-feature normal equations and checks
+  the release app's posterior MSE and zero hidden-parameter delta. The raw
+  record is `results/mlp_structure_gp.csv`, with a typed CUDA-unavailable row;
+  the protocol is documented in `results/MLP_STRUCTURE_GP.md`. NNGP
+  covariance, sampled posterior weights, and Hamiltonian, symplectic, or PINN
+  mappings remain separate open lanes.
 - [ ] Add matched GPyTorch variational-likelihood and calibrated-likelihood
   comparisons. FortML's CPU inducing-point Bernoulli ELBO, packed gradient,
   JVP, and CUDA refusal are covered by

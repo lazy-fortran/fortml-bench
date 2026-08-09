@@ -339,6 +339,19 @@ python3 -B scripts/bench_mlp_last_layer_gp_posterior.py \
 
 See [`results/MLP_LAST_LAYER_GP_POSTERIOR.md`](results/MLP_LAST_LAYER_GP_POSTERIOR.md).
 
+The structure-aware MLP GP lane wraps the finite-feature posterior with a
+packed hidden-state and RMS-scale preservation contract for an ordinary
+fixed-depth MLP. NumPy independently solves the frozen-feature normal
+equations, and the release app checks posterior MSE and hidden-state delta.
+CUDA remains an explicit typed refusal:
+
+```bash
+python3 -B scripts/bench_mlp_structure_gp.py \
+  --fortml ../fortml --output results/mlp_structure_gp.csv
+```
+
+See [`results/MLP_STRUCTURE_GP.md`](results/MLP_STRUCTURE_GP.md).
+
 The Hamiltonian vector-field VJP lane checks the canonical reverse product
 against an independent quadratic Hamiltonian oracle, then runs the FortML
 release app for the packed parameter/state adjoint identity. CUDA is recorded
