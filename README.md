@@ -113,6 +113,19 @@ python -B scripts/bench_bayesian_ridge.py \
 
 See [`results/BAYESIAN_RIDGE.md`](results/BAYESIAN_RIDGE.md).
 
+The weighted ordinary-least-squares lane compares the deterministic
+multi-output fit and packed coefficient state with an independent NumPy
+weighted normal-equation oracle. It also checks the release fixed-state JVP
+path and records the explicit CUDA refusal:
+
+```bash
+python -B scripts/bench_weighted_ols.py \
+  --fortml ../fortml --output results/weighted_ols.csv \
+  --report results/WEIGHTED_OLS.md
+```
+
+See [`results/WEIGHTED_OLS.md`](results/WEIGHTED_OLS.md).
+
 The cross-validation scoring lane independently derives contiguous K-fold fold
 scores, weights, parameter gradients, and FortOpt orientation before accepting
 the Fortran release-app timing. It records a typed CUDA control-plane refusal:

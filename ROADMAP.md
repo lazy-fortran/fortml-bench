@@ -894,6 +894,13 @@ a different workload, precision, device, or residency policy.
   The release record is `results/huber_regression.csv` with protocol in
   `results/HUBER_REGRESSION.md`; residual kinks and derivative-through-fit
   remain explicit boundaries.
+- [x] Add the weighted ordinary-least-squares lane.
+  `scripts/bench_weighted_ols.py` compares deterministic multi-output fitting
+  and the packed coefficient checksum with an independent NumPy weighted
+  normal-equation oracle, checks the release fixed-state JVP path, and records
+  the typed CUDA refusal. The release record is `results/weighted_ols.csv`
+  with protocol in `results/WEIGHTED_OLS.md`; positive constraints,
+  derivative-through-fit, and resident GPU solves remain separate gaps.
 - [x] Add the weighted Bayesian-ridge posterior lane.
   `scripts/bench_bayesian_ridge.py` compares dense multi-output posterior
   evidence and prediction with an independent NumPy conjugate-Gaussian oracle,
