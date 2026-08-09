@@ -21,6 +21,7 @@ Raw results are in [`basis_blend_pipeline.csv`](basis_blend_pipeline.csv) and
 are generated with:
 
 ```sh
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
 python3 scripts/bench_basis_blend_pipeline.py \
   --fortml ../fortml \
   --output results/basis_blend_pipeline.csv
