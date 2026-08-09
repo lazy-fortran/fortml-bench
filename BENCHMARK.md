@@ -1,11 +1,28 @@
 # Benchmark lanes
 
+## Stable linear-classifier log probabilities
+
+This lane checks saturation-safe binary log-sigmoid and multinomial
+log-softmax values, then runs the independent logistic and softmax JVP/VJP
+tests. The fixture includes logits of `+/-1200`, so a separate `log(p)` path
+would expose underflow. CUDA is recorded as a typed refusal until resident
+classifier reductions are linked.
+
+```bash
+python -B scripts/bench_linear_log_proba.py \
+  --fortml ../fortml --output results/linear_log_proba.csv \
+  --report results/LINEAR_LOG_PROBA.md
+```
+
+See [`results/LINEAR_LOG_PROBA.md`](results/LINEAR_LOG_PROBA.md) for the
+independent oracle and provenance.
+
 ## Trainer validation direction and checkpoint replay
 
 This lane checks the model-agnostic trainer's patience and best-state
 restoration for both loss metrics (minimize, the default) and score metrics
 (`validation_higher_is_better`). The independent NumPy oracle checks the
-known-answer trajectories and the release test checks schema-6 checkpoint
+known-answer trajectories and the release test checks schema-7 checkpoint
 continuation plus the transactional callback-presence refusal.
 
 ```bash
@@ -33,6 +50,25 @@ python -B scripts/bench_trainer_partial_fit.py \
 
 See [`results/TRAINER_PARTIAL_FIT.md`](results/TRAINER_PARTIAL_FIT.md) for
 the independent oracle, provenance, and refusal contract.
+
+## Generic trainer fit diagnostics
+
+This lane checks the production `trainer_state_t` diagnostics introduced by
+the schema-7 checkpoint contract. An independent quadratic oracle gates the
+bounded FortOpt L-BFGS-B optimum, while the release app records optimizer
+iterations, line-search evaluations, curvature updates, and successful fit
+calls. A callback-stopped Adam run checks that streaming optimizers expose zero
+for the L-BFGS-B-specific counters. The generic trainer remains host-owned;
+CUDA is not claimed without a resident objective and optimizer state.
+
+```bash
+python -B scripts/bench_trainer_fit_diagnostics.py \
+  --fortml ../fortml --output results/trainer_fit_diagnostics.csv \
+  --report results/TRAINER_FIT_DIAGNOSTICS.md
+```
+
+See [`results/TRAINER_FIT_DIAGNOSTICS.md`](results/TRAINER_FIT_DIAGNOSTICS.md)
+for the independent oracle, diagnostics, and provenance.
 
 ## Basis-composed linear regression
 
