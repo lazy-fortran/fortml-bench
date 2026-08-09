@@ -2,8 +2,8 @@
 
 This lane checks the generic trainer_t%partial_fit warm-start contract against an independent NumPy Adam recurrence. One six-update trajectory is compared with two and four update chunks, then the Fortran test checks checkpoint continuation and transactional over-budget requests. CUDA is an explicit typed refusal because the generic trainer has no resident objective or optimizer state.
 
-FortML revision: 7448208a60c8295b120dbd8f7c53368226ba2861
-Benchmark revision: 6a4482ec836d01473b3e690558be4f4e73218506
+FortML revision: ee39cc0537bd10e5d23282f1b194843938749488
+Benchmark revision: 7771c2a93f0a4974b4686b5f761c9866954e6692
 
 | phase | status | metric | value | max abs error |
 | --- | --- | --- | ---: | ---: |
