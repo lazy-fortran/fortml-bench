@@ -5,7 +5,7 @@ the bounded FortOpt L-BFGS-B adapter. The Fortran model fits rank targets for
 three sorted integer labels, then exposes the packed coordinate block
 `[log(signal variance), log(length scale), log(noise variance)]`. The
 independent NumPy oracle assembles the dense RBF covariance and Cholesky solve
-directly; it checks the analytic evidence gradient against coordinate-wise
+directly. It checks the analytic evidence gradient against coordinate-wise
 central differences and obtains the directional HVP by central-differencing
 that independently assembled gradient.
 
@@ -15,9 +15,9 @@ that independently assembled gradient.
 - Benchmark revision: `4ad685249e9a488c9b3e4fdc19e837a537e8b903`
 - Compiler: GNU Fortran, `-O3`
 - Precision: IEEE float64
-- Fixture: 18 points on `[-1.7,1.7]`; labels `[-4,7,19]` by two ordered cuts;
-  RBF variance `1.35`, length scale `0.79`, noise variance `0.05`, jitter
-  `1e-8`; direction `[0.07,-0.04,0.03]`
+- Fixture: 18 points on `[-1.7,1.7]`. Labels `[-4,7,19]` use two ordered
+  cuts. RBF variance `1.35`, length scale `0.79`, noise variance `0.05`,
+  jitter `1e-8`. Direction `[0.07,-0.04,0.03]`
 - Timing: 32 resident gradient/HVP calls after fit and warmup
 - Training: bounded FortOpt L-BFGS-B, bounds `[-8,8]`, gradient tolerance
   `2e-5`, maximum 120 iterations
