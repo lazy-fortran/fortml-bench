@@ -12,5 +12,5 @@ FO_SCAN_FALLBACK=regex python -B scripts/bench_hamiltonian_vector_field_vjp.py \
   --fortml ../fortml --output results/hamiltonian_vector_field_vjp.csv
 ```
 
-The raw six-column record includes the source and benchmark revisions and keeps
+The raw CSV record includes the source and benchmark revisions and keeps
 the independent oracle separate from the release-app timing.
