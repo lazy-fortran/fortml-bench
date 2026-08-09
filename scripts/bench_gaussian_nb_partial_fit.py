@@ -175,7 +175,7 @@ def main() -> None:
         "population moments, and Gaussian log densities across two batches. "
         "The first batch omits one declared class, so fitting is deferred until "
         "the second batch. The Fortran behavioral gate checks transactional "
-        "unknown-label rollback and CPU/CUDA dispatch; CUDA is an explicit "
+        "unknown-label rollback and CPU/CUDA dispatch. CUDA is an explicit "
         "resident sufficient-statistic refusal.\n\n"
         f"FortML revision: {details['fortml_revision']}\n"
         f"Benchmark revision: {details['benchmark_revision']}\n\n"
