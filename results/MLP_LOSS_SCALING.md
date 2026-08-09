@@ -10,8 +10,8 @@ FP16, BF16, and CUDA rows record typed capability boundaries.
 Growth and overflow branches are discrete, so smooth HPO products are
 not claimed across a branch change.
 
-FortML revision: `1618c8db7ae3511e9114ead0874f4cdffd44f92b+dirty`
-Benchmark revision: `bacffbffdd81d0fe0e6a1e2410692d65e639faa4+dirty`
+FortML revision: `ba72eb13cdf15962ad593a7c5ca196767a6938dc`
+Benchmark revision: `de653a0724f31294da7f69d084ee51fe0b24c7fe`
 
 | phase | status | metric | value | max abs error |
 | --- | --- | --- | ---: | ---: |
