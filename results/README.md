@@ -64,6 +64,7 @@ Complete-call studies:
 - [Random-forest permutation importance](RANDOM_FOREST_PERMUTATION.md)
 - [Weighted linear SVM classification](LINEAR_SVM.md)
 - [Dense RBF SVM classification](RBF_SVM.md)
+- [Deterministic multiclass RBF SVM classification](RBF_SVM_MULTICLASS.md)
 - [Coupled-L2 Adam trajectory hypergradients](ADAM_HYPERGRADIENT.md)
 - [Correlated multi-output GP products](MULTI_OUTPUT_GP_PRODUCTS.md)
 - [Weighted linear SVR regression](LINEAR_SVR.md)

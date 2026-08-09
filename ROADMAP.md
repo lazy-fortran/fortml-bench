@@ -289,6 +289,12 @@ a different workload, precision, device, or residency policy.
   CUDA capability refusal. Its FortML behavioral gate also checks fixed-state
   input/parameter JVP/VJP products, CPU dispatch, and typed CUDA derivative
   refusals. The raw record is `results/rbf_svm.csv`.
+- [x] Add the deterministic one-vs-rest multiclass finite-basis RBF-SVM lane.
+  Independent per-class SciPy L-BFGS-B solves gate sorted arbitrary integer
+  labels, normalized sigmoid-margin probabilities, predictions, packed child
+  parameters, fit/predict timings, and the explicit typed CUDA refusal. The
+  raw record is `results/rbf_svm_multiclass.csv`; the protocol is documented in
+  `results/RBF_SVM_MULTICLASS.md`.
 - [x] Add a bounded dense RBF one-class SVM correctness lane with an independent
   NumPy capped-simplex dual/score/label oracle and CPU oracle fit/predict
   timings. The release app is checked against every support weight, offset,

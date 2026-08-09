@@ -928,6 +928,21 @@ python -B scripts/bench_rbf_svm.py \
 See [`results/RBF_SVM.md`](results/RBF_SVM.md). CUDA value and derivative rows
 remain explicit unavailable capability records until resident kernels are linked.
 
+The multiclass RBF-SVM lane independently solves one weighted squared-hinge
+problem per sorted integer class and gates margins, normalized probabilities,
+predictions, packed child parameters, and release timings before retaining the
+CPU rows:
+
+```bash
+python -B scripts/bench_rbf_svm_multiclass.py \
+    --fortml ../fortml --output results/rbf_svm_multiclass.csv \
+    --report results/RBF_SVM_MULTICLASS.md
+```
+
+See [`results/RBF_SVM_MULTICLASS.md`](results/RBF_SVM_MULTICLASS.md). CUDA is
+recorded as an explicit typed refusal until resident batched RBF kernels are
+linked.
+
 The linear-regression margin lane checks weighted dense primal SVR fitting for
 arbitrary real targets, epsilon-insensitive prediction, packed affine
 parameters, and an independent NumPy/SciPy L-BFGS-B oracle:
