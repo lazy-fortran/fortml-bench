@@ -3,7 +3,7 @@
 This lane covers a single dense linear layer with an explicitly uploaded resident batch. Gradients, Adam moments, and model parameters remain on the selected device across four updates. The native oracle covers SGD, Adam, and AdamW. Compute-sanitizer runs the same independent fixture.
 
 - FortML revision: `6cf9c5b5efb71d2091c2cc1959528712e0e5605b`
-- Benchmark revision: `d33346fd877ce293a1a83d0ae32b1b61414422ed+dirty`
+- Benchmark revision: `6eb1eccf2ba52f1372acc5d5793a3687165625f0+dirty`
 - Native gate: `pass` (max error `2.429e-17`)
 - Compute-sanitizer: `pass`
 - Oracle parameter norms: `{'sgd': 0.4503899472104731, 'adam': 0.3163764026199537, 'adamw': 0.3986765926980302}`
