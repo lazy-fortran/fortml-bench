@@ -276,6 +276,17 @@ def main() -> None:
                         max_abs_error=0.0,
                         oracle="Fortran recurrence/checkpoint/refusal oracle",
                         notes="fo test test_mlp_loss_scaling"))
+        event_test = subprocess.run(
+            ["fo", "test", "test_mlp_training"], cwd=fortml,
+            env=environment, capture_output=True, text=True,
+        )
+        event_status = "pass" if event_test.returncode == 0 else "failed"
+        rows.append(row(metadata, phase="independent_fortran_event_oracle",
+                        status=event_status, metric="test_mlp_training",
+                        value=1.0 if event_test.returncode == 0 else 0.0,
+                        max_abs_error=0.0,
+                        oracle="Fortran FP32 overflow/skip-event behavioral oracle",
+                        notes="fo test test_mlp_training"))
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")
