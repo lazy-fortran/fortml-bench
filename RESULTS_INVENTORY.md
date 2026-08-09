@@ -7,7 +7,7 @@ release claim. The 2026-08-09 audit found 318 tracked top-level result files:
 - 154 are legacy/non-release records with missing v1 fields, incomplete
   capability metadata, or dirty historical provenance.
 - The current release lanes are listed explicitly in `BENCHMARK.md` and are
-  validated independently; a historical CSV is never promoted by filename
+  validated independently. A historical CSV is never promoted by filename
   alone.
 
 Run the strict release gate for the current evidence set with:
@@ -24,5 +24,5 @@ python -B scripts/validate_result_schema.py \
 ```
 
 Use `--all` only when auditing migration debt. A failing historical row must
-be either rerun with an independent oracle and v1 provenance, or moved to the
-recoverable Trash area; it must not be cited as a completed parity feature.
+be rerun with an independent oracle and v1 provenance, or moved to the
+recoverable Trash area. It must not be cited as a completed parity feature.
