@@ -6,7 +6,7 @@ independent NumPy affine oracle.
 | Field | Value |
 | --- | --- |
 | FortML revision | `143590856846190bf55fa8dd9b15d801828338d0` |
-| Benchmark revision | `cb6bf8b10d8b355c1a4c6e2c11db1b58426ae5c8` |
+| Benchmark revision | `cc3fbec0138207ced3231dacf79719b8cc52aee9` |
 | Compiler | `gfortran` with `-O3` release app protocol |
 | Precision | CPU `float64` |
 | Fixture | Four affine rows, weights `[1, 0, 2, 0.5]`, `lambda=0.07` |
