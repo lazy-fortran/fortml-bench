@@ -105,8 +105,12 @@ def main() -> None:
         ["fo", "test", "test_cuda_boosted_tree_api"], cwd=fortml,
         capture_output=True, text=True,
     )
+    dispatch_gate = subprocess.run(
+        ["fo", "test", "test_xgboost_cuda_dispatch"], cwd=fortml,
+        capture_output=True, text=True,
+    )
     elapsed = time.perf_counter() - started
-    gate_ok = gate.returncode == 0
+    gate_ok = gate.returncode == 0 and dispatch_gate.returncode == 0
     cuda_ready = shutil.which("nvcc") is not None and subprocess.run(
         ["nvidia-smi"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     ).returncode == 0
@@ -145,6 +149,13 @@ def main() -> None:
         "value": 1.0 if gate_ok else 0.0, "max_abs_error": oracle_error, **metadata,
         "notes": "typed CUDA refusal preserves prediction and JVP sentinels",
     }, {
+        "workload": "xgboost_cuda_dispatch", "phase": "numeric_tree_dispatch",
+        "backend": "fortml", "device": "cpu", "status": "pass" if dispatch_gate.returncode == 0 else "failed",
+        "seconds_per_operation": elapsed, "metric": "behavioral_gate",
+        "value": 1.0 if dispatch_gate.returncode == 0 else 0.0,
+        "max_abs_error": 0.0, **metadata,
+        "notes": "CPU dispatch parity plus resident-CUDA capability/refusal contract",
+    }, {
         "workload": "cuda_boosted_tree", "phase": "resident_value_jvp",
         "backend": "fortml", "device": "cuda", "status": cuda_status,
         "seconds_per_operation": cuda_elapsed, "metric": "native_gate",
@@ -163,7 +174,9 @@ def main() -> None:
         "independent NumPy leaf-walk oracle. The oracle covers base score, "
         "learning rate, per-tree scales, strict split routing, and a learned "
         "NaN default. The Fortran test checks ordinary-build typed refusal, "
-        "invalid-device and output-preservation behavior. Native CUDA is run "
+        "invalid-device and output-preservation behavior. It also gates the "
+        "numeric XGBoost device-dispatch path, which uses the same resident "
+        "plan when linked and otherwise reports FORTNUM_NOT_IMPLEMENTED. Native CUDA is run "
         "only when both `nvcc` and `nvidia-smi` are available. No device is "
         "recorded as GPU timing evidence when unavailable.\n\n"
         "Run:\n\n```sh\n"
@@ -174,7 +187,7 @@ def main() -> None:
     )
     print(f"wrote {len(rows)} rows to {output}")
     if not gate_ok:
-        print(gate.stdout + gate.stderr)
+        print(gate.stdout + gate.stderr + dispatch_gate.stdout + dispatch_gate.stderr)
         raise SystemExit(1)
 
 
