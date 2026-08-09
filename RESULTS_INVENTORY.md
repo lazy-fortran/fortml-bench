@@ -1,11 +1,10 @@
 # Benchmark result inventory
 
 The benchmark tree is now inventoried rather than treating every old CSV as a
-release claim. The 2026-08-09 audit found 322 tracked CSV result files (319
+release claim. The 2026-08-09 audit found 325 tracked CSV result files (322
 top-level and three nested):
 
-- 177 pass `scripts/validate_result_schema.py` without `--allow-dirty` before
-  the XGBoost resident-policy lane is regenerated.
+- 180 pass `scripts/validate_result_schema.py` without `--allow-dirty`.
 - 145 are legacy/non-release records with missing v1 fields, incomplete
   capability metadata, or dirty historical provenance.
 - The current release lanes are listed explicitly in `BENCHMARK.md` and are
@@ -42,7 +41,10 @@ python -B scripts/validate_result_schema.py \
   results/xgboost_categorical_partition.csv \
   results/xgboost_multiclass_log_proba.csv \
   results/xgboost_cuda.csv \
-  results/polynomial_svm.csv
+  results/polynomial_svm.csv \
+  results/adamw_beta_hypergradient.csv \
+  results/gp_derivative_kernel_matrix.csv \
+  results/naive_bayes_partial_fit.csv
 ```
 
 Use `--all` only when auditing migration debt. A failing historical row must
