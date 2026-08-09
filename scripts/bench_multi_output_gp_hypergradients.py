@@ -106,8 +106,8 @@ def parse_probe(stdout: str) -> dict[str, tuple[float, float]]:
         fields = [field.strip() for field in line.split(",")]
         if not fields or fields[0] != "multi_output_gp":
             continue
-        if fields[1] == "likelihood_value_jvp" and len(fields) == 3:
-            records[fields[1]] = (float(fields[2]), 0.0)
+        if fields[1] == "likelihood_value_jvp" and len(fields) == 4:
+            records[fields[1]] = (float(fields[2]), float(fields[3]))
         elif len(fields) == 7:
             records[fields[1]] = (float(fields[5]), float(fields[6]))
     required = {"hyperparameter_gradient", "hyperparameter_hvp", "likelihood_value_jvp"}
@@ -146,6 +146,7 @@ def main() -> None:
     records = parse_probe(probe.stdout)
     expected_value, expected_gradient_sum, expected_hvp_sum = products_oracle()
     value, value_dot = records["likelihood_value_jvp"]
+    value_time = ""
     gradient_time, gradient_sum = records["hyperparameter_gradient"]
     hvp_time, hvp_sum = records["hyperparameter_hvp"]
     oracle_parameters = np.array([
