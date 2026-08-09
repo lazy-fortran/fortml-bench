@@ -15,6 +15,21 @@ python -B scripts/bench_basis_linear_regression.py \
 See [`results/BASIS_LINEAR_REGRESSION.md`](results/BASIS_LINEAR_REGRESSION.md)
 for the fixture and reproducibility details.
 
+## Sequential basis device dispatch
+
+This lane checks explicit CPU dispatch for a sequential polynomial/Fourier
+basis composition and the typed CUDA refusal for transform, JVP, VJP, and HVP.
+An independent NumPy oracle covers the mixed input/log-frequency JVP and VJP
+adjoint identity.
+
+```bash
+python -B scripts/bench_basis_sequential_device.py \
+  --fortml ../fortml --output results/basis_sequential_device.csv
+```
+
+See [`results/BASIS_SEQUENTIAL_DEVICE.md`](results/BASIS_SEQUENTIAL_DEVICE.md)
+for the fixture and refusal contract.
+
 ## Accumulated SGD momentum hyperproducts
 
 This lane checks deterministic contiguous microbatch accumulation for the
