@@ -119,6 +119,23 @@ python -B scripts/bench_wave12_parity.py \
 See [`results/WAVE12_PARITY.md`](results/WAVE12_PARITY.md) for fixtures,
 reproduction, and the evidence boundary.
 
+## Wave 13 OVO, GP, and batch-cursor products
+
+This lane checks weighted OVO logistic `partial_fit` replay, scalar GP
+classification hyperparameter JVP/VJP products, and deterministic MLP batch
+cursor capture and restore. Independent NumPy invariants accompany the FortML
+behavioral gates. CUDA rows remain typed unavailable results until resident
+implementations exist.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_wave13_parity.py \
+  --fortml ../fortml --output results/wave13_parity.csv
+```
+
+See [`results/WAVE13_PARITY.md`](results/WAVE13_PARITY.md) for the fixtures
+and evidence boundary.
+
 ## PCA-seeded linear MLP initializer
 
 This lane checks the centered thin-SVD reconstruction used to initialize a

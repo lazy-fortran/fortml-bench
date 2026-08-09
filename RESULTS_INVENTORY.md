@@ -1,10 +1,10 @@
 # Benchmark result inventory
 
 The benchmark tree is now inventoried rather than treating every old CSV as a
-release claim. The 2026-08-09 audit found 327 tracked CSV result files (324
+release claim. The 2026-08-09 audit found 328 tracked CSV result files (325
 top-level and three nested):
 
-- 182 pass `scripts/validate_result_schema.py` without `--allow-dirty`.
+- 183 pass `scripts/validate_result_schema.py` without `--allow-dirty`.
 - 145 are legacy/non-release records with missing v1 fields, incomplete
   capability metadata, or dirty historical provenance.
 - The current release lanes are listed explicitly in `BENCHMARK.md` and are
@@ -47,7 +47,8 @@ python -B scripts/validate_result_schema.py \
   results/naive_bayes_partial_fit.csv \
   results/basis_linear_regression.csv \
   results/wave11_derivative_products.csv \
-  results/wave12_parity.csv
+  results/wave12_parity.csv \
+  results/wave13_parity.csv
 ```
 
 Use `--all` only when auditing migration debt. A failing historical row must
