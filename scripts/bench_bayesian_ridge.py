@@ -88,9 +88,10 @@ def run_app(fortml: Path) -> tuple[dict[str, float | str], float]:
         if line.strip() == "bayesian_ridge_cuda,unavailable":
             values["bayesian_ridge_cuda_status"] = "unavailable"
             continue
-        fields = line.split()
-        if len(fields) == 2 and fields[0].startswith("bayesian_ridge_"):
-            values[fields[0].rstrip(",")] = float(fields[1])
+        if line.startswith("bayesian_ridge_") and "," in line:
+            name, raw = line.split(",", 1)
+            if name.startswith("bayesian_ridge_"):
+                values[name.strip()] = float(raw.strip())
     required = {"bayesian_ridge_log_evidence", "bayesian_ridge_prediction_mean",
                 "bayesian_ridge_precision_dimension", "bayesian_ridge_cuda_status"}
     missing = sorted(required - values.keys())
