@@ -364,6 +364,19 @@ FO_SCAN_FALLBACK=regex python -B scripts/bench_derivative_gp_periodic_hvp.py \
 
 See [`results/DERIVATIVE_GP_PERIODIC_HVP.md`](results/DERIVATIVE_GP_PERIODIC_HVP.md).
 
+The local-periodic derivative-GP HVP lane extends that oracle with the
+squared-exponential envelope and all four logarithmic kernel coordinates. It
+checks the analytic coincidence-safe radial `F/F_s/F_ss` products and log-noise
+coordinate against the independent dense NumPy likelihood HVP; CUDA remains
+an explicit resident-graph refusal:
+
+```bash
+FO_SCAN_FALLBACK=regex python -B scripts/bench_derivative_gp_local_periodic_hvp.py \
+  --fortml ../fortml --output results/derivative_gp_local_periodic_hvp.csv
+```
+
+See [`results/DERIVATIVE_GP_LOCAL_PERIODIC_HVP.md`](results/DERIVATIVE_GP_LOCAL_PERIODIC_HVP.md).
+
 The Matérn derivative-GP HVP lane covers mixed value/first-derivative
 observations for Matérn 3/2 and 5/2. An independent NumPy dense likelihood
 oracle gates the analytic FortML CPU checksums and records per-kernel timing;

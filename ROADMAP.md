@@ -839,6 +839,13 @@ a different workload, precision, device, or residency policy.
   the analytic radial fourth-input product and records CPU timing plus the
   typed resident-CUDA refusal in `results/derivative_gp_periodic_hvp.csv`.
   The protocol is documented in `results/DERIVATIVE_GP_PERIODIC_HVP.md`.
+- [x] Add the local-periodic derivative-GP mixed-observation HVP lane. The
+  independent NumPy dense oracle covers the squared-exponential envelope,
+  periodic factor, all four packed kernel coordinates, and log noise; the
+  FortML app checks the coincidence-safe radial `F/F_s/F_ss` products and
+  records CPU timing plus the typed resident-CUDA refusal in
+  `results/derivative_gp_local_periodic_hvp.csv`. The protocol is documented
+  in `results/DERIVATIVE_GP_LOCAL_PERIODIC_HVP.md`.
 - [x] Add the Matérn 3/2 and 5/2 derivative-GP mixed-observation HVP lane. The
   independent NumPy dense oracle covers value/first-derivative observations
   and all packed logarithmic kernel/noise coordinates; the FortML release app
