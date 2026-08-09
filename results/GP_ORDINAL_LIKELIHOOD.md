@@ -20,9 +20,10 @@ behavioral oracle `test_gp_ordinal_likelihood` passed for both likelihoods,
 including central-difference JVP/HVP checks, VJP/JVP adjoint duality,
 transactional malformed-threshold refusal, and device capability checks.
 
-CUDA is recorded as an explicit unsupported capability. No host fallback is
-counted as GPU execution until a resident ordinal likelihood reduction kernel
-is linked.
+CUDA is recorded as an explicit unsupported capability. The value, JVP, VJP,
+and HVP device entry points return `FORTNUM_NOT_IMPLEMENTED` and preserve
+zeroed outputs for a selected CUDA context. No host fallback is counted as GPU
+execution until a resident ordinal likelihood reduction kernel is linked.
 
 The machine-readable rows are in
 [`gp_ordinal_likelihood.csv`](gp_ordinal_likelihood.csv). Reproduce with:
@@ -32,5 +33,5 @@ python scripts/bench_gp_ordinal_likelihood.py \
   --fortml ../fortml --output results/gp_ordinal_likelihood.csv
 ```
 
-Pinned source revision: `818065489b7decc952aa38f85321edaa3aff21e9`.
-Pinned benchmark revision: `75d1582b5e22fb9994a09e94a29b52a5ef9e358c`.
+Pinned source revision: `93da9b549fee98aad5af977e486cd64b16507a40`.
+Pinned benchmark revision: `25515c70397a10554b0ee70e8cde54e1a12b46e5`.
