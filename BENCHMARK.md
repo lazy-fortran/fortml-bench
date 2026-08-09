@@ -1,5 +1,21 @@
 # Benchmark lanes
 
+## Trainer validation direction and checkpoint replay
+
+This lane checks the model-agnostic trainer's patience and best-state
+restoration for both loss metrics (minimize, the default) and score metrics
+(`validation_higher_is_better`). The independent NumPy oracle checks the
+known-answer trajectories and the release test checks schema-6 checkpoint
+continuation plus the transactional callback-presence refusal.
+
+```bash
+python -B scripts/bench_trainer_validation.py \
+  --fortml ../fortml --output results/trainer_validation.csv
+```
+
+See [`results/TRAINER_VALIDATION.md`](results/TRAINER_VALIDATION.md) for the
+fixture and reproducibility details.
+
 ## Basis-composed linear regression
 
 The basis-linear lane covers polynomial, cubic B-spline, and Fourier feature
