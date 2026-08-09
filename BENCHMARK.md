@@ -224,6 +224,23 @@ python -B scripts/bench_gp_multilabel_log_proba.py \
 See [`results/GP_MULTILABEL_LOG_PROBA.md`](results/GP_MULTILABEL_LOG_PROBA.md)
 for the fixture and reproducibility details.
 
+## Categorical GP likelihood products
+
+This lane checks the variance-corrected categorical softmax likelihood and its
+log-temperature gradient, input and parameter JVP/VJP products, probability
+and ELBO HVPs, FortOpt likelihood fit, and typed CUDA refusals against an
+independent NumPy oracle.
+
+```bash
+python -B scripts/bench_gp_categorical_likelihood.py \
+  --fortml ../fortml --output results/gp_categorical_likelihood.csv
+```
+
+See [`results/GP_CATEGORICAL_LIKELIHOOD.md`](results/GP_CATEGORICAL_LIKELIHOOD.md)
+for the fixture, tolerances, and provenance. The older
+`gp_categorical_likelihood_wave2.csv` snapshot is retained only as historical
+input and is not a release claim.
+
 ## MLP automatic loss scaling gradient contract
 
 This lane checks the independent growth/backoff recurrence together with the
@@ -971,6 +988,6 @@ python -B scripts/validate_result_schema.py --all
 
 The complete inventory and migration policy are in
 [`RESULTS_INVENTORY.md`](RESULTS_INVENTORY.md). The `--all` command audits the
-154 retained legacy rows as well as release evidence, so it is expected to
+153 retained legacy rows as well as release evidence, so it is expected to
 return nonzero until those rows are rerun or quarantined. Release rows must
 pass without `--allow-dirty`.
