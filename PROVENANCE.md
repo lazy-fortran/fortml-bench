@@ -5,6 +5,12 @@ run records the `fortml` and `fortnum` commit, compiler versions, Python
 package versions, CUDA runtime, driver, GPU model, precision, problem shape,
 residency mode, warm-up count, repetitions, and correctness error.
 
+The continuation-wave release rows are repinned to clean source and benchmark
+commits. A small set of older scalable-GP, model-workload, preprocessing,
+variational-classification, one-class-SVM, and optimizer CSV/report artifacts
+retain `+dirty` in their historical revision fields. They are preserved as
+non-release evidence rather than rewritten with a different timing run.
+
 The independent RBF oracle evaluates the stated pairwise formula in blocked
 NumPy loops. It is separate from the dense PyTorch, KeOps, GPyTorch, and
 Fortran implementations.
