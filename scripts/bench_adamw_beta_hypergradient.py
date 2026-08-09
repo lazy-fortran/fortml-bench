@@ -219,10 +219,12 @@ def unavailable_rows(details: dict[str, str], note: str) -> list[dict[str, Any]]
     rows = [base(
         details, workload="mlp_adamw_beta_hypergradient", phase="value_gradient",
         backend="fortml", device="cpu", status="unavailable", repetitions="",
+        metric="validation_mse",
         oracle="FortML complete-array release-app protocol", notes=note,
     ), base(
         details, workload="mlp_adamw_beta_hypergradient", phase="jvp",
         backend="fortml", device="cpu", status="unavailable", repetitions="",
+        metric="directional_validation_mse_derivative",
         oracle="FortML complete-array release-app protocol", notes=note,
     )]
     rows.extend(base(
