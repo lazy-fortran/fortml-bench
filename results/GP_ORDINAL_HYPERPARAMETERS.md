@@ -37,7 +37,8 @@ The independent oracle gives initial log marginal likelihood
 
 FortOpt converged in 16 iterations and 18 objective evaluations. The final
 negative log marginal likelihood was `8.9340880731858778`, with gradient norm
-`7.658010707165161e-07`. The Fortran behavioral gate
+`7.658010707165161e-07`. It improves the initial negative evidence
+`13.085550253342490` on the same fixture. The Fortran behavioral gate
 `test_gp_ordinal_classification_hyperparameters` passed its independent
 finite-difference, HVP, transactionality, convergence, and device-boundary
 checks.
