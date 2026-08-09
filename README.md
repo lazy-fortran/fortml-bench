@@ -312,6 +312,21 @@ FO_SCAN_FALLBACK=regex python -B scripts/bench_derivative_gp_matern_hvp.py \
 
 See [`results/DERIVATIVE_GP_MATERN_HVP.md`](results/DERIVATIVE_GP_MATERN_HVP.md).
 
+The rational-quadratic derivative-GP HVP lane independently assembles the
+mixed value/first-derivative covariance and central-differences the dense
+likelihood gradient in NumPy. It checks all three logarithmic kernel
+coordinates and log noise against the analytic FortML CPU HVP; CUDA remains
+an explicit resident-graph refusal:
+
+```bash
+FO_SCAN_FALLBACK=regex python -B scripts/bench_derivative_gp_rational_quadratic_hvp.py \
+  --fortml ../fortml \
+  --output results/derivative_gp_rational_quadratic_hvp.csv \
+  --report results/DERIVATIVE_GP_RATIONAL_QUADRATIC_HVP.md
+```
+
+See [`results/DERIVATIVE_GP_RATIONAL_QUADRATIC_HVP.md`](results/DERIVATIVE_GP_RATIONAL_QUADRATIC_HVP.md).
+
 The finite-feature GP posterior lane extends the deterministic MLP last-layer
 initializer with posterior predictive variance and an exact regularization JVP.
 An independent NumPy precision solve gates the FortML release app; the CUDA
