@@ -105,11 +105,13 @@ def main() -> None:
         ["fo", "test", "test_cuda_boosted_tree_api"], cwd=fortml,
         capture_output=True, text=True,
     )
+    gate_elapsed = time.perf_counter() - started
+    started = time.perf_counter()
     dispatch_gate = subprocess.run(
         ["fo", "test", "test_xgboost_cuda_dispatch"], cwd=fortml,
         capture_output=True, text=True,
     )
-    elapsed = time.perf_counter() - started
+    dispatch_elapsed = time.perf_counter() - started
     gate_ok = gate.returncode == 0 and dispatch_gate.returncode == 0
     cuda_ready = shutil.which("nvcc") is not None and subprocess.run(
         ["nvidia-smi"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
@@ -145,13 +147,13 @@ def main() -> None:
     }, {
         "workload": "cuda_boosted_tree", "phase": "ordinary_stub",
         "backend": "fortml", "device": "cpu", "status": "pass" if gate_ok else "failed",
-        "seconds_per_operation": elapsed, "metric": "gate_seconds",
+        "seconds_per_operation": gate_elapsed, "metric": "gate_seconds",
         "value": 1.0 if gate_ok else 0.0, "max_abs_error": oracle_error, **metadata,
         "notes": "typed CUDA refusal preserves prediction and JVP sentinels",
     }, {
         "workload": "xgboost_cuda_dispatch", "phase": "numeric_tree_dispatch",
         "backend": "fortml", "device": "cpu", "status": "pass" if dispatch_gate.returncode == 0 else "failed",
-        "seconds_per_operation": elapsed, "metric": "behavioral_gate",
+        "seconds_per_operation": dispatch_elapsed, "metric": "behavioral_gate",
         "value": 1.0 if dispatch_gate.returncode == 0 else 0.0,
         "max_abs_error": 0.0, **metadata,
         "notes": "CPU dispatch parity plus resident-CUDA capability/refusal contract",
