@@ -134,6 +134,7 @@ def main() -> None:
         row(details, workload="xgboost_multiclass_log_proba", phase="fit",
             backend="fortml", device="cpu", status="pass",
             metric="fit_seconds", value=observed["xgb_mc_log_fit_seconds"],
+            max_abs_error=0.0,
             seconds=observed["xgb_mc_log_fit_seconds"],
             notes="four depth-one logistic trees per sorted OVR child"),
         row(details, workload="xgboost_multiclass_log_proba", phase="predict",

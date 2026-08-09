@@ -153,7 +153,7 @@ def parse_app(stdout: str, details: dict[str, object], rows: list[dict[str, obje
             tolerance = 3.0e-11 if metric in ("value", "jvp") else 3.0e-9
             if error > tolerance:
                 raise RuntimeError(f"{kind} {metric} checksum mismatch: {error:.3e}")
-            rows.append(row(details, phase="release_app", status="pass",
+            rows.append(row(details, phase="release_app", backend="fortml", status="pass",
                             seconds_per_operation=seconds, metric=f"{kind}_{metric}",
                             value=observed_value, max_abs_error=error,
                             oracle="independent NumPy ordered likelihood products"))

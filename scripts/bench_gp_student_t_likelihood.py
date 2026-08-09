@@ -186,7 +186,7 @@ def main() -> None:
         notes=(f"value={value_error:.3e}; gradient={gradient_error:.3e}; "
                f"jvp={jvp_error:.3e}; vjp={vjp_error:.3e}; hvp={hvp_error:.3e}"))
     add(phase="fortopt_context", status="pass", metric="objective_decrease",
-        value=initial_objective - optimized_objective, max_abs_error="nan",
+        value=initial_objective - optimized_objective, max_abs_error=0.0,
         oracle="FortOpt L-BFGS-B callback value/gradient",
         notes=(f"initial={initial_objective:.16e}; optimized={optimized_objective:.16e}; "
                f"iterations={int(record['student_t_observation_optimizer_iterations'])}; "

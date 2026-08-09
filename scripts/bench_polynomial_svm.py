@@ -29,7 +29,7 @@ PREDICTION_REPETITIONS = 64
 FIELDS = (
     "workload", "phase", "backend", "device", "status", "n_samples",
     "n_features", "seconds_per_operation", "accuracy", "max_abs_error",
-    "oracle", "python_version", "numpy_version", "scipy_version",
+    "metric", "value", "oracle", "python_version", "numpy_version", "scipy_version",
     "fortml_revision", "benchmark_revision", "compiler", "flags", "notes",
 )
 
@@ -112,6 +112,7 @@ def make_row(details: dict[str, str], **values: Any) -> dict[str, Any]:
         "workload": "polynomial_svm", "phase": "", "backend": "", "device": "cpu",
         "status": "", "n_samples": N_SAMPLES, "n_features": N_FEATURES,
         "seconds_per_operation": "", "accuracy": "", "max_abs_error": "",
+        "metric": "", "value": "",
         "oracle": "", "notes": "",
     }
     row.update(details); row.update(values)
@@ -162,6 +163,7 @@ def main() -> None:
     numpy_seconds = (time.perf_counter() - started) / PREDICTION_REPETITIONS
     rows = [make_row(details, phase="fit_predict", backend="numpy_oracle", status="pass",
                      seconds_per_operation=numpy_seconds, accuracy=float(np.mean(expected_predictions == labels)),
+                     metric="accuracy", value=float(np.mean(expected_predictions == labels)),
                      max_abs_error=0.0, oracle="independent SciPy L-BFGS-B weighted squared-hinge polynomial RKHS solve",
                      notes="degree=2; gamma=0.4; coef0=1.0; dense finite training basis")]
     environment = os.environ.copy(); environment.update({"FO_FC": environment.get("FO_FC", "gfortran"), "OMP_NUM_THREADS": "1"})
@@ -184,11 +186,12 @@ def main() -> None:
     timing = parse_timing(completed.stdout); accuracy = float(np.mean(actual_predictions == labels))
     rows.extend([
         make_row(details, phase="fit", backend="fortml_cpu", status="pass", seconds_per_operation=timing.get("polynomial_svm_fit", ""),
-                 accuracy=accuracy, max_abs_error=error, oracle="SciPy polynomial score/label oracle",
+                 accuracy=accuracy, metric="accuracy", value=accuracy, max_abs_error=error, oracle="SciPy polynomial score/label oracle",
                  notes="FortOpt weighted squared-hinge fit; fixed-state JVP/VJP independently tested"),
         make_row(details, phase="predict", backend="fortml_cpu", status="pass", seconds_per_operation=timing.get("polynomial_svm_predict", ""),
-                 accuracy=accuracy, max_abs_error=error, oracle="SciPy polynomial score/label oracle", notes="dense finite-basis prediction"),
+                 accuracy=accuracy, metric="accuracy", value=accuracy, max_abs_error=error, oracle="SciPy polynomial score/label oracle", notes="dense finite-basis prediction"),
         make_row(details, phase="predict", backend="fortml_cuda", device="cuda", status="unavailable",
+                 metric="resident_polynomial_svm", value="nan", max_abs_error=0.0,
                  oracle="typed_device_contract", notes="resident CUDA polynomial-SVM value/derivative kernels absent; FORTNUM_NOT_IMPLEMENTED"),
     ])
     args.output.parent.mkdir(parents=True, exist_ok=True)

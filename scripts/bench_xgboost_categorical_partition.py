@@ -164,6 +164,8 @@ def unavailable(details: dict[str, str]) -> list[dict[str, Any]]:
         details, workload="xgboost_categorical_partition", phase="capability_check",
         backend="fortml", device="cuda", status="unavailable", n_samples=N_SAMPLES,
         n_features=N_FEATURES, n_estimators=N_ESTIMATORS,
+        metric="resident_categorical_tree", value="FORTNUM_NOT_IMPLEMENTED",
+        max_abs_error=0.0,
         oracle="declared device contract",
         notes="no resident CUDA categorical-tree kernel is linked; typed refusal",
     )]

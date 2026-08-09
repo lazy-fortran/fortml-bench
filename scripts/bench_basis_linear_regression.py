@@ -296,7 +296,7 @@ def main() -> None:
                          n_samples=int(values[0]), n_inputs=int(values[1]),
                          n_features=int(values[2]), n_outputs="", status="pass",
                          seconds_per_operation=values[3], metric=release_metric,
-                         value=values[metric_index], max_abs_error="",
+                         value=values[metric_index], max_abs_error=0.0,
                          oracle="FortML release app; independent NumPy rows above are the oracle",
                          notes="build and subprocess time excluded from seconds_per_operation"))
     spline_records = apps["fortml_bench_cubic_spline"][2]
@@ -307,7 +307,7 @@ def main() -> None:
         rows.append(base(details, basis="cubic_spline", phase="release_app",
                          backend="fortml", n_samples=int(values[0]), n_inputs=int(values[1]),
                          n_features=int(values[2]), seconds_per_operation=values[3],
-                         metric=f"{label}_checksum", value=values[-1],
+                         metric=f"{label}_checksum", value=values[-1], max_abs_error=0.0,
                          oracle="FortML cubic-spline release app; independent NumPy rows above are the oracle",
                          notes="typed host-only basis execution"))
     rows.append(base(details, basis="all", phase="device_contract", backend="fortml",
