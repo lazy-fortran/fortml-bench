@@ -287,6 +287,19 @@ FO_SCAN_FALLBACK=regex python -B scripts/bench_derivative_gp_periodic_hvp.py \
 
 See [`results/DERIVATIVE_GP_PERIODIC_HVP.md`](results/DERIVATIVE_GP_PERIODIC_HVP.md).
 
+The Matérn derivative-GP HVP lane covers mixed value/first-derivative
+observations for Matérn 3/2 and 5/2. An independent NumPy dense likelihood
+oracle gates the analytic FortML CPU checksums and records per-kernel timing;
+CUDA remains an explicit resident-graph refusal:
+
+```bash
+FO_SCAN_FALLBACK=regex python -B scripts/bench_derivative_gp_matern_hvp.py \
+  --fortml ../fortml-gp-matern-derivative \
+  --output results/derivative_gp_matern_hvp.csv
+```
+
+See [`results/DERIVATIVE_GP_MATERN_HVP.md`](results/DERIVATIVE_GP_MATERN_HVP.md).
+
 The change-point GP lane checks a gated RBF-plus-constant covariance, exact-GP
 posterior moments, and packed parameter JVP/VJP/HVP products against an
 independent NumPy covariance and central-difference oracle. The Fortran gate
