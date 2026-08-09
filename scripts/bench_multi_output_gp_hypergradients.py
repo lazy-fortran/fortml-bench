@@ -53,7 +53,7 @@ def fixture() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         y[i, 0] = np.sin(0.8 * x[i, 0]) + 0.1 * x[i, 1]
         y[i, 1] = np.cos(0.6 * x[i, 0]) - 0.2 * x[i, 1]
         y[i, 2] = x[i, 0] * x[i, 1]
-    weights = np.array([[0.8, 0.3], [-0.4, 0.6], [-0.2, 0.5]])
+    weights = np.array([[0.8, 0.6], [-0.4, -0.2], [0.3, 0.5]])
     independent = np.array([0.25, 0.35, 0.18])
     return x, y, weights, independent
 
@@ -64,7 +64,9 @@ def lml(coordinates: np.ndarray) -> float:
     independent = coordinates[3 + P * RANK:3 + P * RANK + P]
     kernel = np.empty((N, N))
     delta = x[:, None, :] - x[None, :, :]
-    kernel[:, :] = 1.2 * np.exp(-0.5 * np.sum(delta * delta, axis=2) / 0.65**2)
+    variance = np.exp(coordinates[0])
+    lengthscale = np.exp(coordinates[1])
+    kernel[:, :] = variance * np.exp(-0.5 * np.sum(delta * delta, axis=2) / lengthscale**2)
     b = weights @ weights.T + np.diag(independent)
     covariance = np.kron(b, kernel)
     covariance.flat[:: covariance.shape[0] + 1] += np.exp(coordinates[2])
@@ -89,7 +91,7 @@ def gradient_oracle(coordinates: np.ndarray, step: float = 2.0e-5) -> np.ndarray
 def products_oracle() -> tuple[float, float, float]:
     parameters = np.array([
         np.log(1.2), np.log(0.65), np.log(0.12),
-        0.8, 0.3, -0.4, 0.6, -0.2, 0.5,
+        0.8, 0.6, -0.4, -0.2, 0.3, 0.5,
         0.25, 0.35, 0.18,
     ])
     direction = 0.03 * np.sin(0.17 * np.arange(1, parameters.size + 1))
@@ -151,7 +153,7 @@ def main() -> None:
     hvp_time, hvp_sum = records["hyperparameter_hvp"]
     oracle_parameters = np.array([
         np.log(1.2), np.log(0.65), np.log(0.12),
-        0.8, 0.3, -0.4, 0.6, -0.2, 0.5, 0.25, 0.35, 0.18,
+        0.8, 0.6, -0.4, -0.2, 0.3, 0.5, 0.25, 0.35, 0.18,
     ])
     oracle_direction = 0.03 * np.sin(0.17 * np.arange(1, 13))
     expected_jvp = float(np.dot(gradient_oracle(oracle_parameters), oracle_direction))
