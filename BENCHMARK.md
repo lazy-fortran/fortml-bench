@@ -118,3 +118,19 @@ python -B scripts/bench_gp_multilabel_log_proba.py \
 
 See [`results/GP_MULTILABEL_LOG_PROBA.md`](results/GP_MULTILABEL_LOG_PROBA.md)
 for the fixture and reproducibility details.
+
+## Multiclass XGBoost log probabilities
+
+This lane checks stable sorted-label one-vs-rest `predict_log_proba`, input and
+packed leaf-coordinate JVP/VJP products, and explicit CPU/CUDA dispatch. The
+independent NumPy oracle exercises a tail that would underflow under
+`log(predict_proba)` and checks the normalized simplex.
+
+```bash
+python -B scripts/bench_xgboost_multiclass_log_proba.py \
+  --fortml ../fortml --output results/xgboost_multiclass_log_proba.csv \
+  --report results/XGBOOST_MULTICLASS_LOG_PROBA.md
+```
+
+See [`results/XGBOOST_MULTICLASS_LOG_PROBA.md`](results/XGBOOST_MULTICLASS_LOG_PROBA.md)
+for the fixture, derivative errors, and typed CUDA refusal.
