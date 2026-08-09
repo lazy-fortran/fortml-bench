@@ -1,7 +1,7 @@
 # Matérn-5/2 second-derivative GP hyperproducts
 
 FortML revision: `1618c8db7ae3511e9114ead0874f4cdffd44f92b`  
-Benchmark revision: `e398cd35de6e008532315c0f5b8626d37baa1b87`  
+Benchmark revision: `af7cf9f6f688b44da741d5508c8b6ef36c6c2903`  
 
 The independent NumPy fixture assembles value, first-derivative, and second-derivative covariance blocks through order four. It central differences the dense prediction functional, likelihood gradient, and query functional, then compares every checksum with the CPU release app. The largest CPU checksum error is 1.092e-05. Timings are recorded in the CSV.
 
