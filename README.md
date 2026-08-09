@@ -367,6 +367,18 @@ python3 -B scripts/bench_mlp_structure_gp.py \
 
 See [`results/MLP_STRUCTURE_GP.md`](results/MLP_STRUCTURE_GP.md).
 
+The separable-Hamiltonian structure-aware GP lane independently solves the
+finite-feature posteriors for `V(q)` and `T(p)`, then checks both RMSEs and the
+zero structure-defect certificate reported by the FortML release app. CUDA is
+an explicit typed refusal:
+
+```bash
+python3 -B scripts/bench_hamiltonian_structure_gp.py \
+  --fortml ../fortml --output results/hamiltonian_structure_gp.csv
+```
+
+See [`results/HAMILTONIAN_STRUCTURE_GP.md`](results/HAMILTONIAN_STRUCTURE_GP.md).
+
 The Hamiltonian vector-field VJP lane checks the canonical reverse product
 against an independent quadratic Hamiltonian oracle, then runs the FortML
 release app for the packed parameter/state adjoint identity. CUDA is recorded

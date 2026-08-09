@@ -788,6 +788,13 @@ a different workload, precision, device, or residency policy.
   the protocol is documented in `results/MLP_STRUCTURE_GP.md`. NNGP
   covariance, sampled posterior weights, and Hamiltonian, symplectic, or PINN
   mappings remain separate open lanes.
+- [x] Add the separable-Hamiltonian structure-aware GP initializer lane.
+  Independent NumPy V/T kernel-ridge solves gate the FortML release app's two
+  component RMSEs and zero structure-defect certificate; the raw record is
+  `results/hamiltonian_structure_gp.csv`, with a typed CUDA-unavailable row.
+  The protocol is documented in `results/HAMILTONIAN_STRUCTURE_GP.md`; NNGP
+  covariance, nonseparable HNN, symplectic-GP, PINN, and resident-GPU paths
+  remain separate open lanes.
 - [ ] Add matched GPyTorch variational-likelihood and calibrated-likelihood
   comparisons. FortML's CPU inducing-point Bernoulli ELBO, packed gradient,
   JVP, and CUDA refusal are covered by
