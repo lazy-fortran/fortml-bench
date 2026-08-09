@@ -819,6 +819,13 @@ a different workload, precision, device, or residency policy.
   `results/derivative_gp_rational_quadratic_hvp.csv`. The protocol and exact
   source provenance are documented in
   `results/DERIVATIVE_GP_RATIONAL_QUADRATIC_HVP.md`.
+- [x] Add the cosine derivative-GP mixed-observation HVP lane. The independent
+  NumPy dense oracle covers value/first-derivative observations and the packed
+  logarithmic variance/length-scale/noise coordinates; the FortML release app
+  checks the exact coincidence-safe radial parameter-direction products and
+  records CPU timing plus the typed resident-CUDA refusal in
+  `results/derivative_gp_cosine_hvp.csv`. The protocol and source provenance
+  are documented in `results/DERIVATIVE_GP_COSINE_HVP.md`.
 - [x] Add the Hamiltonian vector-field VJP lane. An independent quadratic
   NumPy oracle checks the canonical JVP/VJP identity, while the FortML release
   app checks packed parameter/state reverse products and records CPU timing plus
