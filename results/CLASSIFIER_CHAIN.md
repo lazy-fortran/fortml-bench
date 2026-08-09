@@ -7,10 +7,17 @@ The release executable is `fortml_bench_classifier_chain`.
 The fixture has 192 rows, four continuous features, and three binary outputs.
 FortML trains one logistic head per output using the observed positive
 indicators from preceding columns. The release app writes the packed fitted
-heads, probabilities, and integer predictions. The benchmark independently
-replays those heads with NumPy sigmoids and thresholding before retaining fit
-or prediction timings; the recorded maximum probability error is therefore a
-forward-oracle check, not a comparison against the same Fortran output.
+heads, probabilities, integer predictions, and the joint input/parameter
+probability HVP. The benchmark independently replays those heads with NumPy
+sigmoids and thresholding before retaining fit or prediction timings; it also
+computes a central finite difference of an independent NumPy reverse pass for
+the HVP. The recorded maximum errors are therefore oracle checks, not
+comparisons against the same Fortran output.
+
+The HVP row times `predict_proba_hvp` for a fixed probability cotangent and
+direction. The checked release record has parameter and input HVP errors below
+`4e-11`. The CUDA HVP row is `unavailable` until a resident multi-head kernel
+is linked.
 
 The CUDA row is `unavailable`: the classifier-chain device entry point returns
 `FORTNUM_NOT_IMPLEMENTED` until a resident multi-head kernel is linked.

@@ -2110,8 +2110,9 @@ row is an explicit unavailable capability record because warm-start
 continuation has no resident CUDA entry point.
 
 The classifier-chain lane checks sequential logistic heads, packed-parameter
-NumPy replay, integer-label predictions, fit/predict timings, and an explicit
-CUDA refusal:
+NumPy replay, integer-label predictions, the joint input/parameter probability
+HVP against an independent finite-difference reverse oracle, fit/predict/HVP
+timings, and explicit CUDA refusals:
 
 ```bash
 python -B scripts/bench_classifier_chain.py \

@@ -321,9 +321,11 @@ a different workload, precision, device, or residency policy.
   multi-head CUDA kernels remain separate work packages.
 - [x] Add a sequential classifier-chain logistic lane with arbitrary integer
   labels, observed-label training features, smooth probability-chain
-  prediction, and an independent NumPy replay of the packed fitted heads. The
-  raw record is `results/classifier_chain.csv`; resident CUDA remains an
-  explicit typed refusal.
+  prediction, and an independent NumPy replay of the packed fitted heads. Add
+  the exact joint input/parameter probability HVP and central-difference
+  reverse oracle, with separate CPU timing and typed CUDA refusal rows. The raw
+  record is `results/classifier_chain.csv`; resident CUDA remains an explicit
+  typed refusal.
 - [x] Add a fixed full-batch MLP SGD hypergradient workload over log learning
   rate and log L2, including a central finite-difference value/gradient/JVP
   oracle and explicit FortML release-target refusal rows.  The raw record is

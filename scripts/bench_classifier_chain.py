@@ -23,6 +23,7 @@ import numpy as np
 N_SAMPLES = 192
 N_FEATURES = 4
 N_OUTPUTS = 3
+N_PARAMETERS = N_OUTPUTS * N_FEATURES + N_OUTPUTS * (N_OUTPUTS + 1) // 2
 FIELDS = (
     "workload", "phase", "backend", "device", "status", "n_samples",
     "n_features", "n_outputs", "seconds_per_operation", "metric", "value",
@@ -87,7 +88,57 @@ def oracle(x: np.ndarray, parameters: np.ndarray) -> tuple[np.ndarray, np.ndarra
     return probabilities, predicted
 
 
-def parse(stdout: str, path: Path) -> tuple[dict[str, float], np.ndarray, np.ndarray, np.ndarray]:
+def directions() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    x_dot = np.empty((N_SAMPLES, N_FEATURES), dtype=np.float64)
+    probabilities_bar = np.empty((N_SAMPLES, N_OUTPUTS), dtype=np.float64)
+    theta_dot = np.empty(N_PARAMETERS, dtype=np.float64)
+    for i in range(N_SAMPLES):
+        for j in range(N_FEATURES):
+            x_dot[i, j] = 0.003 * np.cos(0.017 * (i + 1) * (j + 1))
+        for j in range(N_OUTPUTS):
+            probabilities_bar[i, j] = 0.2 * np.sin(
+                0.03 * (i + 1) + 0.4 * (j + 1)
+            )
+    for i in range(N_PARAMETERS):
+        theta_dot[i] = 0.01 * np.sin(0.13 * (i + 1))
+    return x_dot, probabilities_bar, theta_dot
+
+
+def vjp(x: np.ndarray, parameters: np.ndarray,
+        cotangent: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    probabilities = np.empty((x.shape[0], N_OUTPUTS), dtype=np.float64)
+    augmented = np.zeros((x.shape[0], N_FEATURES + N_OUTPUTS - 1), dtype=np.float64)
+    augmented[:, :N_FEATURES] = x
+    heads: list[tuple[np.ndarray, int]] = []
+    position = 0
+    for output in range(N_OUTPUTS):
+        feature_count = N_FEATURES + output
+        count = feature_count + 1
+        head = parameters[position:position + count]
+        position += count
+        heads.append((head, feature_count))
+        logits = augmented[:, :feature_count] @ head[:feature_count] + head[-1]
+        probabilities[:, output] = 1.0 / (1.0 + np.exp(-logits))
+        if output + 1 < N_OUTPUTS:
+            augmented[:, N_FEATURES + output] = probabilities[:, output]
+    cotangent_work = cotangent.copy()
+    parameter_bar = np.zeros_like(parameters)
+    x_bar = np.zeros_like(x)
+    for output in range(N_OUTPUTS - 1, -1, -1):
+        head, feature_count = heads[output]
+        p = probabilities[:, output]
+        q = cotangent_work[:, output] * p * (1.0 - p)
+        first = sum(N_FEATURES + k + 1 for k in range(output))
+        parameter_bar[first:first + feature_count] = q @ augmented[:, :feature_count]
+        parameter_bar[first + feature_count] = np.sum(q)
+        augmented_bar = q[:, None] * head[:feature_count][None, :]
+        x_bar += augmented_bar[:, :N_FEATURES]
+        if output > 0:
+            cotangent_work[:, :output] += augmented_bar[:, N_FEATURES:]
+    return parameter_bar, x_bar
+
+
+def parse(stdout: str, path: Path) -> tuple[dict[str, float], np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     timing: dict[str, float] = {}
     for line in stdout.splitlines():
         fields = line.strip().split(",")
@@ -96,6 +147,8 @@ def parse(stdout: str, path: Path) -> tuple[dict[str, float], np.ndarray, np.nda
     parameters = np.zeros(sum(N_FEATURES + output + 1 for output in range(N_OUTPUTS)))
     probabilities = np.zeros((N_SAMPLES, N_OUTPUTS))
     predicted = np.zeros((N_SAMPLES, N_OUTPUTS), dtype=np.int64)
+    theta_hvp = np.zeros(N_PARAMETERS)
+    x_hvp = np.zeros((N_SAMPLES, N_FEATURES))
     with path.open(newline="") as stream:
         for row in csv.DictReader(stream):
             quantity = row["quantity"]
@@ -107,9 +160,13 @@ def parse(stdout: str, path: Path) -> tuple[dict[str, float], np.ndarray, np.nda
                 probabilities[index, column] = float(row["value"])
             elif quantity == "prediction":
                 predicted[index, column] = int(float(row["value"]))
-    if set(timing) != {"classifier_chain_fit", "classifier_chain_predict"}:
+            elif quantity == "theta_hvp":
+                theta_hvp[index] = float(row["value"])
+            elif quantity == "x_hvp":
+                x_hvp[index, column] = float(row["value"])
+    if set(timing) != {"classifier_chain_fit", "classifier_chain_predict", "classifier_chain_hvp"}:
         raise RuntimeError("release app omitted classifier-chain timings")
-    return timing, parameters, probabilities, predicted
+    return timing, parameters, probabilities, predicted, theta_hvp, x_hvp
 
 
 def row(details: dict[str, str], **values: Any) -> dict[str, Any]:
@@ -144,8 +201,8 @@ def main() -> None:
                    check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     completed = subprocess.run(["fo", "exec", "--no-build", args.target], cwd=fortml,
                                env=environment, check=True, capture_output=True, text=True)
-    timing, parameters, observed_probabilities, observed_predicted = parse(
-        completed.stdout, observed_path)
+    timing, parameters, observed_probabilities, observed_predicted, \
+        observed_theta_hvp, observed_x_hvp = parse(completed.stdout, observed_path)
     x, labels = fixture()
     expected_probabilities, expected_predicted = oracle(x, parameters)
     probability_error = float(np.max(np.abs(observed_probabilities - expected_probabilities)))
@@ -154,6 +211,23 @@ def main() -> None:
         raise RuntimeError(
             f"classifier-chain oracle mismatch: probability={probability_error:.3e}, "
             f"prediction={prediction_error:.3e}"
+        )
+    x_dot, probabilities_bar, theta_dot = directions()
+    h = 1.0e-5
+    theta_bar_plus, x_bar_plus = vjp(
+        x + h * x_dot, parameters + h * theta_dot, probabilities_bar
+    )
+    theta_bar_minus, x_bar_minus = vjp(
+        x - h * x_dot, parameters - h * theta_dot, probabilities_bar
+    )
+    expected_theta_hvp = (theta_bar_plus - theta_bar_minus) / (2.0 * h)
+    expected_x_hvp = (x_bar_plus - x_bar_minus) / (2.0 * h)
+    theta_hvp_error = float(np.max(np.abs(observed_theta_hvp - expected_theta_hvp)))
+    x_hvp_error = float(np.max(np.abs(observed_x_hvp - expected_x_hvp)))
+    if theta_hvp_error > 5e-7 or x_hvp_error > 5e-7:
+        raise RuntimeError(
+            f"classifier-chain HVP oracle mismatch: theta={theta_hvp_error:.3e}, "
+            f"x={x_hvp_error:.3e}"
         )
     records = [
         row(details, workload="classifier_chain", phase="fit", backend="fortml",
@@ -168,11 +242,30 @@ def main() -> None:
             metric="hard_label_max_abs_error", value=prediction_error,
             max_abs_error=prediction_error, oracle="independent NumPy threshold replay",
             notes="probabilities and integer labels match"),
+        row(details, workload="classifier_chain", phase="hvp", backend="fortml",
+            device="cpu", status="pass", n_samples=N_SAMPLES, n_features=N_FEATURES,
+            n_outputs=N_OUTPUTS, seconds_per_operation=timing["classifier_chain_hvp"],
+            metric="theta_hvp_max_abs_error", value=theta_hvp_error,
+            max_abs_error=theta_hvp_error,
+            oracle="independent NumPy finite-difference reverse oracle",
+            notes=f"input_hvp_max_abs_error={x_hvp_error:.3e}"),
+        row(details, workload="classifier_chain", phase="hvp_input", backend="fortml",
+            device="cpu", status="pass", n_samples=N_SAMPLES, n_features=N_FEATURES,
+            n_outputs=N_OUTPUTS, metric="x_hvp_max_abs_error", value=x_hvp_error,
+            max_abs_error=x_hvp_error,
+            oracle="independent NumPy finite-difference reverse oracle",
+            notes="joint parameter/input direction"),
         row(details, workload="classifier_chain", phase="device_contract", backend="fortml",
             device="cuda", status="unavailable", n_samples=N_SAMPLES, n_features=N_FEATURES,
             n_outputs=N_OUTPUTS, metric="api_surface", value="unavailable", max_abs_error=0.0,
             oracle="device capability contract",
             notes="classifier-chain CUDA path is a typed refusal"),
+        row(details, workload="classifier_chain", phase="hvp_device_contract", backend="fortml",
+            device="cuda", status="unavailable", n_samples=N_SAMPLES,
+            n_features=N_FEATURES, n_outputs=N_OUTPUTS, metric="api_surface",
+            value="unavailable", max_abs_error=0.0,
+            oracle="device capability contract",
+            notes="classifier-chain HVP CUDA path is a typed refusal"),
     ]
     with args.output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")
