@@ -14,3 +14,46 @@ python -B scripts/bench_basis_linear_regression.py \
 
 See [`results/BASIS_LINEAR_REGRESSION.md`](results/BASIS_LINEAR_REGRESSION.md)
 for the fixture and reproducibility details.
+
+## Accumulated SGD momentum hyperproducts
+
+This lane checks deterministic contiguous microbatch accumulation for the
+fixed SGD/Nesterov trajectory objective. The Python oracle compares value,
+gradient, JVP, VJP, and affine HVP products and records the typed CUDA
+boundary.
+
+```bash
+python -B scripts/bench_sgd_momentum_hypergradient.py \
+  --fortml ../fortml --output results/sgd_momentum_hypergradient_accumulation.csv
+```
+
+See
+[`results/SGD_MOMENTUM_HYPERGRADIENT_ACCUMULATION.md`](results/SGD_MOMENTUM_HYPERGRADIENT_ACCUMULATION.md).
+
+## Weighted random-forest regression
+
+This lane replays the seeded weighted CART bootstrap ensemble in NumPy. It
+checks scalar and multi-output predictions, staged prefixes, bootstrap
+inclusion, split-frequency importance, fixed-state products, and the typed
+CUDA refusal.
+
+```bash
+python -B scripts/bench_random_forest_regression.py \
+  --fortml ../fortml --output results/random_forest_regression.csv
+```
+
+See [`results/RANDOM_FOREST_REGRESSION.md`](results/RANDOM_FOREST_REGRESSION.md).
+
+## Robust Poisson Gaussian process products
+
+This lane checks the Poisson log-rate likelihood and fixed-mode robust-GP
+posterior products against an independent NumPy oracle. It records likelihood
+and posterior HVP errors, query JVP/VJP checks, FortOpt fitting, and the typed
+CUDA refusal.
+
+```bash
+python -B scripts/bench_robust_gp_poisson_products.py \
+  --fortml ../fortml --output results/robust_gp_poisson_products.csv
+```
+
+See [`results/ROBUST_GP_POISSON_PRODUCTS.md`](results/ROBUST_GP_POISSON_PRODUCTS.md).
