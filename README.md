@@ -60,6 +60,20 @@ python -B scripts/bench_xgboost_multiclass_validation.py \
 
 See [`results/XGBOOST_MULTICLASS_VALIDATION.md`](results/XGBOOST_MULTICLASS_VALIDATION.md).
 
+The LightGBM-style multiclass lane independently replays the bounded two-leaf
+one-vs-rest logistic updates for sorted integer labels. It checks normalized
+probabilities at every retained stage, weighted validation best-prefix
+selection, fixed-tree input JVP/VJP zeros away from split surfaces, the typed
+CUDA refusal, and transactional unknown-label rejection:
+
+```bash
+python -B scripts/bench_lightgbm_multiclass.py \
+  --fortml ../fortml --output results/lightgbm_multiclass.csv \
+  --report results/LIGHTGBM_MULTICLASS.md
+```
+
+See [`results/LIGHTGBM_MULTICLASS.md`](results/LIGHTGBM_MULTICLASS.md).
+
 The cross-validation scoring lane independently derives contiguous K-fold fold
 scores, weights, parameter gradients, and FortOpt orientation before accepting
 the Fortran release-app timing. It records a typed CUDA control-plane refusal:

@@ -793,6 +793,14 @@ a different workload, precision, device, or residency policy.
   deterministic scales, schema-3 persistence, warm-start parity, malformed-rate
   refusal, and typed CUDA refusal; fit-time dropout derivatives remain an
   explicit discrete-fit boundary.
+- [x] Add the LightGBM-style multiclass OVR lane. `scripts/bench_lightgbm_multiclass.py`
+  independently replays the bounded two-leaf logistic children for sorted
+  labels `[-8, 2, 11]`, normalizes every stage, computes weighted validation
+  log-loss, and checks the release app's common best prefix. The raw
+  `results/lightgbm_multiclass.csv` records CPU fit/staged/derivative rows,
+  zero oracle error, the typed CUDA refusal, and transactional unknown-label
+  preservation. Split-surface and fit-time routing derivatives remain typed
+  boundaries.
 - [x] Add fixed-structure XGBoost/LightGBM leaf-coordinate JVP/VJP products.
   `scripts/bench_tree_leaf_products.py` checks packed base-plus-leaf routing,
   forward/reverse contractions, and the independent two-leaf NumPy oracle;
