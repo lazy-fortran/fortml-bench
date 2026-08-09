@@ -104,9 +104,12 @@ def parse_probe(stdout: str) -> dict[str, tuple[float, float]]:
     records: dict[str, tuple[float, float]] = {}
     for line in stdout.splitlines():
         fields = [field.strip() for field in line.split(",")]
-        if len(fields) != 6 or fields[0] != "multi_output_gp":
+        if not fields or fields[0] != "multi_output_gp":
             continue
-        records[fields[1]] = (float(fields[4]), float(fields[5]))
+        if fields[1] == "likelihood_value_jvp" and len(fields) == 3:
+            records[fields[1]] = (float(fields[2]), 0.0)
+        elif len(fields) == 7:
+            records[fields[1]] = (float(fields[5]), float(fields[6]))
     required = {"hyperparameter_gradient", "hyperparameter_hvp", "likelihood_value_jvp"}
     missing = required - records.keys()
     if missing:
@@ -142,14 +145,16 @@ def main() -> None:
     )
     records = parse_probe(probe.stdout)
     expected_value, expected_gradient_sum, expected_hvp_sum = products_oracle()
-    value_time, value_dot = records["likelihood_value_jvp"]
+    value, value_dot = records["likelihood_value_jvp"]
     gradient_time, gradient_sum = records["hyperparameter_gradient"]
     hvp_time, hvp_sum = records["hyperparameter_hvp"]
-    value_error = abs(value_dot - float(np.dot(
-        gradient_oracle(np.array([
-            np.log(1.2), np.log(0.65), np.log(0.12),
-            0.8, 0.3, -0.4, 0.6, -0.2, 0.5, 0.25, 0.35, 0.18,
-        ])), 0.03 * np.sin(0.17 * np.arange(1, 13)))))
+    oracle_parameters = np.array([
+        np.log(1.2), np.log(0.65), np.log(0.12),
+        0.8, 0.3, -0.4, 0.6, -0.2, 0.5, 0.25, 0.35, 0.18,
+    ])
+    oracle_direction = 0.03 * np.sin(0.17 * np.arange(1, 13))
+    expected_jvp = float(np.dot(gradient_oracle(oracle_parameters), oracle_direction))
+    value_error = max(abs(value - expected_value), abs(value_dot - expected_jvp))
     gradient_error = abs(gradient_sum - expected_gradient_sum)
     hvp_error = abs(hvp_sum - expected_hvp_sum)
     if gradient_error > 2.0e-4 or hvp_error > 3.0e-3:
