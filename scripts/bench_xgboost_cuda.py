@@ -144,14 +144,13 @@ def main() -> None:
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text(
         "# XGBoost resident CUDA policy\n\n"
-        "This release lane exercises the finite numeric XGBoost `gbtree` "
-        "path and its explicit device boundaries. Numeric native CUDA "
-        "prediction is admitted only when it matches the independent CPU "
-        "prediction. Categorical partitions, missing-default routing, "
-        "ranking, and DART return `FORTNUM_NOT_IMPLEMENTED` before changing "
-        "caller output. Those rows are capability evidence, not GPU timings. "
-        "The resident additive-tree ABI keeps model arrays on the device and "
-        "exposes transfer counters for query-only steady-state accounting.\n\n"
+        "This lane exercises the finite numeric XGBoost `gbtree` path and its explicit\n"
+        "device boundaries. Numeric native CUDA prediction is admitted only when it\n"
+        "matches the independent CPU prediction. Categorical partitions,\n"
+        "missing-default routing, ranking, and DART return `FORTNUM_NOT_IMPLEMENTED`\n"
+        "before changing caller output. Those rows are capability evidence rather than\n"
+        "GPU timings. The resident additive-tree ABI keeps model arrays on the device\n"
+        "and exposes transfer counters for query-only steady-state accounting.\n\n"
         "Run:\n\n```sh\n"
         "python3 scripts/bench_xgboost_cuda.py --fortml ../fortml\n```\n"
     )
