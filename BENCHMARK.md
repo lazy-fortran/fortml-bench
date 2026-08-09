@@ -136,6 +136,22 @@ python -B scripts/bench_mlp_loss_scaling.py \
 See [`results/MLP_LOSS_SCALING.md`](results/MLP_LOSS_SCALING.md) for the
 independent NumPy oracle and provenance.
 
+## Independent multilabel Laplace-GP hyperparameter optimization
+
+This lane checks one independent RBF kernel-log block per multilabel head. The
+NumPy oracle compares fixed-state objective value, gradient, JVP, VJP, and a
+central directional finite difference, then records bounded FortOpt
+L-BFGS-B and the typed CUDA capability boundary.
+
+```bash
+python -B scripts/bench_gp_multilabel_independent_optimizer.py \
+  --fortml ../fortml --output results/gp_multilabel_independent_optimizer.csv
+```
+
+See
+[`results/GP_MULTILABEL_INDEPENDENT_OPTIMIZER.md`](results/GP_MULTILABEL_INDEPENDENT_OPTIMIZER.md)
+for the fixture and reproducibility details.
+
 ## Multiclass XGBoost log probabilities
 
 This lane checks stable sorted-label one-vs-rest `predict_log_proba`, input and
