@@ -677,7 +677,8 @@ python -B scripts/bench_basis_blend_pipeline.py \
 ```
 
 See [`results/BASIS_BLEND_PIPELINE.md`](results/BASIS_BLEND_PIPELINE.md) for
-the oracle, timing, and clean provenance (`48008d4`).
+the oracle and timing. The CSV was generated at clean benchmark revision
+`7ff48db` and recorded in `48008d4`.
 
 ## Fixed-full-batch SGD clipping hypergradients
 
@@ -693,7 +694,8 @@ python -B scripts/bench_mlp_clip_hypergradient.py \
 
 See [`MLP_CLIP_HYPERGRADIENT.md`](MLP_CLIP_HYPERGRADIENT.md) and
 [`results/mlp_clip_hypergradient.csv`](results/mlp_clip_hypergradient.csv)
-for the 15-row oracle and clean provenance (`cb681b3`).
+for the 15-row oracle. The CSV was generated at clean benchmark revision
+`8683d98` and recorded in `cb681b3`.
 
 ## Weighted Gamma GP likelihood products
 
@@ -709,8 +711,8 @@ python -B scripts/bench_gp_gamma_likelihood.py \
 ```
 
 See [`results/GP_GAMMA_LIKELIHOOD.md`](results/GP_GAMMA_LIKELIHOOD.md) for
-the maximum product error (`1.399e-6`), fit error (`4.274e-9`), and clean
-provenance (`86c4bd9`).
+the maximum product error (`1.399e-6`) and fit error (`4.274e-9`). The CSV was
+generated at clean benchmark revision `566fbc1` and recorded in `86c4bd9`.
 
 ## Versioned result schema
 
