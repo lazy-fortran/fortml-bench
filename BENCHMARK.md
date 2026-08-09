@@ -521,6 +521,23 @@ python -B scripts/bench_basis_pipeline_clone.py \
 See [`results/BASIS_PIPELINE_CLONE.md`](results/BASIS_PIPELINE_CLONE.md) for
 the fixture, independent oracle, timing, and device-boundary evidence.
 
+## Transactional sequential basis-pipeline cloning
+
+This lane checks the clone/reset seam for a fitted sequential polynomial-to-
+Fourier basis graph. The independent NumPy oracle reconstructs the two-stage
+map, checks copied-output equality, and verifies that a parameter mutation is
+isolated to the clone. The release test checks invalid-source transactionality,
+CPU dispatch, and the typed CUDA refusal.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_sequential_pipeline_clone.py \
+  --fortml ../fortml --output results/sequential_pipeline_clone.csv
+```
+
+See [`results/SEQUENTIAL_PIPELINE_CLONE.md`](results/SEQUENTIAL_PIPELINE_CLONE.md)
+for the independent oracle, timing, and explicit resident-graph boundary.
+
 ## Polynomial-kernel binary SVM
 
 This lane compares the dense finite-basis polynomial SVM with an independent
