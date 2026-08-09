@@ -2,8 +2,8 @@
 
 The independent NumPy oracle accumulates a sorted class vocabulary, population moments, and Gaussian log densities across two batches. The first batch omits one declared class, so fitting is deferred until the second batch. The Fortran behavioral gate checks transactional unknown-label rollback and CPU/CUDA dispatch. CUDA is an explicit resident sufficient-statistic refusal.
 
-FortML revision: fb28717d296030d94416ceea2ec4519a83c93e3f
-Benchmark revision: c7f9693ddf4a9e469be38982daef8363708c0f0c
+FortML revision: 9b06d473f5d09417fe513af18f0276fe81d5ff5f
+Benchmark revision: 1b9f96aa86fc42231f628115f1c84d3399ae0e99
 
 | phase | device | status | metric | value | max abs error |
 | --- | --- | --- | --- | ---: | ---: |
