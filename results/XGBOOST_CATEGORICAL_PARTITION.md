@@ -13,6 +13,12 @@ so the expected left partition is `{0,2}` and the prediction error is zero to
 binary64 precision.  The release lane also checks the three-node diagnostic and
 repeated fixed-tree prediction timing.
 
+The subset enumeration is deliberately bounded: if a fitted partition feature
+has more than `XGB_MAX_EXHAUSTIVE_CATEGORICAL_VALUES` (12) observed codes,
+FortML returns `FORTNUM_NOT_IMPLEMENTED` rather than risking an unbounded or
+overflowing subset loop. The explicit `categorical_max_categories` metadata
+limit remains 2--64 for the ordered policy and for partition input validation.
+
 The CUDA row is intentionally `unavailable`: no resident CUDA categorical-tree
 kernel is linked, so FortML preserves the typed refusal instead of falling back
 to host execution.  Categorical input JVP/VJP products remain an explicit
