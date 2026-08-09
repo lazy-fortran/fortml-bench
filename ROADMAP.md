@@ -244,6 +244,12 @@ a different workload, precision, device, or residency policy.
   uninterrupted trajectories. `results/mlp_plateau_training.csv` records
   zero oracle error and an explicit typed CUDA-unavailable row; the protocol is
   documented in `results/MLP_PLATEAU_TRAINING.md`.
+- [x] Add the generic trainer-owned learning-rate schedule trajectory lane.
+  An independent Python one-cycle formula and quadratic SGD recurrence check
+  all four applied rates and both final parameters before retaining the release
+  app timing in `results/trainer_schedule.csv`; the report is
+  `results/TRAINER_SCHEDULE.md`. The resident CUDA optimizer path remains an
+  explicit typed `unavailable` row.
 - [x] Add a dense MLP activation lane for linear, `tanh`, ReLU, GELU, SiLU,
   ELU, softplus, leaky ReLU, sigmoid, and Mish. Ten independent NumPy checksum
   rows and ten FortML CPU timings are retained alongside ten explicit CUDA

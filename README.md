@@ -856,6 +856,19 @@ products (including one-cycle peak/final-rate tangents):
 See [`results/MLP_SCHEDULES.md`](results/MLP_SCHEDULES.md). CUDA schedule rows
 are explicit `unavailable` capability records, not host timings.
 
+The generic trainer schedule lane checks a trainer-owned one-cycle trajectory
+against an independent quadratic SGD recurrence. It verifies every applied
+rate, the final parameter vector, and the explicit resident-CUDA boundary:
+
+```bash
+python3 -B scripts/bench_trainer_schedule.py \
+  --fortml ../fortml --output results/trainer_schedule.csv
+```
+
+See [`results/TRAINER_SCHEDULE.md`](results/TRAINER_SCHEDULE.md). The release
+app is accepted only when all four rates and both final parameters agree with
+the Python oracle; the CUDA row remains typed `unavailable`.
+
 The metric-aware plateau lane checks explicit minimizing and maximizing metric
 transitions, patience resets, `min_delta`, compounded reductions, base/factor
 derivatives, and comparison-state zeros against an independent Python oracle:
