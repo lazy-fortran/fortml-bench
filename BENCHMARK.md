@@ -326,3 +326,19 @@ python -B scripts/bench_power_transformer.py \
 
 See [`results/POWER_TRANSFORMER.md`](results/POWER_TRANSFORMER.md) for oracle
 errors, provenance, and the typed device row.
+
+## LightGBM query-weighted rank:pairwise
+
+This lane checks `lightgbm_t%fit_ranking` against a direct NumPy pair loop.
+The oracle covers minimum endpoint row weighting, query isolation, the
+two-row Newton leaf solution, deterministic replay, malformed/singleton
+query refusal, and the explicit CUDA boundary. Ranking margins are raw-link
+values; no probability or hidden host fallback is inferred.
+
+```bash
+python -B scripts/bench_lightgbm_ranking.py \
+  --fortml ../fortml --output results/lightgbm_ranking.csv
+```
+
+See [`results/LIGHTGBM_RANKING.md`](results/LIGHTGBM_RANKING.md) for the
+fixture, oracle values, provenance, and timing rows.
