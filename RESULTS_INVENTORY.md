@@ -1,7 +1,7 @@
 # Benchmark result inventory
 
 The benchmark tree is now inventoried rather than treating every old CSV as a
-release claim. The 2026-08-09 audit found 328 tracked CSV result files (325
+release claim. The 2026-08-09 audit found 327 tracked CSV result files (324
 top-level and three nested):
 
 - 183 pass `scripts/validate_result_schema.py` without `--allow-dirty`.
@@ -13,10 +13,8 @@ top-level and three nested):
 
 The migration-invalid rows are retained only while their benchmark scripts or
 historical reports still reference them. They are not release evidence. The
-audit found no safe archive candidate without first changing a wildcard suite
-or report reference. The unreferenced `gp_categorical_likelihood_wave2.csv`
-is a superseded strict-valid snapshot; the current categorical-GP evidence is
-`gp_categorical_likelihood.csv`.
+superseded unreferenced categorical-GP snapshot was archived during this audit;
+the current categorical-GP evidence is `gp_categorical_likelihood.csv`.
 
 Run the strict release gate for the current evidence set with:
 

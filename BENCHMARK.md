@@ -308,9 +308,8 @@ python -B scripts/bench_gp_categorical_likelihood.py \
 ```
 
 See [`results/GP_CATEGORICAL_LIKELIHOOD.md`](results/GP_CATEGORICAL_LIKELIHOOD.md)
-for the fixture, tolerances, and provenance. The older
-`gp_categorical_likelihood_wave2.csv` snapshot is retained only as historical
-input and is not a release claim.
+for the fixture, tolerances, and provenance. Superseded snapshots are archived
+outside the repository and are not release claims.
 
 ## MLP automatic loss scaling gradient contract
 
