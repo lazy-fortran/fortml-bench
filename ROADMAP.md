@@ -908,6 +908,12 @@ a different workload, precision, device, or residency policy.
   refusal. The release record is `results/bayesian_ridge.csv` with protocol in
   `results/BAYESIAN_RIDGE.md`; evidence optimisation, ARD, and
   derivative-through-fit remain separate gaps.
+- [x] Add the deterministic linear-SGD lane. `scripts/bench_linear_sgd.py`
+  independently replays seeded mini-batch linear regression and binary
+  logistic updates, including Polyak averaging and the update schedule. The
+  release record is `results/linear_sgd.csv` with protocol in
+  `results/LINEAR_SGD.md`; stochastic hypergradients and resident CUDA state
+  remain explicit boundaries.
 - [x] Add transactional multi-output XGBoost and LightGBM regression adapters.
   `scripts/bench_xgboost_multioutput.py` computes an independent NumPy
   two-output one-tree Newton-stump oracle and checks matrix predictions,

@@ -113,6 +113,20 @@ python -B scripts/bench_bayesian_ridge.py \
 
 See [`results/BAYESIAN_RIDGE.md`](results/BAYESIAN_RIDGE.md).
 
+The deterministic linear-SGD lane compares weighted mini-batch regression and
+binary logistic classification against independent NumPy recurrences. It
+checks seeded order streams, Polyak averaging, update counts, and the typed
+CUDA refusal:
+
+```bash
+python -B scripts/bench_linear_sgd.py \
+  --fortml ../fortml --output results/linear_sgd.csv \
+  --report results/LINEAR_SGD.md
+```
+
+See [`results/LINEAR_SGD.md`](results/LINEAR_SGD.md). Stochastic
+hypergradients and resident loader/optimizer state remain outside this lane.
+
 The weighted ordinary-least-squares lane compares the deterministic
 multi-output fit and packed coefficient state with an independent NumPy
 weighted normal-equation oracle. It also checks the release fixed-state JVP
