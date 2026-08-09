@@ -30,5 +30,5 @@ python -B scripts/bench_lightgbm_multiclass.py \
 ```
 
 FortML revision: `afc17bce530716ceb6552576871a3a73ae758056`
-Benchmark revision: `07df33416e962e823b32cb5cedd5ab2bc13233b8+dirty`
+Benchmark revision: `e12f249c158e5459dcef8b51020d45713117de15`
 Python 3.14.6, NumPy 2.5.1
