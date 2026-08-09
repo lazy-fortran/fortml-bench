@@ -95,8 +95,8 @@ def main() -> None:
     gate_text = (completed.stdout + "\n" + completed.stderr).strip()
     passed = completed.returncode == 0
     note = (
-        "independent semantic-label/value oracle; duplicate refusal is "
-        "transactional; pipeline values and packed layouts are unchanged"
+        "independent semantic-label/value oracle, duplicate refusal is "
+        "transactional, and pipeline values and packed layouts are unchanged"
     )
     if not passed:
         note += ": " + (gate_text.splitlines()[-1] if gate_text else "no gate output")
@@ -146,12 +146,12 @@ python -B scripts/bench_basis_feature_names.py \\
 
 | Phase | Backend/device | Result | Evidence |
 | --- | --- | --- | --- |
-| Independent labels and values | NumPy | Pass | {n_features} qualified labels; direct trigonometric/polynomial construction; maximum error `{oracle_error:.3e}` |
-| Fortran semantic-label gate | FortML / CPU | {'Pass' if passed else 'Failed'} | `test_basis_feature_names`; transactional duplicate refusal and composition metadata |
+| Independent labels and values | NumPy | Pass | {n_features} qualified labels, direct trigonometric/polynomial construction, and maximum error `{oracle_error:.3e}` |
+| Fortran semantic-label gate | FortML / CPU | {'Pass' if passed else 'Failed'} | `test_basis_feature_names`, transactional duplicate refusal, and composition metadata |
 
 FortML revision: `{revision(fortml)}`. Benchmark revision: `{revision(root, ignored)}`. Python {platform.python_version()}, NumPy {np.__version__}, GNU Fortran `-O3`.
 
-This is a metadata and correctness lane; it does not claim resident GPU
+This is a metadata and correctness lane. It does not claim resident GPU
 transform throughput. Structural pipeline persistence, sparse feature views,
 and device-resident transforms remain explicit roadmap boundaries.
 """,
