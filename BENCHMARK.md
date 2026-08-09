@@ -864,25 +864,6 @@ See [`results/CUDA_BOOSTED_TREE.md`](results/CUDA_BOOSTED_TREE.md) for the
 zero-error CPU oracle, native CUDA row, and typed boundary. The clean evidence
 is pinned by benchmark commit `186d186` and FortML revision `c50511c`.
 
-## PCA-seeded linear MLP initializer
-
-This lane compares `mlp_t%initialize_from_pca` with an independent NumPy
-centered thin-SVD reconstruction on a deterministic `512 x 16` fixture with
-eight retained components. The CPU release app must match the oracle's
-reconstruction RMSE; CUDA remains an explicit typed refusal until resident
-PCA/MLP initialization is available. The current oracle RMSE is
-`0.4092698664533236`; the FortML row differs by `1.67e-16`.
-
-```bash
-FO_FC=gfortran FO_SCAN_FALLBACK=regex \
-python -B scripts/bench_mlp_pca_initializer.py \
-  --fortml ../fortml --output results/mlp_pca_initializer.csv
-```
-
-See [`results/MLP_PCA_INITIALIZER.md`](results/MLP_PCA_INITIALIZER.md) and
-[`results/mlp_pca_initializer.csv`](results/mlp_pca_initializer.csv) for the
-independent oracle, timings, provenance, and device boundary.
-
 ## Versioned result schema
 
 Release CSVs use the required provenance and correctness fields described in
