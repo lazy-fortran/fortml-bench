@@ -660,3 +660,15 @@ python -B scripts/bench_boosted_partial_dependence.py \
 
 See [`results/BOOSTED_PARTIAL_DEPENDENCE.md`](results/BOOSTED_PARTIAL_DEPENDENCE.md)
 for the hand-computed/NumPy oracle and provenance.
+
+## Versioned result schema
+
+Release CSVs use the required provenance and correctness fields described in
+[`RESULT_SCHEMA.md`](RESULT_SCHEMA.md). Validate the latest lanes with:
+
+```bash
+python -B scripts/validate_result_schema.py --all
+```
+
+The `--all` audit reports historical pre-v1 rows as migrations. Release rows
+must pass without `--allow-dirty`.
