@@ -53,11 +53,11 @@ def revision(repository: Path, ignored: tuple[Path, ...] = ()) -> str:
     return head + ("+dirty" if dirty else "")
 
 
-def details(root: Path, fortml: Path, output: Path) -> dict[str, str]:
+def details(root: Path, fortml: Path, output: Path, report: Path) -> dict[str, str]:
     return {
         "python_version": platform.python_version(), "numpy_version": np.__version__,
         "fortml_revision": revision(fortml),
-        "benchmark_revision": revision(root, (output.resolve(),)),
+        "benchmark_revision": revision(root, (output.resolve(), report.resolve())),
         "compiler": os.environ.get("FO_FC", "gfortran"), "flags": "-O3",
     }
 
@@ -234,7 +234,8 @@ def main() -> None:
     root = Path(__file__).resolve().parents[1]
     fortml = args.fortml.resolve()
     output = args.output.resolve()
-    meta = details(root, fortml, output)
+    report = args.report.resolve()
+    meta = details(root, fortml, output, report)
     expected = oracle()
     rows = oracle_rows(meta, expected)
     if args.skip_fortml:
@@ -247,7 +248,6 @@ def main() -> None:
         writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
-    report = args.report.resolve()
     report.parent.mkdir(parents=True, exist_ok=True)
     max_error = max(float(row["max_abs_error"]) for row in rows if row["max_abs_error"] != "")
     report.write_text(f"""# Grouped coupled-L2 Adam trajectory benchmark
