@@ -58,7 +58,9 @@ python -B scripts/bench_adagrad_hypergradient.py \
 ```
 
 See [`results/ADAGRAD_HYPERGRADIENT_HVP.md`](results/ADAGRAD_HYPERGRADIENT_HVP.md)
-for the fixture, tolerances, and timings.
+for the fixture, tolerances, and timings. The current affine HVP row has
+maximum oracle error `4.54e-7`. Nonlinear multi-layer outer HVPs and resident
+Adagrad derivative state remain typed refusal rows.
 
 ## Weighted random-forest regression
 
