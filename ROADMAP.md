@@ -825,6 +825,14 @@ a different workload, precision, device, or residency policy.
   `results/tree_leaf_products.csv` records zero CPU error and explicit
   unavailable resident-CUDA rows. Split routing and fit-time derivatives stay
   separate discrete boundaries.
+- [x] Add the fixed-structure boosted-tree objective lane.
+  `scripts/bench_boosted_leaf_objective.py` checks weighted squared and binary
+  logistic value/gradient/JVP/VJP/HVP products for both XGBoost and LightGBM
+  against an independent NumPy stump design, then gates bounded FortOpt
+  L-BFGS-B convergence and the typed CUDA refusal. The release record is
+  `results/boosted_leaf_objective.csv` with protocol in
+  `results/BOOSTED_LEAF_OBJECTIVE.md`; split topology remains a discrete
+  boundary.
 - [x] Add transactional multi-output XGBoost and LightGBM regression adapters.
   `scripts/bench_xgboost_multioutput.py` computes an independent NumPy
   two-output one-tree Newton-stump oracle and checks matrix predictions,

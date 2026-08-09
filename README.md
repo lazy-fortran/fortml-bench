@@ -74,6 +74,20 @@ python -B scripts/bench_lightgbm_multiclass.py \
 
 See [`results/LIGHTGBM_MULTICLASS.md`](results/LIGHTGBM_MULTICLASS.md).
 
+The fixed-structure boosted-tree objective lane freezes a fitted two-leaf
+XGBoost or LightGBM topology and independently evaluates weighted squared and
+binary logistic losses in packed base/leaf coordinates. It checks exact
+value/gradient/JVP/VJP/HVP products, bounded FortOpt L-BFGS-B convergence, and
+the typed CUDA boundary:
+
+```bash
+python -B scripts/bench_boosted_leaf_objective.py \
+  --fortml ../fortml --output results/boosted_leaf_objective.csv \
+  --report results/BOOSTED_LEAF_OBJECTIVE.md
+```
+
+See [`results/BOOSTED_LEAF_OBJECTIVE.md`](results/BOOSTED_LEAF_OBJECTIVE.md).
+
 The cross-validation scoring lane independently derives contiguous K-fold fold
 scores, weights, parameter gradients, and FortOpt orientation before accepting
 the Fortran release-app timing. It records a typed CUDA control-plane refusal:
