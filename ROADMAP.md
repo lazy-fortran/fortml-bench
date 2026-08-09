@@ -768,6 +768,12 @@ a different workload, precision, device, or residency policy.
   explicit finite-width approximation boundary. The clean release-app CPU row
   matches the NumPy posterior MSE to `2.78e-17` on source `c2d9c4c`; the
   protocol and provenance are documented in `results/MLP_LAST_LAYER_GP.md`.
+- [x] Extend that initializer with an exact posterior predictive variance
+  diagonal and regularization JVP. The independent dense NumPy precision solve,
+  release app, clean CPU checksum, and typed CUDA refusal are recorded in
+  `results/mlp_last_layer_gp_posterior.csv` and
+  `results/MLP_LAST_LAYER_GP_POSTERIOR.md`; NNGP covariance and full
+  structure-aware GP initialization remain open.
 - [ ] Add matched GPyTorch variational-likelihood and calibrated-likelihood
   comparisons. FortML's CPU inducing-point Bernoulli ELBO, packed gradient,
   JVP, and CUDA refusal are covered by
