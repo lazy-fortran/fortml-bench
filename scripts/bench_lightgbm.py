@@ -203,6 +203,8 @@ def main() -> None:
                      "workload": "lightgbm_leafwise", "phase": "predict",
                      "backend": "fortml_cuda", "device": "cuda", "status": "unavailable",
                      "n_samples": 192, "n_features": 3, "n_estimators": 8,
+                     "seconds_per_operation": 0.0,
+                     "metric": "resident_numeric_prediction", "value": -1.0,
                      "max_abs_error": "nan", "oracle": "typed_device_contract",
                      "notes": "FORTNUM_NOT_IMPLEMENTED; native resident tree ABI unavailable"})
     else:
