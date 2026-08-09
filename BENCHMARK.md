@@ -85,6 +85,23 @@ python -B scripts/bench_basis_linear_regression.py \
 See [`results/BASIS_LINEAR_REGRESSION.md`](results/BASIS_LINEAR_REGRESSION.md)
 for the fixture and reproducibility details.
 
+## PCA-seeded linear MLP initializer
+
+This lane checks the centered thin-SVD reconstruction used to initialize a
+finite two-layer linear MLP. The independent NumPy oracle records the same
+reconstruction RMSE and the release probe keeps the non-resident CUDA boundary
+explicit.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_mlp_pca_initializer.py \
+  --fortml ../fortml --output results/mlp_pca_initializer.csv
+```
+
+See [`results/MLP_PCA_INITIALIZER.md`](results/MLP_PCA_INITIALIZER.md) for the
+oracle and device contract. The clean evidence is pinned by the benchmark
+revision recorded in the CSV and FortML `21099eb`.
+
 ## Sequential basis device dispatch
 
 This lane checks explicit CPU dispatch for a sequential polynomial/Fourier
@@ -847,6 +864,25 @@ See [`results/CUDA_BOOSTED_TREE.md`](results/CUDA_BOOSTED_TREE.md) for the
 zero-error CPU oracle, native CUDA row, and typed boundary. The clean evidence
 is pinned by benchmark commit `186d186` and FortML revision `c50511c`.
 
+## PCA-seeded linear MLP initializer
+
+This lane compares `mlp_t%initialize_from_pca` with an independent NumPy
+centered thin-SVD reconstruction on a deterministic `512 x 16` fixture with
+eight retained components. The CPU release app must match the oracle's
+reconstruction RMSE; CUDA remains an explicit typed refusal until resident
+PCA/MLP initialization is available. The current oracle RMSE is
+`0.4092698664533236`; the FortML row differs by `1.67e-16`.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_mlp_pca_initializer.py \
+  --fortml ../fortml --output results/mlp_pca_initializer.csv
+```
+
+See [`results/MLP_PCA_INITIALIZER.md`](results/MLP_PCA_INITIALIZER.md) and
+[`results/mlp_pca_initializer.csv`](results/mlp_pca_initializer.csv) for the
+independent oracle, timings, provenance, and device boundary.
+
 ## Versioned result schema
 
 Release CSVs use the required provenance and correctness fields described in
@@ -856,5 +892,8 @@ Release CSVs use the required provenance and correctness fields described in
 python -B scripts/validate_result_schema.py --all
 ```
 
-The `--all` audit reports historical pre-v1 rows as migrations. Release rows
-must pass without `--allow-dirty`.
+The complete inventory and migration policy are in
+[`RESULTS_INVENTORY.md`](RESULTS_INVENTORY.md). The `--all` command audits the
+155 retained legacy rows as well as release evidence, so it is expected to
+return nonzero until those rows are rerun or quarantined. Release rows must
+pass without `--allow-dirty`.
