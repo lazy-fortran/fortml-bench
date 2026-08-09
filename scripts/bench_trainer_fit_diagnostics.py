@@ -3,7 +3,7 @@
 
 The NumPy oracle independently defines the quadratic optimum and the
 callback-stopped Adam update count.  The FortML release app supplies the
-bounded FortOpt counters and schema-7 state contract. No source-inspection
+ bounded FortOpt counters and schema-8 state contract. No source-inspection
 result is accepted as a behavioral pass.
 """
 
@@ -190,7 +190,7 @@ def main() -> None:
             metric="test_trainer_fit_diagnostics",
             value=1.0 if not args.skip_fortml else "nan", max_abs_error=0.0,
             oracle="Fortran independent quadratic behavioral oracle",
-            notes="counter relationships, schema-7 persistence, and optimum"),
+            notes="counter relationships, schema-8 persistence, and optimum"),
         row(metadata, phase="device_boundary", device="cuda", status="unavailable",
             metric="resident_trainer", value="nan", max_abs_error=0.0,
             oracle="typed capability boundary",
@@ -204,7 +204,7 @@ def main() -> None:
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text(
         "# Generic trainer fit diagnostics\n\n"
-        "This lane gates the schema-7 generic trainer diagnostics against an "
+        "This lane gates the schema-8 generic trainer diagnostics against an "
         "independent NumPy quadratic oracle. The bounded FortOpt L-BFGS-B "
         "row records iteration, line-search, and curvature counters. A "
         "callback-stopped Adam row checks fit-call/update counters and the "

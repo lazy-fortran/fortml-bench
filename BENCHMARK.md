@@ -22,7 +22,7 @@ independent oracle and provenance.
 This lane checks the model-agnostic trainer's patience and best-state
 restoration for both loss metrics (minimize, the default) and score metrics
 (`validation_higher_is_better`). The independent NumPy oracle checks the
-known-answer trajectories and the release test checks schema-7 checkpoint
+known-answer trajectories and the release test checks schema-8 checkpoint
 continuation plus the transactional callback-presence refusal.
 
 ```bash
@@ -54,7 +54,7 @@ the independent oracle, provenance, and refusal contract.
 ## Generic trainer fit diagnostics
 
 This lane checks the production `trainer_state_t` diagnostics introduced by
-the schema-7 checkpoint contract. An independent quadratic oracle gates the
+the schema-8 checkpoint contract. An independent quadratic oracle gates the
 bounded FortOpt L-BFGS-B optimum, while the release app records optimizer
 iterations, line-search evaluations, curvature updates, and successful fit
 calls. A callback-stopped Adam run checks that streaming optimizers expose zero
