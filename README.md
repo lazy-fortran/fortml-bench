@@ -60,6 +60,17 @@ python -B scripts/bench_xgboost_multiclass_validation.py \
 
 See [`results/XGBOOST_MULTICLASS_VALIDATION.md`](results/XGBOOST_MULTICLASS_VALIDATION.md).
 
+The cross-validation scoring lane independently derives contiguous K-fold fold
+scores, weights, parameter gradients, and FortOpt orientation before accepting
+the Fortran release-app timing. It records a typed CUDA control-plane refusal:
+
+```bash
+python -B scripts/bench_cross_validation.py \
+  --fortml ../fortml --output results/cross_validation.csv
+```
+
+See [`results/CROSS_VALIDATION.md`](results/CROSS_VALIDATION.md).
+
 ## Complete model and GP-feature calls
 
 The small exact-GP and MLP harness separates fit, prediction, forward, and

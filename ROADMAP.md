@@ -701,6 +701,13 @@ a different workload, precision, device, or residency policy.
   record is `results/time_series_split.csv`; the protocol is documented in
   `results/TIME_SERIES_SPLIT.md`. Repeated K-fold, Monte Carlo scoring, and
   generic model cloning remain separate open workflows.
+- [x] Add the weighted cross-validation scoring lane. An independent NumPy
+  K-fold oracle derives every held-out fold score and weight, then checks the
+  weighted mean, parameter gradient, FortOpt-oriented minimization value, and
+  release-app diagnostics before retaining timing in
+  `results/cross_validation.csv`. The lane records the explicit CPU index/
+  callback control-plane CUDA refusal and documents the protocol in
+  `results/CROSS_VALIDATION.md`.
 - [x] Add a centered dense PCA lane with an independent NumPy thin-SVD oracle,
   scikit-learn full-SVD context, deterministic sign/rank checks, and the
   FortML release-app orthonormality/timing protocol. The raw record is
