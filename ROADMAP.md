@@ -791,6 +791,12 @@ a different workload, precision, device, or residency policy.
   plus typed resident-CUDA refusals in `results/derivative_gp_matern_hvp.csv`.
   The protocol and exact source provenance are documented in
   `results/DERIVATIVE_GP_MATERN_HVP.md`.
+- [x] Add the Hamiltonian vector-field VJP lane. An independent quadratic
+  NumPy oracle checks the canonical JVP/VJP identity, while the FortML release
+  app checks packed parameter/state reverse products and records CPU timing plus
+  a typed resident-CUDA refusal in `results/hamiltonian_vector_field_vjp.csv`.
+  The protocol and provenance are documented in
+  `results/HAMILTONIAN_VECTOR_FIELD_VJP.md`.
 - [x] Add the locally-periodic exact-GP lane with separate vectorized and
   scalar-loop covariance oracles, exact posterior moments, input and
   logarithmic parameter products, and an explicit static-operator/CUDA

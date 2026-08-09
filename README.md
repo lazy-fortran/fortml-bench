@@ -300,6 +300,18 @@ FO_SCAN_FALLBACK=regex python -B scripts/bench_derivative_gp_matern_hvp.py \
 
 See [`results/DERIVATIVE_GP_MATERN_HVP.md`](results/DERIVATIVE_GP_MATERN_HVP.md).
 
+The Hamiltonian vector-field VJP lane checks the canonical reverse product
+against an independent quadratic Hamiltonian oracle, then runs the FortML
+release app for the packed parameter/state adjoint identity. CUDA is recorded
+as an explicit resident-HNN graph boundary:
+
+```bash
+FO_SCAN_FALLBACK=regex python -B scripts/bench_hamiltonian_vector_field_vjp.py \
+  --fortml ../fortml --output results/hamiltonian_vector_field_vjp.csv
+```
+
+See [`results/HAMILTONIAN_VECTOR_FIELD_VJP.md`](results/HAMILTONIAN_VECTOR_FIELD_VJP.md).
+
 The change-point GP lane checks a gated RBF-plus-constant covariance, exact-GP
 posterior moments, and packed parameter JVP/VJP/HVP products against an
 independent NumPy covariance and central-difference oracle. The Fortran gate
