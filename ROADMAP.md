@@ -407,6 +407,11 @@ a different workload, precision, device, or residency policy.
   contraction HVP reductions for a 4,096-by-3 degree-eight fixture; the raw
   rows are `results/chebyshev_basis.csv`, with CPU timings and a typed CUDA
   refusal documented in `results/CHEBYSHEV_BASIS.md`.
+- [x] Add the cubic B-spline basis lane for the order-four production shortcut.
+  The independent NumPy Cox--de Boor fixture checks value, input JVP/VJP, and
+  fixed-span HVP reductions on a 2,048-by-2 map; CPU timings and the explicit
+  resident-CUDA refusal are pinned in `results/cubic_spline_basis.csv` and
+  `results/CUBIC_SPLINE_BASIS.md`.
 - [x] Add the dense pipeline input-schema lane. The independent names/count
   oracle checks matching validation plus transactional duplicate/mismatch
   refusal, while the Fortran app records repeated CPU validation and an

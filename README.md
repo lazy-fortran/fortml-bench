@@ -539,6 +539,21 @@ python -B scripts/bench_chebyshev_basis.py \
 
 See [`results/CHEBYSHEV_BASIS.md`](results/CHEBYSHEV_BASIS.md).
 
+The cubic B-spline basis lane exercises the production order-four shortcut
+`make_cubic_spline_basis` on a 2,048-by-2 clamped fixture.  Its independent
+NumPy oracle builds the augmented endpoint-repeated knot vectors with
+Cox--de Boor recursion and checks value, input JVP, input VJP, and fixed-span
+scalar-contraction HVP reductions before retaining CPU timings.  The map is
+parameter-free; resident CUDA is recorded as a typed refusal because no
+device lowering exists yet:
+
+```bash
+python -B scripts/bench_cubic_spline_basis.py \
+  --fortml ../fortml --output results/cubic_spline_basis.csv
+```
+
+See [`results/CUBIC_SPLINE_BASIS.md`](results/CUBIC_SPLINE_BASIS.md).
+
 The derivative-GP lane checks exact query-input JVP/VJP products and dense
 posterior covariance parameter JVP/VJP products for mixed value/first-derivative
 periodic, rational-quadratic, cosine, polynomial, spectral-mixture, and ARD-RBF
