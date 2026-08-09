@@ -77,6 +77,12 @@ research extension, not unfinished work in the present benchmark scope.
 The checklist below is complete for the defined scope. Research directions are
 not completion gates.
 
+The latest MLP infrastructure lane records the automatic loss-scale policy in
+`results/mlp_loss_scaling.csv` and `results/MLP_LOSS_SCALING.md`. An independent
+NumPy recurrence checks finite-update growth and overflow backoff, the release
+app checks FP64 trainer state and formatted schema-11 persistence through the
+Fortran oracle, and FP32/CUDA rows remain typed capability boundaries.
+
 ## Workloads
 
 - [x] Complete matched RBF MVM runs on CPU and GPU for Fortran, dense PyTorch,
@@ -284,6 +290,12 @@ a different workload, precision, device, or residency policy.
   distance/margin derivative boundaries and the typed CUDA value refusal are
   recorded in `results/contrastive_loss.csv` and
   `results/CONTRASTIVE_LOSS.md`.
+- [x] Add the MLP automatic loss-scaling benchmark. The independent NumPy
+  recurrence checks growth, overflow backoff, and skipped-update accounting;
+  `scripts/bench_mlp_loss_scaling.py` invokes the release app and
+  `test_mlp_loss_scaling`, records FP64 dynamic state, and emits typed FP32 and
+  CUDA rows in `results/mlp_loss_scaling.csv`. The protocol is documented in
+  `results/MLP_LOSS_SCALING.md`; resident lower-precision kernels remain open.
 - [x] Add a dense multilabel-indicator logistic lane with independent
   per-output Newton oracle checks, complete positive-probability and hard
   indicator outputs, contextual scikit-learn timing, and explicit CUDA

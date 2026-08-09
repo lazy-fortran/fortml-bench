@@ -824,6 +824,19 @@ See [`results/MLP_ACTIVATIONS.md`](results/MLP_ACTIVATIONS.md). Every CUDA
 row is an explicit `unavailable` capability record until resident MLP
 activation and dense-gradient kernels are linked.
 
+The MLP automatic loss-scaling lane replays finite-update growth and overflow
+backoff in an independent NumPy recurrence, then checks the release app,
+FP64 trainer state, and the Fortran checkpoint/refusal oracle:
+
+```bash
+python3 -B scripts/bench_mlp_loss_scaling.py \
+    --fortml ../fortml --output results/mlp_loss_scaling.csv
+```
+
+See [`results/MLP_LOSS_SCALING.md`](results/MLP_LOSS_SCALING.md). FP32 and
+CUDA rows are explicit capability records until master-weight and resident
+lower-precision kernels are linked.
+
 The scheduled trajectory hypergradient lane checks a complete `3-8-1` MLP
 training trajectory with exact reverse gradients and a directional JVP over
 base-rate, L2, minimum-fraction, and decay-logit hyperparameters:
