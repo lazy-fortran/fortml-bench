@@ -519,3 +519,50 @@ python -B scripts/bench_polynomial_svm.py \
 
 See [`results/POLYNOMIAL_SVM.md`](results/POLYNOMIAL_SVM.md) for the fixture,
 oracle, tolerances, and pinned provenance.
+
+## Variational multiclass GP log probabilities
+
+This lane checks stable one-vs-rest logistic and probit log probabilities,
+row-wise log-sum-exp normalization, packed variational-state JVP/VJP products,
+fixed-state input products, and the typed CUDA refusal. An independent NumPy
+oracle covers central-difference agreement and an extreme tail that would
+underflow in probability space.
+
+```bash
+python -B scripts/bench_gp_variational_multiclass_log_proba.py \
+  --fortml ../fortml --output results/gp_variational_multiclass_log_proba.csv
+```
+
+See [`results/GP_VARIATIONAL_MULTICLASS_LOG_PROBA.md`](results/GP_VARIATIONAL_MULTICLASS_LOG_PROBA.md)
+for the oracle, release timing, and provenance.
+
+## Resident CUDA dense MSE training
+
+This lane checks a resident dense affine MSE update with device-resident
+parameters, batches, gradients, and optimizer state. The native CUDA oracle
+covers SGD, Adam, and AdamW against a NumPy recurrence and compute-sanitizer
+checks report zero memory errors. Ordinary builds retain a typed
+`FORTNUM_NOT_IMPLEMENTED` refusal rather than falling back to the host.
+
+```bash
+python -B scripts/bench_cuda_dense_training.py \
+  --fortml ../fortml --output results/cuda_dense_training.csv
+```
+
+See [`results/CUDA_DENSE_TRAINING.md`](results/CUDA_DENSE_TRAINING.md) for
+native/sanitizer results, transfer counters, and refusal behavior.
+
+## Successive-halving hyperparameter search
+
+This lane checks deterministic seeded candidate generation, multi-fidelity rung
+pruning, evaluation-budget accounting, and fixed-resource FortOpt L-BFGS-B
+refinement against an independent quadratic oracle. CUDA is a typed refusal
+until a resident objective callback ABI is available.
+
+```bash
+python -B scripts/bench_hyperparameter_successive_halving.py \
+  --fortml ../fortml --output results/hyperparameter_successive_halving.csv
+```
+
+See [`results/HYPERPARAMETER_SUCCESSIVE_HALVING.md`](results/HYPERPARAMETER_SUCCESSIVE_HALVING.md)
+for the fixture, rung diagnostics, and provenance.
