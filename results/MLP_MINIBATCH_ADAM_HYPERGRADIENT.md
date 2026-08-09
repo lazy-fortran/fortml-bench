@@ -13,9 +13,10 @@ The packed outer variable is
 The NumPy oracle directly replays the Adam first/second moments and computes
 central finite differences for all five components and the directional
 product. The FortML release app emits the complete value, gradient, and JVP
-records before its repeated CPU timing is retained. CUDA rows are explicit
-`unavailable` capability refusals because the complete mini-batch Adam state
-and derivative graph are not resident.
+records before its repeated CPU timing is retained. The five-component fixture
+agrees within `9e-12` absolute error. CUDA rows are explicit `unavailable`
+capability refusals because the complete mini-batch Adam state and derivative
+graph are not resident.
 
 Run the lane with:
 
