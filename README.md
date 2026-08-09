@@ -1893,6 +1893,20 @@ python3 -B scripts/bench_gp_multilabel.py \
 
 See [`results/GP_MULTILABEL.md`](results/GP_MULTILABEL.md).
 
+The shared multilabel GP hyperparameter lane keeps the two fitted Laplace
+modes fixed while optimizing one common RBF log-variance/log-lengthscale
+vector with bounded FortOpt L-BFGS-B. An independent NumPy prior-solve and
+analytic covariance-contraction oracle checks the value, gradient, JVP/VJP,
+and central finite difference; transactional malformed updates and the
+CPU-only CUDA boundary are covered by the FortML unit/release probes:
+
+```bash
+python -B scripts/bench_gp_multilabel_optimizer.py \
+  --fortml ../fortml --output results/gp_multilabel_optimizer.csv
+```
+
+See [`results/GP_MULTILABEL_OPTIMIZER.md`](results/GP_MULTILABEL_OPTIMIZER.md).
+
 The inducing-point Bernoulli variational-GP lane checks a dense two-inducing
 point ELBO and packed variational-parameter gradient against an independent
 NumPy finite-difference oracle, then runs FortML's seeded Monte Carlo,

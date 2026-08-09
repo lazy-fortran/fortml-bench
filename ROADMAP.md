@@ -156,6 +156,12 @@ Fortran oracle, and FP32/CUDA rows remain typed capability boundaries.
   explicit CUDA refusal is recorded in
   `results/gp_multiclass_hyper_hvp.csv` and
   [`results/GP_MULTICLASS_HYPER_HVP.md`](results/GP_MULTICLASS_HYPER_HVP.md).
+- [x] Add the shared multilabel Laplace-GP FortOpt lane. The independent NumPy
+  oracle checks the fixed-state negative summed mode posterior, shared
+  log-kernel gradient, JVP/VJP duality, and central finite difference; the
+  release probe records bounded L-BFGS-B convergence and the explicit
+  CPU-only CUDA capability row in `results/gp_multilabel_optimizer.csv` and
+  [`results/GP_MULTILABEL_OPTIMIZER.md`](results/GP_MULTILABEL_OPTIMIZER.md).
 - [x] Add exact latent-Gaussian ordinal-GP evidence hyperparameter products.
   The independent dense NumPy oracle checks every packed kernel/log-noise
   gradient and HVP, while the release app checks bounded FortOpt L-BFGS-B
