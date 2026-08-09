@@ -8,8 +8,8 @@ and CUDA rows record typed capability boundaries.
 Growth and overflow branches are discrete, so smooth HPO products are
 not claimed across a branch change.
 
-FortML revision: `8249266631068de506a58b261cd874b3a9ce2c07`
-Benchmark revision: `551d581e55ceb7418c9c7a55a005b824911c8e61`
+FortML revision: `25cc887532decf81f9cc4254711e4b28456ca7ea`
+Benchmark revision: `58c065b4129cd1d4e8e7ad82850581c1157f853b`
 
 | phase | status | metric | value | max abs error |
 | --- | --- | --- | ---: | ---: |

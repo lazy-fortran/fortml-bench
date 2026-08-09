@@ -8,4 +8,4 @@ Reproduce:
 python -B scripts/bench_lightgbm_multiclass_log_proba.py --fortml ../fortml --output results/lightgbm_multiclass_log_proba.csv --report results/LIGHTGBM_MULTICLASS_LOG_PROBA.md
 ```
 
-The CUDA row is `unavailable` with typed `FORTNUM_NOT_IMPLEMENTED`; no host fallback timing is reported.
+The CUDA row is `unavailable` with typed `FORTNUM_NOT_IMPLEMENTED`. No host fallback timing is reported.
