@@ -119,6 +119,23 @@ python -B scripts/bench_gp_multilabel_log_proba.py \
 See [`results/GP_MULTILABEL_LOG_PROBA.md`](results/GP_MULTILABEL_LOG_PROBA.md)
 for the fixture and reproducibility details.
 
+## MLP automatic loss scaling gradient contract
+
+This lane checks the independent growth/backoff recurrence together with the
+trainer's allocation-free scale/check/unscale gradient products. The release
+app verifies exact finite round trips, detects a scale-induced IEEE overflow,
+and refuses the corresponding optimizer commit. FP32 and CUDA remain explicit
+typed capability boundaries until resident master-weight kernels are released.
+
+```bash
+python -B scripts/bench_mlp_loss_scaling.py \
+  --fortml ../fortml --output results/mlp_loss_scaling.csv \
+  --report results/MLP_LOSS_SCALING.md
+```
+
+See [`results/MLP_LOSS_SCALING.md`](results/MLP_LOSS_SCALING.md) for the
+independent NumPy oracle and provenance.
+
 ## Multiclass XGBoost log probabilities
 
 This lane checks stable sorted-label one-vs-rest `predict_log_proba`, input and

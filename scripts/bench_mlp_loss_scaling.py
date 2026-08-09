@@ -73,7 +73,8 @@ def app_values(output: str) -> dict[str, list[float]]:
     for line in output.splitlines():
         fields = [item.strip() for item in line.split(",")]
         if fields and fields[0] in {
-                "recurrence_overflow", "fp64_training", "fp32_typed_refusal"}:
+                "recurrence_overflow", "gradient_products", "gradient_overflow",
+                "gradient_overflow_commit", "fp64_training", "fp32_typed_refusal"}:
             values[fields[0]] = [float(item) for item in fields[1:]]
     return values
 
@@ -144,12 +145,19 @@ def main() -> None:
         if app_result.returncode != 0:
             note = (app_result.stderr[-240:] or app_result.stdout[-240:]).replace("\n", " ")
     observed_overflow = parsed.get("recurrence_overflow", [float("nan")]*3)
+    observed_products = parsed.get("gradient_products", [float("nan")]*2)
+    observed_gradient_overflow = parsed.get("gradient_overflow", [float("nan")]*2)
+    observed_overflow_commit = parsed.get("gradient_overflow_commit", [float("nan")])
     observed_training = parsed.get("fp64_training", [float("nan")]*3)
     observed_refusal = parsed.get("fp32_typed_refusal", [float("nan")])
     errors = np.array([
         abs(observed_overflow[0] - expected["final_scale"]),
         abs(observed_overflow[1] - expected["overflow_count"]),
         abs(observed_overflow[2] - expected["skipped_updates"]),
+        abs(observed_products[0]),
+        abs(observed_products[1] - 1.0),
+        abs(observed_gradient_overflow[0] - 1.0),
+        abs(observed_overflow_commit[0] - 2.0),
         abs(observed_training[1] - 16.0),
         abs(observed_refusal[0] - 3.0),
     ])
@@ -163,6 +171,21 @@ def main() -> None:
                     max_abs_error=abs(observed_training[1] - 16.0),
                     oracle="FP64 trainer captures dynamic scale and counters",
                     notes=f"updates={observed_training[0] if observed_training else 'nan'}"))
+    rows.append(row(metadata, phase="gradient_scale_round_trip", status=app_status,
+                    metric="max_abs_error", value=observed_products[0],
+                    max_abs_error=abs(observed_products[0]),
+                    oracle="explicit scale/unscale product",
+                    notes=f"finite={observed_products[1] if observed_products else 'nan'}"))
+    rows.append(row(metadata, phase="gradient_overflow_detection", status=app_status,
+                    metric="overflow_detected", value=observed_gradient_overflow[0],
+                    max_abs_error=abs(observed_gradient_overflow[0] - 1.0),
+                    oracle="scaled finite-vector overflow boundary",
+                    notes=f"counter={observed_gradient_overflow[1] if observed_gradient_overflow else 'nan'}"))
+    rows.append(row(metadata, phase="gradient_overflow_commit", status=app_status,
+                    metric="status_code", value=observed_overflow_commit[0],
+                    max_abs_error=abs(observed_overflow_commit[0] - 2.0),
+                    oracle="non-finite scaled gradient is refused before optimizer commit",
+                    notes="FORTNUM_CONVERGENCE_ERROR"))
     rows.append(row(metadata, phase="fp32_typed_refusal", status=app_status,
                     metric="status_code", value=observed_refusal[0],
                     max_abs_error=abs(observed_refusal[0] - 3.0),
@@ -195,7 +218,8 @@ def main() -> None:
         "The lane compares the release app with an independent NumPy recurrence.",
         "The policy starts at 8, grows by 2 after two finite updates, and backs",
         "off by 0.5 after an overflow. The FP64 trainer row checks persisted",
-        "dynamic state. FP32 and CUDA rows record typed capability boundaries.",
+        "dynamic state and explicit scale/check/unscale gradient products. FP32",
+        "and CUDA rows record typed capability boundaries.",
         "Growth and overflow branches are discrete, so smooth HPO products are",
         "not claimed across a branch change.",
         "",
