@@ -193,8 +193,14 @@ def main() -> None:
         abs(observed_fp16[0] - 3.0),
         abs(observed_bf16[0] - 3.0),
     ])
+    # Discrete FP64/contract products are expected to be bitwise-stable at
+    # this scale; the FP32 trajectory is intentionally compared at its
+    # single-precision rounding envelope instead of the FP64 tolerance.
+    fp32_errors = errors[[11, 12, 14]]
+    contract_errors = np.delete(errors, [11, 12, 14])
     app_passed = (app_status == "pass" and np.all(np.isfinite(errors)) and
-                  np.max(errors) <= 1.0e-12)
+                  np.max(contract_errors) <= 1.0e-12 and
+                  np.max(fp32_errors) <= 1.0e-8)
     rows.append(row(metadata, phase="release_app_recurrence", status="pass" if app_passed else app_status,
                     metric="final_scale", value=observed_overflow[0],
                     seconds_per_operation=elapsed, max_abs_error=float(np.max(errors)),
