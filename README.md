@@ -300,6 +300,18 @@ FO_SCAN_FALLBACK=regex python -B scripts/bench_derivative_gp_matern_hvp.py \
 
 See [`results/DERIVATIVE_GP_MATERN_HVP.md`](results/DERIVATIVE_GP_MATERN_HVP.md).
 
+The finite-feature GP posterior lane extends the deterministic MLP last-layer
+initializer with posterior predictive variance and an exact regularization JVP.
+An independent NumPy precision solve gates the FortML release app; the CUDA
+row remains an explicit resident feature-map/precision refusal:
+
+```bash
+python3 -B scripts/bench_mlp_last_layer_gp_posterior.py \
+  --fortml ../fortml --output results/mlp_last_layer_gp_posterior.csv
+```
+
+See [`results/MLP_LAST_LAYER_GP_POSTERIOR.md`](results/MLP_LAST_LAYER_GP_POSTERIOR.md).
+
 The Hamiltonian vector-field VJP lane checks the canonical reverse product
 against an independent quadratic Hamiltonian oracle, then runs the FortML
 release app for the packed parameter/state adjoint identity. CUDA is recorded
