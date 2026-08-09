@@ -2,8 +2,8 @@
 
 This lane compares the release application with an independent NumPy tanh-MLP oracle. It freezes layer_1.weight, verifies that the packed deployment value is unchanged and that frozen VJP/JVP coordinates are zero, then re-enables the block and checks the analytic JVP. The Fortran behavioral oracle covers transactional unknown-path refusal. CUDA is recorded as unavailable because resident optimizer routing for this metadata path is not claimed.
 
-FortML revision: 455588592ec84d74c313e502f67b397d40c83de9
-Benchmark revision: 2b82eac5f01c8a879d5f429b53121d5e9c7a7268
+FortML revision: ab655ac540f23f37cd5067844fc8f34c869cf00c
+Benchmark revision: b44ea3b8eea2b96e670e7a0af261997415ef4787
 
 | phase | status | metric | value | max abs error |
 | --- | --- | --- | ---: | ---: |
