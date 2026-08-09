@@ -475,6 +475,25 @@ See [`results/LIGHTGBM_CUDA.md`](results/LIGHTGBM_CUDA.md) and
 [`results/lightgbm_leafwise.csv`](results/lightgbm_leafwise.csv) for the
 correctness gate and provenance.
 
+## XGBoost resident numeric policy
+
+This lane fits a finite numeric XGBoost `gbtree` model and checks the resident
+CUDA dispatch against its CPU prediction. Categorical partitions,
+missing-value defaults, ranking, and DART are explicit typed refusals. The
+refusal tests require `FORTNUM_NOT_IMPLEMENTED` and unchanged sentinel
+outputs, so no host execution is counted as GPU work. The additive-tree plan
+keeps model arrays resident and exposes query-only transfer counters for the
+native steady-state gate.
+
+```bash
+python -B scripts/bench_xgboost_cuda.py \
+  --fortml ../fortml --output results/xgboost_cuda.csv \
+  --report results/XGBOOST_CUDA.md
+```
+
+See [`results/XGBOOST_CUDA.md`](results/XGBOOST_CUDA.md) for the independent
+CPU oracle, native or unavailable CUDA row, policy refusals, and provenance.
+
 ## Power transformer
 
 This lane compares fixed-lambda Yeo--Johnson and Box--Cox transforms against
