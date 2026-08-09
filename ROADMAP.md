@@ -301,6 +301,12 @@ a different workload, precision, device, or residency policy.
   parameters, fit/predict timings, and the explicit typed CUDA refusal. The
   raw record is `results/rbf_svm_multiclass.csv`; the protocol is documented in
   `results/RBF_SVM_MULTICLASS.md`.
+- [x] Add the deterministic one-vs-one finite-basis RBF-SVM lane. Independent
+  per-pair SciPy L-BFGS-B solves gate sorted pair metadata, pair-specific
+  packed offsets, decision margins, normalized pairwise-vote probabilities,
+  original labels, fit/predict timings, and the explicit typed CUDA refusal.
+  The raw record is `results/ovo_rbf_svm.csv`; the protocol is documented in
+  `results/OVO_RBF_SVM.md`.
 - [x] Add a bounded dense RBF one-class SVM correctness lane with an independent
   NumPy capped-simplex dual/score/label oracle and CPU oracle fit/predict
   timings. The release app is checked against every support weight, offset,

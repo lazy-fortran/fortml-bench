@@ -969,6 +969,19 @@ See [`results/RBF_SVM_MULTICLASS.md`](results/RBF_SVM_MULTICLASS.md). CUDA is
 recorded as an explicit typed refusal until resident batched RBF kernels are
 linked.
 
+The one-vs-one RBF-SVM lane independently solves every sorted class pair on
+its own finite basis and replays FortML's normalized pairwise-vote policy. It
+gates pair decisions, simplex probabilities, original labels, pair metadata,
+and packed pair-specific parameters before retaining CPU timings:
+
+```bash
+python -B scripts/bench_ovo_rbf_svm.py \
+    --fortml ../fortml --output results/ovo_rbf_svm.csv
+```
+
+See [`results/OVO_RBF_SVM.md`](results/OVO_RBF_SVM.md). CUDA remains an
+explicit typed refusal until resident pair-batched RBF kernels are linked.
+
 The linear-regression margin lane checks weighted dense primal SVR fitting for
 arbitrary real targets, epsilon-insensitive prediction, packed affine
 parameters, and an independent NumPy/SciPy L-BFGS-B oracle:
