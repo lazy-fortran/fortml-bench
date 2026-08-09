@@ -37,6 +37,10 @@ python -B scripts/validate_result_schema.py \
   results/boosted_partial_dependence.csv
 ```
 
-The validator also supports `--all` for an audit of historical rows. Existing
-pre-v1 records remain visible and are reported as migrations until their
-headers are normalized.
+The validator also supports `--all` for an audit of historical rows. The
+2026-08-09 inventory contains 318 tracked CSVs: 163 pass the v1 release
+schema and 155 remain legacy/non-release records. Those legacy files are kept
+as historical research data, but they are not release evidence and are not
+allowed to silently pass the release gate. See
+[`RESULTS_INVENTORY.md`](RESULTS_INVENTORY.md) for the audit policy and the
+exact commands used to quarantine or rerun a row.
