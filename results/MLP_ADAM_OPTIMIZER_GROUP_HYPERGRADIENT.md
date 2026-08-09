@@ -1,7 +1,8 @@
 # Grouped coupled-L2 Adam trajectory benchmark
 
 This lane compares FortML's fixed full-batch grouped Adam trajectory with an
-independent NumPy two-parameter recurrence.  Adam moment state is updated
+independent NumPy two-parameter recurrence over six packed hyperparameters.
+Adam moment state is updated
 before each group's post-update multiplier, matching `mlp_train`.
 
 Run it with:
@@ -12,10 +13,10 @@ python -B scripts/bench_mlp_adam_optimizer_group_hypergradient.py \
   --report results/MLP_ADAM_OPTIMIZER_GROUP_HYPERGRADIENT.md
 ```
 
-The release fixture records 18 rows.  The maximum FortML-versus-NumPy
+The release fixture records 24 rows.  The maximum FortML-versus-NumPy
 discrepancy was `2.558e-12` (gate `3.0e-08`).  CUDA is recorded as
 an explicit typed-unavailable boundary because the complete resident Adam
 trajectory and derivative state are not implemented.
 
-Source revision: `41d0509f674cff5b89902c190a843a142e463ece`  
-Benchmark revision: `fca008da9b7342fa0a5c59b9e5cfa549d77665ef`
+Source revision: `c16d5a3d41e3dc885106af855d58cb209c624e80`  
+Benchmark revision: `01f78117ea2f928e5141bc381493b49de6fb4895+dirty`
