@@ -491,6 +491,18 @@ python -B scripts/bench_gp_classification_hvp.py \
 
 See [`results/GP_CLASSIFICATION_HYPERPARAMETER_HVP.md`](results/GP_CLASSIFICATION_HYPERPARAMETER_HVP.md).
 
+The ordinal-GP evidence lane checks exact latent-Gaussian kernel and log-noise
+gradients, directional HVPs, and bounded FortOpt L-BFGS-B fitting against an
+independent dense NumPy Cholesky oracle. Transactional malformed-input checks
+and typed CUDA refusals are retained as explicit rows:
+
+```bash
+python -B scripts/bench_gp_ordinal_hyperparameters.py \
+  --fortml ../fortml --output results/gp_ordinal_hyperparameters.csv
+```
+
+See [`results/GP_ORDINAL_HYPERPARAMETERS.md`](results/GP_ORDINAL_HYPERPARAMETERS.md).
+
 The binary classification lane compares the FortML logistic estimator with
 scikit-learn on a deterministic two-label fixture. It checks full predicted
 labels and probabilities with independent NumPy accuracy, log-loss, and

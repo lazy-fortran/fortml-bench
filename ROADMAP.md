@@ -150,6 +150,12 @@ Fortran oracle, and FP32/CUDA rows remain typed capability boundaries.
   independent NumPy likelihood-gradient finite difference checks all four
   packed log-kernel coordinates and log noise, including the degree-one limit;
   the release record has CPU timings and an explicit resident-CUDA refusal.
+- [x] Add exact latent-Gaussian ordinal-GP evidence hyperparameter products.
+  The independent dense NumPy oracle checks every packed kernel/log-noise
+  gradient and HVP, while the release app checks bounded FortOpt L-BFGS-B
+  convergence, transactional validation, and typed CUDA refusals in
+  `results/gp_ordinal_hyperparameters.csv`; the protocol is documented in
+  [`results/GP_ORDINAL_HYPERPARAMETERS.md`](results/GP_ORDINAL_HYPERPARAMETERS.md).
 - [x] Add the RBF mixed-observation order-three lane. The independent dense
   NumPy oracle covers derivative covariance blocks through total order six,
   posterior moments, query input JVP/VJP products, and the packed likelihood
