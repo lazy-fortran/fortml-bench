@@ -103,3 +103,18 @@ python -B scripts/bench_gp_multiclass_log_proba.py \
 
 See [`results/GP_MULTICLASS_LOG_PROBA.md`](results/GP_MULTICLASS_LOG_PROBA.md)
 for the fixture and reproducibility details.
+
+## Multilabel Laplace-GP log probabilities
+
+This lane checks independent positive-label `predict_log_proba`, query-input
+and packed per-label products, the packed shared-kernel JVP/VJP reduction,
+threshold metadata, and output-preserving typed CUDA refusals against an
+independent NumPy logarithm/adjoint oracle.
+
+```bash
+python -B scripts/bench_gp_multilabel_log_proba.py \
+  --fortml ../fortml --output results/gp_multilabel_log_proba.csv
+```
+
+See [`results/GP_MULTILABEL_LOG_PROBA.md`](results/GP_MULTILABEL_LOG_PROBA.md)
+for the fixture and reproducibility details.
