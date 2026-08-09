@@ -862,6 +862,24 @@ See [`results/MLP_OPTIMIZER_GROUP_REGISTRY.md`](results/MLP_OPTIMIZER_GROUP_REGI
 for the round-trip, name-drift, and device rows. The clean evidence is pinned
 by benchmark commit `6874dc9` and FortML revision `c50511c`.
 
+## Grouped coupled-L2 Adam trajectory hypergradients
+
+This lane checks the grouped full-batch Adam trajectory against an independent
+NumPy two-parameter recurrence. It covers the value, every packed gradient
+coordinate, and a directional JVP; each Adam moment update precedes the
+post-update weight/bias multipliers exactly as in `mlp_train`. The CUDA row is
+an explicit typed refusal until resident Adam moment derivatives exist.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_mlp_adam_optimizer_group_hypergradient.py \
+  --fortml ../fortml --output results/mlp_adam_optimizer_group_hypergradient.csv \
+  --report results/MLP_ADAM_OPTIMIZER_GROUP_HYPERGRADIENT.md
+```
+
+See [`results/MLP_ADAM_OPTIMIZER_GROUP_HYPERGRADIENT.md`](results/MLP_ADAM_OPTIMIZER_GROUP_HYPERGRADIENT.md)
+for the recorded maximum error, timing, source revision, and device boundary.
+
 ## Resident numeric XGBoost dispatch
 
 This lane routes numeric fixed-topology XGBoost trees through the resident
