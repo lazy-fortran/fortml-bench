@@ -685,6 +685,21 @@ python -B scripts/bench_cubic_spline_basis.py \
 
 See [`results/CUBIC_SPLINE_BASIS.md`](results/CUBIC_SPLINE_BASIS.md).
 
+The basis-composed linear-regression lane fits a multi-output model after
+independent polynomial, cubic B-spline, and Fourier maps.  NumPy checks fitted
+prediction, input/parameter JVP, and VJP products with central differences and
+the adjoint identity; the FortML gates run the basis-linear and cubic-spline
+tests before retaining release-app timings.  The CUDA row is an explicit typed
+refusal until a resident basis-linear executor is linked:
+
+```bash
+python -B scripts/bench_basis_linear_regression.py \
+  --fortml ../fortml --output results/basis_linear_regression.csv
+```
+
+See [`results/BASIS_LINEAR_REGRESSION.md`](results/BASIS_LINEAR_REGRESSION.md)
+and [`BENCHMARK.md`](BENCHMARK.md).
+
 The derivative-GP lane checks exact query-input JVP/VJP products and dense
 posterior covariance parameter JVP/VJP products for mixed value/first-derivative
 periodic, rational-quadratic, cosine, polynomial, spectral-mixture, and ARD-RBF
