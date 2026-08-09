@@ -2,8 +2,8 @@
 
 This lane compares the generic trainer's per-coordinate gradient clipping against an independent NumPy quadratic oracle. The release app checks the exact SGD update, diagnostic counter, and schema-8 checkpoint round trip.
 
-FortML revision: edead3b99081f8a28f57b23841cd61a2aeccbaeb
-Benchmark revision: 2ccb52c87a158f9047b1a5b86c13ea0294c0bffd
+FortML revision: 188c222655d4e5b10a5f3c5dec725ab39a41d72e
+Benchmark revision: 844dfd1c6d314adb64a46ad4c80ea24cbbdaec73
 
 | phase | status | metric | value | max abs error |
 | --- | --- | --- | ---: | ---: |
