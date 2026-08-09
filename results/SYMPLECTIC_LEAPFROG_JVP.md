@@ -5,7 +5,7 @@ separable Hamiltonian MLP. `hamiltonian_mlp_t%leapfrog_jvp` propagates packed
 potential/kinetic parameter and initial-state directions through one exact
 velocity-Verlet step. The implementation uses the MLP reverse-over-forward
 HVP product at each split stage and does not finite-difference production
-derivatives. The integration step is fixed in this product; general
+derivatives. The integration step is fixed in this product. General
 nonseparable Hamiltonians retain a typed implicit-integrator refusal.
 
 The NumPy row is an independent harmonic-oscillator map and tangent oracle. It
