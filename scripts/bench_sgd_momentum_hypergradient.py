@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Correctness-gated fixed-trajectory SGD momentum hypergradient benchmark.
+"""Correctness-gated accumulated SGD momentum hypergradient benchmark.
 
 The NumPy implementation is an independent two-parameter linear-MSE
-trajectory.  It finite-differences the validation objective with respect to
+trajectory with deterministic contiguous microbatch accumulation.  It
+finite-differences the validation objective with respect to
 the packed ``[log_learning_rate, log_l2, momentum]`` vector and checks the
 complete FortML value/gradient/JVP/HVP oracle before retaining a CPU timing.
 CUDA rows remain typed refusals until the optimizer state derivatives are
@@ -25,6 +26,8 @@ import numpy as np
 
 
 STEPS = 4
+MICROBATCH_SIZE = 2
+ACCUMULATION_STEPS = 3
 N_TRAIN = 5
 N_VALIDATION = 3
 N_PARAMETERS = 3
@@ -40,7 +43,8 @@ ORACLE_TOLERANCE = 5.0e-7
 
 FIELDS = (
     "workload", "phase", "variant", "backend", "device", "status",
-    "n_train", "n_validation", "n_parameters", "steps", "repetitions",
+    "n_train", "n_validation", "n_parameters", "steps", "microbatch_size",
+    "accumulation_steps", "repetitions",
     "seconds_per_operation", "metric", "value", "max_abs_error", "oracle",
     "python_version", "numpy_version", "fortml_revision", "benchmark_revision",
     "compiler", "flags", "notes",
@@ -93,6 +97,27 @@ def loss_gradient(theta: np.ndarray, x: np.ndarray, target: np.ndarray,
     return value, gradient
 
 
+def accumulated_loss_gradient(theta: np.ndarray, x: np.ndarray,
+                              target: np.ndarray, l2: float) -> tuple[float, np.ndarray]:
+    """Independent row-mass microbatch reduction (no FortML code paths)."""
+    value = 0.0
+    gradient = np.zeros_like(theta)
+    first = 0
+    for _ in range(ACCUMULATION_STEPS):
+        if first >= x.shape[0]:
+            break
+        last = min(x.shape[0], first + MICROBATCH_SIZE)
+        part_value, part_gradient = loss_gradient(theta, x[first:last],
+                                                  target[first:last], 0.0)
+        scale = (last - first) / x.shape[0]
+        value += scale * part_value
+        gradient += scale * part_gradient
+        first = last
+    value += 0.5 * l2 * float(np.dot(theta, theta))
+    gradient += l2 * theta
+    return value, gradient
+
+
 def trajectory(parameters: np.ndarray) -> float:
     train_x, train_target, validation_x, validation_target = fixture()
     learning_rate, l2 = np.exp(parameters[:2])
@@ -100,7 +125,7 @@ def trajectory(parameters: np.ndarray) -> float:
     theta = np.array([0.15, -0.1], dtype=np.float64)
     velocity = np.zeros(2, dtype=np.float64)
     for _ in range(STEPS):
-        _, gradient = loss_gradient(theta, train_x, train_target, l2)
+        _, gradient = accumulated_loss_gradient(theta, train_x, train_target, l2)
         velocity = momentum * velocity + gradient
         theta = theta - learning_rate * velocity
     residual = validation_x[:, 0] * theta[0] + theta[1] - validation_target[:, 0]
@@ -140,7 +165,10 @@ def base(details: dict[str, str], **values: Any) -> dict[str, Any]:
     row.update(details)
     row.update({
         "device": "cpu", "n_train": N_TRAIN, "n_validation": N_VALIDATION,
-        "n_parameters": N_PARAMETERS, "steps": STEPS, "repetitions": REPETITIONS,
+        "n_parameters": N_PARAMETERS, "steps": STEPS,
+        "microbatch_size": MICROBATCH_SIZE,
+        "accumulation_steps": ACCUMULATION_STEPS,
+        "repetitions": REPETITIONS,
     })
     row.update(values)
     return row
@@ -149,7 +177,7 @@ def base(details: dict[str, str], **values: Any) -> dict[str, Any]:
 def oracle_rows(details: dict[str, str], expected: dict[str, Any]) -> list[dict[str, Any]]:
     rows = [base(
         details, workload="mlp_sgd_momentum_hypergradient", phase="value_gradient",
-        variant="fixed_full_batch", backend="numpy_oracle", status="pass",
+        variant="deterministic_accumulation", backend="numpy_oracle", status="pass",
         seconds_per_operation=expected["seconds"], metric="validation_mse",
         value=expected["value"], max_abs_error=0.0,
         oracle="independent NumPy SGD momentum trajectory with central-FD products",
@@ -158,14 +186,14 @@ def oracle_rows(details: dict[str, str], expected: dict[str, Any]) -> list[dict[
     for index, value in enumerate(expected["gradient"], start=1):
         rows.append(base(
             details, workload="mlp_sgd_momentum_hypergradient", phase="gradient_component",
-            variant="fixed_full_batch", backend="numpy_oracle", status="pass",
+            variant="deterministic_accumulation", backend="numpy_oracle", status="pass",
             metric=f"gradient_{index}", value=float(value), max_abs_error=0.0,
             oracle="independent central finite-difference outer objective",
             notes="all three packed components checked",
         ))
     rows.append(base(
         details, workload="mlp_sgd_momentum_hypergradient", phase="jvp",
-        variant="fixed_full_batch", backend="numpy_oracle", status="pass",
+        variant="deterministic_accumulation", backend="numpy_oracle", status="pass",
         metric="directional_validation_mse_derivative", value=expected["tangent"],
         max_abs_error=0.0,
         oracle="independent central finite-difference directional product",
@@ -174,7 +202,7 @@ def oracle_rows(details: dict[str, str], expected: dict[str, Any]) -> list[dict[
     for index, value in enumerate(expected["hvp"], start=1):
         rows.append(base(
             details, workload="mlp_sgd_momentum_hypergradient", phase="hvp_component",
-            variant="affine_one_layer", backend="numpy_oracle", status="pass",
+            variant="affine_one_layer_accumulation", backend="numpy_oracle", status="pass",
             metric=f"hvp_{index}", value=float(value), max_abs_error=0.0,
             oracle="independent central finite-difference of trajectory gradient",
             notes=f"direction={DIRECTION.tolist()}; inner h={FD_STEP:g}; outer h={HVP_STEP:g}",
@@ -197,7 +225,7 @@ def unavailable_rows(details: dict[str, str], device: str, status: str,
     ):
         rows.append(base(
             details, workload="mlp_sgd_momentum_hypergradient", phase=phase,
-            variant="fixed_full_batch", backend="fortml", device=device,
+            variant="deterministic_accumulation", backend="fortml", device=device,
             status=status, metric=metric, oracle="FortML release-app protocol",
             notes=notes,
         ))
@@ -265,7 +293,7 @@ def run_fortml(fortml: Path, target: str, details: dict[str, str],
         raise RuntimeError("FortML SGD momentum app emitted no value-gradient timing")
     rows = [base(
         details, workload="mlp_sgd_momentum_hypergradient", phase="value_gradient",
-        variant="fixed_full_batch", backend="fortml", status="pass",
+        variant="deterministic_accumulation", backend="fortml", status="pass",
         seconds_per_operation=timing, metric="validation_mse",
         value=actual[("value", 1)], max_abs_error=error,
         oracle="independent NumPy trajectory and central-FD products",
@@ -273,21 +301,21 @@ def run_fortml(fortml: Path, target: str, details: dict[str, str],
     )]
     rows.extend(base(
         details, workload="mlp_sgd_momentum_hypergradient", phase="gradient_component",
-        variant="fixed_full_batch", backend="fortml", status="pass",
+        variant="deterministic_accumulation", backend="fortml", status="pass",
         metric=f"gradient_{index}", value=actual[("gradient", index)],
         max_abs_error=abs(actual[("gradient", index)] - expected["gradient"][index - 1]),
         oracle="independent NumPy trajectory and central-FD products", notes=target,
     ) for index in range(1, N_PARAMETERS + 1))
     rows.append(base(
         details, workload="mlp_sgd_momentum_hypergradient", phase="jvp",
-        variant="fixed_full_batch", backend="fortml", status="pass",
+        variant="deterministic_accumulation", backend="fortml", status="pass",
         metric="directional_validation_mse_derivative", value=actual[("jvp", 1)],
         max_abs_error=abs(actual[("jvp", 1)] - expected["tangent"]),
         oracle="independent NumPy trajectory and central-FD products", notes=target,
     ))
     rows.extend(base(
         details, workload="mlp_sgd_momentum_hypergradient", phase="hvp_component",
-        variant="affine_one_layer", backend="fortml", status="pass",
+        variant="affine_one_layer_accumulation", backend="fortml", status="pass",
         metric=f"hvp_{index}", value=actual[("hvp", index)],
         max_abs_error=abs(actual[("hvp", index)] - expected["hvp"][index - 1]),
         oracle="independent NumPy nested central-FD trajectory oracle", notes=target,

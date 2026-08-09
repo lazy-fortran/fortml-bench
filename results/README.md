@@ -14,6 +14,7 @@ Complete-call studies:
 - [Differentiable Chebyshev basis](CHEBYSHEV_BASIS.md)
 - [SGD/Nesterov training and differentiable imputation](TRAINING_IMPUTER.md)
 - [Affine SGD momentum outer hyper-HVP](MLP_SGD_MOMENTUM_HYPERGRADIENT_HVP.md)
+- [Deterministic accumulated SGD momentum hypergradients](SGD_MOMENTUM_HYPERGRADIENT_ACCUMULATION.md)
 - [AdamW training and MLP hypergradients](ADAMW_HYPERGRADIENT.md)
 - [AdamW beta-logit hypergradients](ADAMW_BETA_HYPERGRADIENT.md)
 - [Typed MLP learning-rate schedules](MLP_SCHEDULES.md)

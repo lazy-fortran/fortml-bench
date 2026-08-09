@@ -1734,6 +1734,19 @@ JVP against an independent central-finite-difference NumPy oracle:
 
 See [`results/SGD_MOMENTUM_HYPERGRADIENT.md`](results/SGD_MOMENTUM_HYPERGRADIENT.md).
 
+The accumulated SGD momentum lane uses the same affine fixture with
+`microbatch_size=2` and `accumulation_steps=3`. Its independent NumPy oracle
+reduces each contiguous microbatch by row mass before applying the momentum
+state, then checks value, all packed hypergradients, JVP, affine HVP, and the
+typed CUDA boundary:
+
+```bash
+.venv/bin/python -B scripts/bench_sgd_momentum_hypergradient.py \
+    --fortml ../fortml --output results/sgd_momentum_hypergradient_accumulation.csv
+```
+
+See [`results/SGD_MOMENTUM_HYPERGRADIENT_ACCUMULATION.md`](results/SGD_MOMENTUM_HYPERGRADIENT_ACCUMULATION.md).
+
 The weighted-validation SGD lane extends that recurrence with a copied
 positive-support validation measure `[1, 2, 4]`. It checks weighted value,
 all three hypergradient components, and a directional JVP against an
