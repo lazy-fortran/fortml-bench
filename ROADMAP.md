@@ -150,6 +150,12 @@ Fortran oracle, and FP32/CUDA rows remain typed capability boundaries.
   independent NumPy likelihood-gradient finite difference checks all four
   packed log-kernel coordinates and log noise, including the degree-one limit;
   the release record has CPU timings and an explicit resident-CUDA refusal.
+- [x] Add the multiclass Laplace-GP hyperparameter HVP lane. The independent
+  NumPy oracle refits three sorted-label OVR modes at central probes, the
+  release app checks the block-packed HVP checksum and CPU timing, and the
+  explicit CUDA refusal is recorded in
+  `results/gp_multiclass_hyper_hvp.csv` and
+  [`results/GP_MULTICLASS_HYPER_HVP.md`](results/GP_MULTICLASS_HYPER_HVP.md).
 - [x] Add exact latent-Gaussian ordinal-GP evidence hyperparameter products.
   The independent dense NumPy oracle checks every packed kernel/log-noise
   gradient and HVP, while the release app checks bounded FortOpt L-BFGS-B

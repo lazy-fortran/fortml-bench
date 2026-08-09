@@ -491,6 +491,17 @@ python -B scripts/bench_gp_classification_hvp.py \
 
 See [`results/GP_CLASSIFICATION_HYPERPARAMETER_HVP.md`](results/GP_CLASSIFICATION_HYPERPARAMETER_HVP.md).
 
+The multiclass Laplace-GP HVP lane independently refits the three sorted
+one-vs-rest latent modes at central kernel probes and checks the block-packed
+FortML hyperparameter HVP, release checksum, and typed CUDA refusal:
+
+```bash
+python3 -B scripts/bench_gp_multiclass_hyper_hvp.py \
+  --fortml ../fortml --output results/gp_multiclass_hyper_hvp.csv
+```
+
+See [`results/GP_MULTICLASS_HYPER_HVP.md`](results/GP_MULTICLASS_HYPER_HVP.md).
+
 The ordinal-GP evidence lane checks exact latent-Gaussian kernel and log-noise
 gradients, directional HVPs, and bounded FortOpt L-BFGS-B fitting against an
 independent dense NumPy Cholesky oracle. Transactional malformed-input checks
