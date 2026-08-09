@@ -310,3 +310,19 @@ python -B scripts/bench_cuda_mlp_chain.py \
 
 See [`results/CUDA_MLP_CHAIN.md`](results/CUDA_MLP_CHAIN.md) for the oracle,
 transfer/residency contract, tolerances, and provenance.
+
+## Power transformer
+
+This lane compares fixed-lambda Yeo--Johnson and Box--Cox transforms against
+independent NumPy branch oracles. It checks transform checksums, inverse
+reconstruction, and the explicit resident-CUDA boundary. The release app uses
+the same 256-row fixture and records CPU elapsed time and fitted lambda state.
+
+```bash
+python -B scripts/bench_power_transformer.py \
+  --fortml ../fortml --output results/power_transformer.csv \
+  --report results/POWER_TRANSFORMER.md
+```
+
+See [`results/POWER_TRANSFORMER.md`](results/POWER_TRANSFORMER.md) for oracle
+errors, provenance, and the typed device row.
