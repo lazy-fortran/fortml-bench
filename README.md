@@ -88,6 +88,18 @@ python -B scripts/bench_boosted_leaf_objective.py \
 
 See [`results/BOOSTED_LEAF_OBJECTIVE.md`](results/BOOSTED_LEAF_OBJECTIVE.md).
 
+The weighted linear Huber lane independently evaluates a fixed packed probe
+with NumPy, checks the release FortOpt L-BFGS-B fit, and records the explicit
+CUDA refusal:
+
+```bash
+python -B scripts/bench_huber_regression.py \
+  --fortml ../fortml --output results/huber_regression.csv \
+  --report results/HUBER_REGRESSION.md
+```
+
+See [`results/HUBER_REGRESSION.md`](results/HUBER_REGRESSION.md).
+
 The cross-validation scoring lane independently derives contiguous K-fold fold
 scores, weights, parameter gradients, and FortOpt orientation before accepting
 the Fortran release-app timing. It records a typed CUDA control-plane refusal:

@@ -854,6 +854,12 @@ a different workload, precision, device, or residency policy.
   `results/boosted_leaf_objective.csv` with protocol in
   `results/BOOSTED_LEAF_OBJECTIVE.md`; split topology remains a discrete
   boundary.
+- [x] Add the weighted linear Huber regression lane. `scripts/bench_huber_regression.py`
+  compares a fixed packed value and gradient norm with an independent NumPy
+  oracle, then gates FortOpt L-BFGS-B convergence and the typed CUDA refusal.
+  The release record is `results/huber_regression.csv` with protocol in
+  `results/HUBER_REGRESSION.md`; residual kinks and derivative-through-fit
+  remain explicit boundaries.
 - [x] Add transactional multi-output XGBoost and LightGBM regression adapters.
   `scripts/bench_xgboost_multioutput.py` computes an independent NumPy
   two-output one-tree Newton-stump oracle and checks matrix predictions,
