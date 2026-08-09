@@ -342,3 +342,18 @@ python -B scripts/bench_lightgbm_ranking.py \
 
 See [`results/LIGHTGBM_RANKING.md`](results/LIGHTGBM_RANKING.md) for the
 fixture, oracle values, provenance, and timing rows.
+
+## Native ordered ordinal GP likelihood
+
+This lane checks the backend-independent ordered-logit and ordered-probit
+likelihood value, latent and cut-point JVP/VJP products, and analytic HVP
+against an independent NumPy CDF/PDF oracle. It also checks malformed threshold
+rollback and the explicit CPU-only capability boundary.
+
+```bash
+python -B scripts/bench_gp_ordinal_likelihood.py \
+  --fortml ../fortml --output results/gp_ordinal_likelihood.csv
+```
+
+See [`results/GP_ORDINAL_LIKELIHOOD.md`](results/GP_ORDINAL_LIKELIHOOD.md) for
+the fixture, checksum errors, timings, and pinned provenance.
