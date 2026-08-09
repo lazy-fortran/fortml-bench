@@ -1017,6 +1017,14 @@ a different workload, precision, device, or residency policy.
   CPU prediction timing, and emits an explicit CUDA-unavailable row. Raw
   evidence is in `results/xgboost_categorical.csv` and the protocol is
   documented in [`results/XGBOOST_CATEGORICAL.md`](results/XGBOOST_CATEGORICAL.md).
+- [x] Add the exhaustive small-cardinality categorical XGBoost lane. The
+  release app selects `categorical_policy="partition"` on a four-code fixture;
+  `scripts/bench_xgboost_categorical_partition.py` independently enumerates
+  every canonical subset, checks Newton leaf predictions and the three-node
+  diagnostic, records repeated CPU prediction timing, and emits the typed
+  CUDA-unavailable row. Raw evidence is in
+  `results/xgboost_categorical_partition.csv`; the protocol is documented in
+  [`results/XGBOOST_CATEGORICAL_PARTITION.md`](results/XGBOOST_CATEGORICAL_PARTITION.md).
 - [x] Add binary XGBoost classifier log-probability products. The independent
   fixture checks stable `exp(predict_log_proba)` round trips, while the release
   app records the direct log-space error, staged consistency, and typed CUDA

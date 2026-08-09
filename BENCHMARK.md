@@ -222,6 +222,23 @@ python -B scripts/bench_xgboost_multiclass_log_proba.py \
 See [`results/XGBOOST_MULTICLASS_LOG_PROBA.md`](results/XGBOOST_MULTICLASS_LOG_PROBA.md)
 for the fixture, derivative errors, and typed CUDA refusal.
 
+## Exhaustive small-cardinality categorical XGBoost
+
+This lane checks the `categorical_policy="partition"` CPU path against an
+independent NumPy enumeration of every canonical nontrivial subset.  The
+four-code fixture verifies the Newton leaf values, selected three-node tree,
+prediction checksum, and repeated prediction timing.  The CUDA row remains an
+explicit unavailable/typed-refusal boundary because no resident categorical
+tree kernel is linked.
+
+```bash
+python -B scripts/bench_xgboost_categorical_partition.py \
+  --fortml ../fortml --output results/xgboost_categorical_partition.csv
+```
+
+See [`results/XGBOOST_CATEGORICAL_PARTITION.md`](results/XGBOOST_CATEGORICAL_PARTITION.md)
+for the oracle, refusal contract, and pinned provenance.
+
 ## Multiclass LightGBM log probabilities
 
 This lane checks stable sorted-label one-vs-rest `predict_log_proba`, input and

@@ -109,6 +109,7 @@ Complete-call studies:
 - [XGBoost text persistence](XGBOOST_SERIALIZATION.md)
 - [XGBoost pairwise ranking](XGBOOST_RANKING.md)
 - [Bounded categorical XGBoost partitions](XGBOOST_CATEGORICAL.md)
+- [Exhaustive small-cardinality categorical XGBoost](XGBOOST_CATEGORICAL_PARTITION.md)
 - [LightGBM-style leaf-wise histogram boosting](LIGHTGBM_LEAFWISE.md)
 - [LightGBM validation and early stopping](LIGHTGBM_EARLY_STOPPING.md)
 - [LightGBM bounded DART/dropout](LIGHTGBM_DART.md)
