@@ -566,3 +566,51 @@ python -B scripts/bench_hyperparameter_successive_halving.py \
 
 See [`results/HYPERPARAMETER_SUCCESSIVE_HALVING.md`](results/HYPERPARAMETER_SUCCESSIVE_HALVING.md)
 for the fixture, rung diagnostics, and provenance.
+
+## Ordinal GP log probabilities
+
+This lane checks stable ordered predictive log probabilities, packed
+parameter/query JVP/VJP products, and finite-difference/adjoint agreement.
+The CPU path is the reference; selected CUDA returns the typed refusal until
+the ordinal covariance graph is resident.
+
+```bash
+python -B scripts/bench_gp_ordinal_log_proba.py \
+  --fortml ../fortml --output results/gp_ordinal_log_proba.csv
+```
+
+See [`results/GP_ORDINAL_LOG_PROBA.md`](results/GP_ORDINAL_LOG_PROBA.md) for
+the independent oracle and pinned provenance.
+
+## Generic trainer value clipping
+
+This lane compares per-coordinate gradient-value clipping with an independent
+NumPy quadratic update and checks the persisted diagnostic counter and schema-8
+checkpoint round trip. The generic trainer remains host-owned, so CUDA is a
+typed unavailable row.
+
+```bash
+python -B scripts/bench_trainer_value_clipping.py \
+  --fortml ../fortml --output results/trainer_value_clipping.csv \
+  --report results/TRAINER_VALUE_CLIPPING.md
+```
+
+See [`results/TRAINER_VALUE_CLIPPING.md`](results/TRAINER_VALUE_CLIPPING.md)
+for the exact update and provenance.
+
+## Multi-output tree validation metadata
+
+This lane checks per-output best iteration, validation loss, and early-stop
+metadata for the XGBoost-style and LightGBM-style adapters against an
+independent two-leaf Newton-stump oracle. The resident tree state is not yet
+linked, so CUDA is a typed refusal.
+
+```bash
+python -B scripts/bench_xgboost_multioutput_validation_metadata.py \
+  --fortml ../fortml \
+  --output results/xgboost_multioutput_validation_metadata.csv \
+  --report results/XGBOOST_MULTIOUTPUT_VALIDATION_METADATA.md
+```
+
+See [`results/XGBOOST_MULTIOUTPUT_VALIDATION_METADATA.md`](results/XGBOOST_MULTIOUTPUT_VALIDATION_METADATA.md)
+for the scalar oracle and pinned provenance.
