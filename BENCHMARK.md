@@ -440,6 +440,24 @@ See [`results/CUDA_BOOSTED_TREE.md`](results/CUDA_BOOSTED_TREE.md) for the
 independent oracle, resident model contract, boundary behavior, and pinned
 provenance.
 
+## Resident numeric LightGBM prediction
+
+The LightGBM leaf-wise release lane now includes resident numeric prediction
+through the same additive-tree CUDA ABI. The fit remains a CPU leaf-wise
+policy; the benchmark compares resident output with the independent CPU tree
+walk and records `unavailable` with a typed refusal when native CUDA is not
+linked. Categorical routing, histogram construction, and resident explanation
+kernels remain separate gaps.
+
+```bash
+python -B scripts/bench_lightgbm.py \
+  --fortml ../fortml --output results/lightgbm_leafwise.csv
+```
+
+See [`results/LIGHTGBM_CUDA.md`](results/LIGHTGBM_CUDA.md) and
+[`results/lightgbm_leafwise.csv`](results/lightgbm_leafwise.csv) for the
+correctness gate and provenance.
+
 ## Power transformer
 
 This lane compares fixed-lambda Yeo--Johnson and Box--Cox transforms against

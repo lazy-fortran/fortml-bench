@@ -31,16 +31,20 @@ fixture. The Python harness checks this before recording timings.
 | persistence | FortML/CPU | 6.980000e-4 | text round-trip max error 0 |
 | persistence refusal | FortML/CPU | not timed | trailing record status 1 |
 | binary | FortML/CPU | not timed | accuracy 0.994792 |
-| predict | FortML/CUDA | unavailable | typed `FORTNUM_NOT_IMPLEMENTED` |
+| predict | FortML/CUDA | unavailable or resident | numeric-tree parity, or typed `FORTNUM_NOT_IMPLEMENTED` when the native plan is unavailable |
 
 The staged, contribution, slice, and persistence rows are correctness-gated
 against independent tree-walk oracles in
 `fortml/test/test_lightgbm_staged_slice.f90`; the warm-start row compares its
 complete staged output with an independently fresh-fitted eight-tree model in
 `fortml/test/test_lightgbm_warm_start.f90`.
-The CPU rows are release timings only and are not GPU evidence. NaN,
-categorical, GOSS, EFB, distributed, persistence, and resident-CUDA policies remain
-explicit follow-up boundaries. The CSV records FortML and benchmark source
+The CUDA row is correctness-gated by
+`fortml/test/test_lightgbm_cuda_dispatch.f90` against an independent one-split
+Newton tree oracle; when native CUDA is present it also checks resident
+prediction parity against the CPU model. CPU rows are release timings only and
+are not GPU evidence. NaN, categorical, GOSS, EFB, distributed, persistence,
+and resident-CUDA training/explanation policies remain explicit follow-up
+boundaries. The CSV records FortML and benchmark source
 revisions, compiler, flags, Python, and NumPy versions.
 
 Reproduce with:

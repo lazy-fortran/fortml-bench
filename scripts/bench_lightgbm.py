@@ -96,7 +96,7 @@ def main() -> None:
                 "lightgbm_warm_start", "lightgbm_warm_start_invalid",
                 "lightgbm_contributions", "lightgbm_slice", "lightgbm_persistence",
                 "lightgbm_persistence_invalid", "lightgbm_binary", "lightgbm_oracle",
-                "lightgbm_cuda"):
+                "lightgbm_cuda", "lightgbm_cuda_result"):
         if key not in parsed:
             raise RuntimeError(f"missing release row {key}")
     oracle_error = float(parsed["lightgbm_oracle"][0])
@@ -180,14 +180,33 @@ def main() -> None:
         n_estimators=int(float(binary[2])), seconds_per_operation=0.0,
         metric="accuracy", value=float(binary[3]), max_abs_error=0.0,
         notes="weighted binary-logistic objective")
-    if parsed["lightgbm_cuda"] != ["3"]:
-        raise RuntimeError(f"unexpected CUDA refusal {parsed['lightgbm_cuda']!r}")
-    rows.append({**{field: "" for field in FIELDS}, **details,
-                 "workload": "lightgbm_leafwise", "phase": "predict",
-                 "backend": "fortml_cuda", "device": "cuda", "status": "unavailable",
-                 "n_samples": 192, "n_features": 3, "n_estimators": 8,
-                 "max_abs_error": "nan", "oracle": "typed_device_contract",
-                 "notes": "FORTNUM_NOT_IMPLEMENTED; no resident CUDA histogram kernel"})
+    cuda = parsed["lightgbm_cuda_result"]
+    if len(cuda) != 2:
+        raise RuntimeError(f"unexpected CUDA result row {cuda!r}")
+    cuda_status = int(cuda[0])
+    cuda_error = float(cuda[1])
+    if cuda_status == 0:
+        if cuda_error > 2.0e-11:
+            raise RuntimeError(f"resident CUDA LightGBM mismatch: {cuda_error}")
+        rows.append({**{field: "" for field in FIELDS}, **details,
+                     "workload": "lightgbm_leafwise", "phase": "predict",
+                     "backend": "fortml_cuda", "device": "cuda", "status": "pass",
+                     "n_samples": 192, "n_features": 3, "n_estimators": 8,
+                     "seconds_per_operation": 0.0, "metric": "prediction_max_abs_error",
+                     "value": cuda_error, "max_abs_error": cuda_error,
+                     "oracle": "independent CPU LightGBM tree-walk oracle",
+                     "notes": "resident numeric additive-tree parity"})
+    elif cuda_status == 3:
+        if parsed["lightgbm_cuda"] != ["3"]:
+            raise RuntimeError(f"inconsistent CUDA status rows {parsed['lightgbm_cuda']!r}")
+        rows.append({**{field: "" for field in FIELDS}, **details,
+                     "workload": "lightgbm_leafwise", "phase": "predict",
+                     "backend": "fortml_cuda", "device": "cuda", "status": "unavailable",
+                     "n_samples": 192, "n_features": 3, "n_estimators": 8,
+                     "max_abs_error": "nan", "oracle": "typed_device_contract",
+                     "notes": "FORTNUM_NOT_IMPLEMENTED; native resident tree ABI unavailable"})
+    else:
+        raise RuntimeError(f"unexpected LightGBM CUDA status {cuda_status}")
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", newline="") as stream:
