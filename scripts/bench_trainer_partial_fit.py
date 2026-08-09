@@ -44,37 +44,32 @@ def revision(repository: Path, ignored: tuple[Path, ...] = ()) -> str:
     return head + ("+dirty" if dirty else "")
 
 
-def advance(parameters: np.ndarray, count: int) -> np.ndarray:
+def advance_state(
+    parameters: np.ndarray,
+    first: np.ndarray,
+    second: np.ndarray,
+    start_step: int,
+    count: int,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     target = np.array([1.5, -0.5, 0.25], dtype=np.float64)
     curvature = np.array([2.0, 4.0, 1.25], dtype=np.float64)
-    first = np.zeros(3, dtype=np.float64)
-    second = np.zeros(3, dtype=np.float64)
-    for step in range(1, count + 1):
+    for step in range(start_step + 1, start_step + count + 1):
         gradient = curvature * (parameters - target)
         first = 0.8 * first + 0.2 * gradient
         second = 0.9 * second + 0.1 * gradient * gradient
         parameters -= 0.05 * (first / (1.0 - 0.8**step)) / (
             np.sqrt(second / (1.0 - 0.9**step)) + 1.0e-9
         )
-    return parameters
+    return parameters, first, second
 
 
 def independent_oracle() -> dict[str, float]:
-    full = advance(np.array([0.0, 1.0, -1.0], dtype=np.float64), 6)
-    # The explicit second recurrence checks the optimizer state boundary.
-    target = np.array([1.5, -0.5, 0.25], dtype=np.float64)
-    curvature = np.array([2.0, 4.0, 1.25], dtype=np.float64)
-    parameters = np.array([0.0, 1.0, -1.0], dtype=np.float64)
-    first = np.zeros(3, dtype=np.float64)
-    second = np.zeros(3, dtype=np.float64)
-    for step in range(1, 7):
-        gradient = curvature * (parameters - target)
-        first = 0.8 * first + 0.2 * gradient
-        second = 0.9 * second + 0.1 * gradient * gradient
-        parameters -= 0.05 * (first / (1.0 - 0.8**step)) / (
-            np.sqrt(second / (1.0 - 0.9**step)) + 1.0e-9
-        )
-    replay_error = float(np.max(np.abs(full - parameters)))
+    initial = np.array([0.0, 1.0, -1.0], dtype=np.float64)
+    zero = np.zeros(3, dtype=np.float64)
+    full, _, _ = advance_state(initial.copy(), zero.copy(), zero.copy(), 0, 6)
+    prefix, first, second = advance_state(initial.copy(), zero.copy(), zero.copy(), 0, 2)
+    split, _, _ = advance_state(prefix, first, second, 2, 4)
+    replay_error = float(np.max(np.abs(full - split)))
     if replay_error > 1.0e-14:
         raise RuntimeError(f"NumPy replay mismatch: {replay_error:.3e}")
     return {"replay_max_abs_error": replay_error, "final_norm": float(np.linalg.norm(full))}
