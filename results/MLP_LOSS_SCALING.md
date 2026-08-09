@@ -9,7 +9,7 @@ Growth and overflow branches are discrete, so smooth HPO products are
 not claimed across a branch change.
 
 FortML revision: `8249266631068de506a58b261cd874b3a9ce2c07`
-Benchmark revision: `f36d292418cb4488b837c49ce65a092bf74ec53b+dirty`
+Benchmark revision: `551d581e55ceb7418c9c7a55a005b824911c8e61`
 
 | phase | status | metric | value | max abs error |
 | --- | --- | --- | ---: | ---: |
