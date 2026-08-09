@@ -59,11 +59,19 @@ def independent_oracle() -> tuple[float, float, float]:
     gradient = weight * residual * 2.0 * theta
     hessian_direction = (weight * (4.0 * theta * theta + 2.0 * residual)
                          * direction)
-    expected_gradient = np.array([0.0, gradient, 0.0, 0.0])
-    expected_hvp = np.array([0.0, hessian_direction, 0.0, 0.0])
-    return float(gradient), float(hessian_direction), float(max(
-        np.max(np.abs(expected_gradient - [0.0, gradient, 0.0, 0.0])),
-        np.max(np.abs(expected_hvp - [0.0, hessian_direction, 0.0, 0.0]))))
+    step = 1.0e-6
+    def objective(point: float) -> float:
+        residual_at_point = point * point - 0.25
+        return weight * residual_at_point * residual_at_point / 2.0
+    def objective_gradient(point: float) -> float:
+        residual_at_point = point * point - 0.25
+        return weight * residual_at_point * 2.0 * point
+    fd_hvp = (objective_gradient(theta + step * direction) -
+              objective_gradient(theta - step * direction)) / (2.0 * step)
+    finite_error = abs(fd_hvp - hessian_direction)
+    if finite_error > 1.0e-8 or abs(objective(theta) - 0.0576) > 1.0e-12:
+        raise RuntimeError("independent PINN gradient/HVP oracle failed")
+    return float(gradient), float(hessian_direction), float(finite_error)
 
 
 def run_release(fortml: Path, details: dict[str, str]) -> dict[str, Any]:
