@@ -5,7 +5,7 @@ independent feature maps: separable degree-three polynomial powers, clamped
 order-four (cubic) B-splines, and Fourier sine/cosine components.  The NumPy
 path fits the intercept and coefficients by least squares, then checks the
 prediction JVP with a central difference and the VJP with the reverse-mode
-adjoint identity.  B-spline values use an independent Cox--de Boor recursion;
+adjoint identity.  B-spline values use an independent Cox--de Boor recursion.
 the fixture stays away from knot breakpoints so the fixed-span derivative
 contract is unambiguous.
 
