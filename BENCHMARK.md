@@ -16,6 +16,24 @@ python -B scripts/bench_trainer_validation.py \
 See [`results/TRAINER_VALIDATION.md`](results/TRAINER_VALIDATION.md) for the
 fixture and reproducibility details.
 
+## Resumable trainer partial-fit contract
+
+This lane compares one six-update Adam trajectory with two warm-start chunks
+(2+4) against an independent NumPy diagonal-quadratic recurrence. The
+Fortran behavioral oracle also checks checkpoint continuation, transactional
+over-budget requests, and CPU/CUDA dispatch. CUDA is an explicit typed
+refusal because the generic trainer has no resident objective or optimizer
+state.
+
+```bash
+python -B scripts/bench_trainer_partial_fit.py \
+  --fortml ../fortml --output results/trainer_partial_fit.csv \
+  --report results/TRAINER_PARTIAL_FIT.md
+```
+
+See [`results/TRAINER_PARTIAL_FIT.md`](results/TRAINER_PARTIAL_FIT.md) for
+the independent oracle, provenance, and refusal contract.
+
 ## Basis-composed linear regression
 
 The basis-linear lane covers polynomial, cubic B-spline, and Fourier feature
