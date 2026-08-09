@@ -1775,6 +1775,19 @@ python3 -B scripts/bench_column_pipeline_device.py \
 
 See [`results/COLUMN_PIPELINE_DEVICE.md`](results/COLUMN_PIPELINE_DEVICE.md).
 
+The conditional feature-union lane checks two interval-routed Fourier branches
+over selected columns against an independent NumPy value/JVP/VJP/HVP oracle.
+It also checks stable branch offsets, transactional endpoint/schema behavior,
+the focused Fortran test, CPU transform timing, and output-preserving typed
+CUDA refusal:
+
+```bash
+python3 -B scripts/bench_conditional_pipeline.py \
+  --fortml ../fortml --output results/conditional_pipeline.csv
+```
+
+See [`results/CONDITIONAL_PIPELINE.md`](results/CONDITIONAL_PIPELINE.md).
+
 The separately named LightGBM-style lane records weighted regression and
 binary-logistic histogram boosting with deterministic globally best-leaf growth
 up to `num_leaves`. The release app also gates cumulative staged predictions,

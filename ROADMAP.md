@@ -432,8 +432,14 @@ a different workload, precision, device, or residency policy.
 - [x] Add the named residual-sum basis DAG correctness lane. The raw record is
   `results/basis_residual_pipeline.csv`; `test_basis_residual_pipeline` and
   the independent NumPy fixture check branch-summed value/JVP/VJP/HVP products,
-  metadata, and output-preserving typed CUDA refusals. Conditional, cyclic,
-  and resident branch execution remain separate open contracts.
+  metadata, and output-preserving typed CUDA refusals. Cyclic and resident
+  branch execution remain separate open contracts.
+- [x] Add the interval-routed conditional basis feature-union lane. The raw
+  record is `results/conditional_pipeline.csv`; an independent NumPy fixture
+  and `test_conditional_pipeline` check routed value/JVP/VJP/HVP products,
+  endpoint and transactional refusals, stable branch offsets, and the
+  output-preserving typed CUDA contract. Cyclic routing and resident route-mask
+  execution remain separate open contracts.
 - [x] Add the fitted horizontal basis-pipeline persistence lane. The raw record
   is `results/pipeline_persistence.csv`; an independent NumPy reconstruction
   checks feature and metadata counts before the Fortran release app's
