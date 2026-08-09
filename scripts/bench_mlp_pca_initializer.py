@@ -145,6 +145,7 @@ def main() -> None:
         rows.append(run_fortml(fortml, args.target, details, expected_rmse))
     rows.append(row(details, phase="device_capability", backend="fortml", device="cuda",
                     status="unavailable", oracle="typed_device_contract",
+                    metric="resident_cuda_initializer",
                     notes="no resident CUDA MLP/PCA initializer; CPU timing is not relabeled"))
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", newline="") as stream:
