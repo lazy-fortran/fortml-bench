@@ -357,3 +357,22 @@ python -B scripts/bench_gp_ordinal_likelihood.py \
 
 See [`results/GP_ORDINAL_LIKELIHOOD.md`](results/GP_ORDINAL_LIKELIHOOD.md) for
 the fixture, checksum errors, timings, and pinned provenance.
+
+## MLP trainable parameter state
+
+This lane compares a named dense-MLP freeze block with an independent NumPy
+forward/reverse recurrence. It freezes `layer_1.weight`, checks that the
+packed deployment value is unchanged and that frozen VJP/JVP coordinates are
+zero, then re-enables the block and checks the analytic JVP. The Fortran
+behavioral oracle covers unknown-path transactionality. The CUDA row is an
+explicit unavailable boundary because resident optimizer routing for this
+metadata path is not claimed.
+
+```bash
+python -B scripts/bench_mlp_trainable_state.py \
+  --fortml ../fortml --output results/mlp_trainable_state.csv \
+  --report results/MLP_TRAINABLE_STATE.md
+```
+
+See [`results/MLP_TRAINABLE_STATE.md`](results/MLP_TRAINABLE_STATE.md) for
+the independent oracle, release output, tolerances, and provenance.
