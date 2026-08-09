@@ -90,6 +90,13 @@ def run_release(fortml: Path) -> dict[str, float]:
     if build.returncode:
         detail = build.stderr.strip().splitlines()[-1] if build.stderr.strip() else "release build failed"
         raise RuntimeError(detail)
+    test = subprocess.run(
+        ["fo", "test", "test_mlp_weighted_training"],
+        cwd=fortml, env=environment, capture_output=True, text=True,
+    )
+    if test.returncode:
+        detail = test.stderr.strip().splitlines()[-1] if test.stderr.strip() else "weighted test failed"
+        raise RuntimeError(detail)
     run = subprocess.run(
         ["fo", "exec", "fortml_bench_mlp_weighted_training"],
         cwd=fortml, env=environment, capture_output=True, text=True,
