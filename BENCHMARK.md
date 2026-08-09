@@ -661,6 +661,57 @@ python -B scripts/bench_boosted_partial_dependence.py \
 See [`results/BOOSTED_PARTIAL_DEPENDENCE.md`](results/BOOSTED_PARTIAL_DEPENDENCE.md)
 for the hand-computed/NumPy oracle and provenance.
 
+## Learned basis fan-in
+
+This lane exercises two named same-shape basis branches combined by learned
+mixing weights. The independent NumPy fixture checks value, input/parameter
+JVP and VJP products. The Fortran gate adds HVP, metadata, transactional
+rollback, CPU dispatch, and output-preserving CUDA/OpenACC refusals. The
+release run uses the GNU compiler explicitly because the NVFortran runtime
+fixture remains an open compatibility boundary.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_basis_blend_pipeline.py \
+  --fortml ../fortml --output results/basis_blend_pipeline.csv
+```
+
+See [`results/BASIS_BLEND_PIPELINE.md`](results/BASIS_BLEND_PIPELINE.md) for
+the oracle, timing, and clean provenance (`48008d4`).
+
+## Fixed-full-batch SGD clipping hypergradients
+
+This lane checks exact active/inactive global-norm clipping sensitivities over
+log learning rate, log L2, and log clip norm. The independent NumPy recurrence
+is compared with the production MLP path, FortOpt L-BFGS-B, and typed kink,
+outer-HVP, and CUDA boundaries.
+
+```bash
+python -B scripts/bench_mlp_clip_hypergradient.py \
+  --fortml ../fortml --output results/mlp_clip_hypergradient.csv
+```
+
+See [`MLP_CLIP_HYPERGRADIENT.md`](MLP_CLIP_HYPERGRADIENT.md) and
+[`results/mlp_clip_hypergradient.csv`](results/mlp_clip_hypergradient.csv)
+for the 15-row oracle and clean provenance (`cb681b3`).
+
+## Weighted Gamma GP likelihood products
+
+This lane checks the positive-target Gamma density over latent log means and a
+transformed log-shape coordinate. The independent NumPy/SciPy oracle covers
+value, gradient, JVP, VJP, and directional HVP products. A bounded FortOpt
+fit is compared with SciPy and CUDA is recorded as a typed refusal.
+
+```bash
+python -B scripts/bench_gp_gamma_likelihood.py \
+  --fortml ../fortml --output results/gp_gamma_likelihood.csv \
+  --report results/GP_GAMMA_LIKELIHOOD.md
+```
+
+See [`results/GP_GAMMA_LIKELIHOOD.md`](results/GP_GAMMA_LIKELIHOOD.md) for
+the maximum product error (`1.399e-6`), fit error (`4.274e-9`), and clean
+provenance (`86c4bd9`).
+
 ## Versioned result schema
 
 Release CSVs use the required provenance and correctness fields described in
