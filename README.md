@@ -2374,6 +2374,12 @@ with its scaling interpretation in
 compares the FortML resident CSR product with dense PyTorch and KeOps at
 matched float64 parameters. Dense PyTorch OOM rows are retained explicitly.
 
+The named PINN term-product lane is recorded in
+[`results/pinn_term_products.csv`](results/pinn_term_products.csv), with its
+independent weighted-quadratic oracle and release protocol in
+[`results/PINN_TERM_PRODUCTS.md`](results/PINN_TERM_PRODUCTS.md). It checks
+per-term gradients and HVPs, inactive-term zeros, and the typed CUDA boundary.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).

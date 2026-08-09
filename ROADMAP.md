@@ -920,6 +920,10 @@ a different workload, precision, device, or residency policy.
   workloads with manufactured-PDE, Lagrangian, posterior-calibration, and
   long-horizon trajectory studies. The canonical harmonic-oscillator residual
   and Jacobian-defect gate is recorded above.
+- [x] Add the named PINN term-product lane. The independent weighted
+  quadratic oracle and release app check per-term parameter gradients/HVPs,
+  inactive-term zeros, and the typed CUDA refusal in
+  `results/pinn_term_products.csv` and `results/PINN_TERM_PRODUCTS.md`.
 - [ ] Add physics-consistent GP, Ghosttasking, Monge-GP, and GP-initialized
   finite-network lanes when their public equations and reference data are
   pinned. Private project results must be accompanied by a reproducible data
