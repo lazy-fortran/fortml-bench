@@ -786,6 +786,10 @@ a different workload, precision, device, or residency policy.
   `results/mlp_last_layer_gp_posterior.csv` and
   `results/MLP_LAST_LAYER_GP_POSTERIOR.md`; NNGP covariance and full
   structure-aware GP initialization remain open.
+- [x] Add the bounded exact ReLU NNGP covariance lane. An independent NumPy
+  arc-cosine recurrence gates the FortML kernel checksum for a fixed-depth
+  Gaussian-prior stack; `results/relu_nngp.csv` retains the explicit CUDA
+  refusal and `results/RELU_NNGP.md` records the finite-weight-map boundary.
 - [x] Add the ordinary fixed-depth structure-aware MLP GP initializer lane.
   NumPy independently solves the frozen-feature normal equations and checks
   the release app's posterior MSE and zero hidden-parameter delta. The raw
