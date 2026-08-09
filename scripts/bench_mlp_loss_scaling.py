@@ -150,6 +150,8 @@ def main() -> None:
         abs(observed_overflow[0] - expected["final_scale"]),
         abs(observed_overflow[1] - expected["overflow_count"]),
         abs(observed_overflow[2] - expected["skipped_updates"]),
+        abs(observed_training[1] - 16.0),
+        abs(observed_refusal[0] - 3.0),
     ])
     app_passed = app_status == "pass" and np.all(np.isfinite(errors)) and np.max(errors) == 0.0
     rows.append(row(metadata, phase="release_app_recurrence", status="pass" if app_passed else app_status,
@@ -158,11 +160,12 @@ def main() -> None:
                     oracle="FortML app vs independent NumPy recurrence", notes=note))
     rows.append(row(metadata, phase="fp64_training_state", status=app_status,
                     metric="loss_scale", value=observed_training[1],
-                    max_abs_error=0.0 if app_status == "pass" else "nan",
+                    max_abs_error=abs(observed_training[1] - 16.0),
                     oracle="FP64 trainer captures dynamic scale and counters",
                     notes=f"updates={observed_training[0] if observed_training else 'nan'}"))
     rows.append(row(metadata, phase="fp32_typed_refusal", status=app_status,
-                    metric="status_code", value=observed_refusal[0], max_abs_error=0.0,
+                    metric="status_code", value=observed_refusal[0],
+                    max_abs_error=abs(observed_refusal[0] - 3.0),
                     oracle="FORTNUM_NOT_IMPLEMENTED before model mutation",
                     notes="master weights and lower-precision resident kernels remain open"))
     rows.append(row(metadata, phase="cuda_typed_refusal", device="cuda",
