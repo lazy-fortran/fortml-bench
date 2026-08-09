@@ -21,7 +21,8 @@ python -B scripts/validate_result_schema.py \
   results/ovr_logistic_partial_fit.csv \
   results/mlp_rmsprop_weighted_hypergradient.csv \
   results/multi_output_gp_hypergradients.csv \
-  results/ranking_metrics.csv
+  results/ranking_metrics.csv \
+  results/gaussian_nb_partial_fit.csv
 ```
 
 Use `--all` only when auditing migration debt. A failing historical row must

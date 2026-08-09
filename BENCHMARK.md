@@ -808,6 +808,26 @@ for the replay error (zero), behavioral gate, and typed CUDA refusal. The
 clean evidence is pinned by benchmark commit `ea13ff1` and FortML revision
 `124a9b4`.
 
+## Gaussian Naive Bayes partial-fit state
+
+This lane checks GaussianNB's sorted class vocabulary, deferred one-class
+prefix, replayed population moments, transactional unknown-label rollback, and
+CPU/CUDA dispatch. The independent NumPy oracle evaluates class means,
+variances, priors, and normalized Gaussian log densities directly. CUDA is a
+typed refusal until resident sufficient-statistic state is linked.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_gaussian_nb_partial_fit.py \
+  --fortml ../fortml --output results/gaussian_nb_partial_fit.csv
+```
+
+See [`results/GAUSSIAN_NB_PARTIAL_FIT.md`](results/GAUSSIAN_NB_PARTIAL_FIT.md)
+for the independent moment and stream oracle, behavioral gate, and device
+boundary. The release app is `fortml_bench_gaussian_nb_partial_fit`; when the
+full application set is available it reports the replay timing and CUDA
+refusal alongside the schema-gated rows.
+
 ## Weighted RMSprop trajectory hypergradients
 
 This lane checks a centered RMSprop trajectory with non-uniform training and

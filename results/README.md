@@ -89,6 +89,7 @@ Complete-call studies:
 - [Binary XGBoost log-probability products](XGBOOST_CLASSIFIER_LOG_PROBA.md)
 - [Multinomial and neural classification](CLASSIFICATION_MODELS.md)
 - [Differentiable Multinomial Naive Bayes](MULTINOMIAL_NB.md)
+- [Gaussian Naive Bayes partial-fit replay](GAUSSIAN_NB_PARTIAL_FIT.md)
 - [Differentiable Complement Naive Bayes](COMPLEMENT_NB.md)
 - [Categorical Naive Bayes](CATEGORICAL_NB.md)
 - [Integer one-hot encoder](ONE_HOT_ENCODER.md)
