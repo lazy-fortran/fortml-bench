@@ -75,7 +75,7 @@ def app_values(output: str) -> dict[str, list[float]]:
         fields = [item.strip() for item in line.split(",")]
         if fields and fields[0] in {
                 "recurrence_overflow", "gradient_products", "gradient_overflow",
-                "gradient_overflow_commit", "fp64_training", "fp32_training",
+                "gradient_overflow_commit", "fp32_overflow_skip", "fp64_training", "fp32_training",
                 "fp32_checkpoint", "fp16_typed_refusal", "bf16_typed_refusal"}:
             values[fields[0]] = [float(item) for item in fields[1:]]
     return values
@@ -169,6 +169,7 @@ def main() -> None:
     observed_products = parsed.get("gradient_products", [float("nan")]*2)
     observed_gradient_overflow = parsed.get("gradient_overflow", [float("nan")]*2)
     observed_overflow_commit = parsed.get("gradient_overflow_commit", [float("nan")])
+    observed_fp32_overflow = parsed.get("fp32_overflow_skip", [float("nan")]*5)
     observed_training = parsed.get("fp64_training", [float("nan")]*3)
     observed_fp32 = parsed.get("fp32_training", [float("nan")]*6)
     observed_checkpoint = parsed.get("fp32_checkpoint", [float("nan")]*2)
@@ -182,6 +183,11 @@ def main() -> None:
         abs(observed_products[1] - 1.0),
         abs(observed_gradient_overflow[0] - 1.0),
         abs(observed_overflow_commit[0] - 2.0),
+        abs(observed_fp32_overflow[0]),
+        abs(observed_fp32_overflow[1] - 1.0),
+        abs(observed_fp32_overflow[2] - 1.0),
+        abs(observed_fp32_overflow[3] - 1.0),
+        abs(observed_fp32_overflow[4]),
         abs(observed_training[1] - 16.0),
         abs(observed_fp32[0] - 3.0),
         abs(observed_fp32[1] - 2.0),
@@ -196,8 +202,8 @@ def main() -> None:
     # Discrete FP64/contract products are expected to be bitwise-stable at
     # this scale; the FP32 trajectory is intentionally compared at its
     # single-precision rounding envelope instead of the FP64 tolerance.
-    fp32_errors = errors[[11, 12, 14]]
-    contract_errors = np.delete(errors, [11, 12, 14])
+    fp32_errors = errors[[16, 17, 19]]
+    contract_errors = np.delete(errors, [16, 17, 19])
     app_passed = (app_status == "pass" and np.all(np.isfinite(errors)) and
                   np.max(contract_errors) <= 1.0e-12 and
                   np.max(fp32_errors) <= 1.0e-8)
@@ -225,6 +231,14 @@ def main() -> None:
                     max_abs_error=abs(observed_overflow_commit[0] - 2.0),
                     oracle="non-finite scaled gradient is refused before optimizer commit",
                     notes="FORTNUM_CONVERGENCE_ERROR"))
+    rows.append(row(metadata, phase="fp32_overflow_skip", status=app_status,
+                    metric="skipped_updates", value=observed_fp32_overflow[2],
+                    max_abs_error=float(np.max(errors[7:12])),
+                    oracle="FP32 trainer overflow replay with independent zero-update oracle",
+                    notes=(f"updates={observed_fp32_overflow[0]}; "
+                           f"overflow_count={observed_fp32_overflow[1]}; "
+                           f"callback_events={observed_fp32_overflow[3]}; "
+                           "parameters remain unchanged")))
     rows.append(row(metadata, phase="fp32_master_trajectory", status=app_status,
                     metric="max_abs_error", value=max(
                         abs(observed_fp32[4] - expected_fp32[0]),
@@ -275,6 +289,9 @@ def main() -> None:
         "The policy starts at 8, grows by 2 after two finite updates, and backs",
         "off by 0.5 after an overflow. The FP64 trainer row checks persisted",
         "dynamic state and explicit scale/check/unscale gradient products. The",
+        "FP32 overflow row checks a finite forward/gradient boundary whose",
+        "scaled vector overflows: the update is skipped, the scale backs off,",
+        "and MLP_EVENT_UPDATE_SKIPPED is delivered exactly once.",
         "FP32 rows compare binary64 master parameters with an independently",
         "rounded NumPy recurrence and check schema-11 checkpoint metadata.",
         "FP16, BF16, and CUDA rows record typed capability boundaries.",
