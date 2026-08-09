@@ -215,3 +215,20 @@ python -B scripts/bench_symplectic_leapfrog_jvp.py \
 
 See [`results/SYMPLECTIC_LEAPFROG_JVP.md`](results/SYMPLECTIC_LEAPFROG_JVP.md)
 for the contract, provenance, and explicit CUDA boundary.
+
+## Semantic basis feature labels
+
+This lane checks optional semantic output names on `basis_map_t` and their
+qualified propagation through horizontal, sequential, and column-selecting
+pipelines. An independent NumPy fixture assembles polynomial and Fourier
+features directly; the Fortran gate checks duplicate-name transactionality and
+that labels leave values and packed layouts unchanged.
+
+```bash
+python -B scripts/bench_basis_feature_names.py \
+  --fortml ../fortml --output results/basis_feature_names.csv \
+  --report results/BASIS_FEATURE_NAMES.md
+```
+
+See [`results/BASIS_FEATURE_NAMES.md`](results/BASIS_FEATURE_NAMES.md) for
+the fixture and provenance.
