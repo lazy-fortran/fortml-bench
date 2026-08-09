@@ -363,6 +363,27 @@ See
 [`results/SECOND_DERIVATIVE_GP_MATERN52_HYPERPARAMETERS.md`](results/SECOND_DERIVATIVE_GP_MATERN52_HYPERPARAMETERS.md)
 for the independent oracle, provenance, tolerances, and timing rows.
 
+## Registered linear-operator GP observations
+
+This lane checks the named first-order operator registry with `[value, d/dx]`
+columns. Value, gradient, and Robin combinations are fitted and queried
+through an exact dense RBF GP. The independent NumPy oracle assembles the
+value/gradient/mixed-Hessian covariance directly, central-differences query
+operator coefficients for JVPs, and checks the release Fortran JVP/VJP
+adjoint identity. CUDA remains a typed refusal until a resident operator
+covariance/factorization graph is linked.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_gp_linear_operator.py \
+  --fortml ../fortml --output results/gp_linear_operator.csv \
+  --report results/GP_LINEAR_OPERATOR.md
+```
+
+See [`results/GP_LINEAR_OPERATOR.md`](results/GP_LINEAR_OPERATOR.md) and
+[`results/gp_linear_operator.csv`](results/gp_linear_operator.csv) for the
+oracle, timing, refusal contract, and pinned provenance.
+
 ## Uniform empirical quantile transformer
 
 This lane checks the fitted per-feature order-statistic map, inverse
