@@ -17,6 +17,7 @@ python -B scripts/validate_result_schema.py \
   results/gp_classification_implicit_prediction.csv \
   results/mlp_optimizer_group_registry.csv \
   results/cuda_boosted_tree.csv \
+  results/mlp_pca_initializer.csv \
   results/ovr_logistic_partial_fit.csv \
   results/mlp_rmsprop_weighted_hypergradient.csv \
   results/multi_output_gp_hypergradients.csv \
