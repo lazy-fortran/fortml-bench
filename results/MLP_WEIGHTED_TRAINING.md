@@ -5,8 +5,8 @@ independent NumPy affine oracle.
 
 | Field | Value |
 | --- | --- |
-| FortML revision | `f7e8c65ba6f1f4c0d72a3ef3a45fd49de1a388e5` |
-| Benchmark revision | `fff6b26e33e5c94b7558e38e4c8ad323618530a3` plus the benchmark patch |
+| FortML revision | `143590856846190bf55fa8dd9b15d801828338d0` |
+| Benchmark revision | `cb6bf8b10d8b355c1a4c6e2c11db1b58426ae5c8` |
 | Compiler | `gfortran` with `-O3` release app protocol |
 | Precision | CPU `float64` |
 | Fixture | Four affine rows, weights `[1, 0, 2, 0.5]`, `lambda=0.07` |
