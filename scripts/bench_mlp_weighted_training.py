@@ -83,6 +83,13 @@ def oracle() -> dict[str, float]:
 def run_release(fortml: Path) -> dict[str, float]:
     environment = os.environ.copy()
     environment.update({"FO_FC": environment.get("FO_FC", "gfortran"), "OMP_NUM_THREADS": "1"})
+    build = subprocess.run(
+        ["fo", "build", "--flag", "-O3"], cwd=fortml,
+        env=environment, capture_output=True, text=True,
+    )
+    if build.returncode:
+        detail = build.stderr.strip().splitlines()[-1] if build.stderr.strip() else "release build failed"
+        raise RuntimeError(detail)
     run = subprocess.run(
         ["fo", "exec", "fortml_bench_mlp_weighted_training"],
         cwd=fortml, env=environment, capture_output=True, text=True,
