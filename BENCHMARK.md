@@ -409,3 +409,19 @@ python -B scripts/bench_basis_pipeline_clone.py \
 
 See [`results/BASIS_PIPELINE_CLONE.md`](results/BASIS_PIPELINE_CLONE.md) for
 the fixture, independent oracle, timing, and device-boundary evidence.
+
+## Polynomial-kernel binary SVM
+
+This lane compares the dense finite-basis polynomial SVM with an independent
+SciPy L-BFGS-B weighted squared-hinge solve. It gates sorted arbitrary labels,
+degree/gamma/coef0 metadata, score and prediction checks, and the release
+timing rows. The FortML behavioral test additionally checks analytic JVP/VJP
+products, malformed-input rollback, CPU dispatch, and the typed CUDA refusal.
+
+```bash
+python -B scripts/bench_polynomial_svm.py \
+  --fortml ../fortml --output results/polynomial_svm.csv
+```
+
+See [`results/POLYNOMIAL_SVM.md`](results/POLYNOMIAL_SVM.md) for the fixture,
+oracle, tolerances, and pinned provenance.
