@@ -773,6 +773,24 @@ for the gradient error (`2.20e-8`), HVP error (`3.17e-6`), timings, and typed
 CUDA refusal. The clean evidence is pinned by benchmark commit `59a66fc` (the
 oracle correction is `ca1bbf1`) and FortML revision `124a9b4`.
 
+## Grouped NDCG ranking metric
+
+This lane checks the standalone tree-ranking reduction for arbitrary positive
+query IDs, deterministic score ties, per-query cutoffs, weighted exponential
+gains, and the typed CUDA boundary. A Python DCG reduction is the independent
+behavioral oracle.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_ranking_metrics.py \
+  --fortml ../fortml --output results/ranking_metrics.csv
+```
+
+See [`results/RANKING_METRICS.md`](results/RANKING_METRICS.md) for the
+matching value (`0.8295009024012067`), zero maximum error, CPU timing, and
+CUDA status 3 refusal. The clean evidence is pinned by benchmark commit
+`70f25ab` and FortML revision `dfa3a92`.
+
 ## Versioned result schema
 
 Release CSVs use the required provenance and correctness fields described in
