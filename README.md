@@ -100,6 +100,19 @@ python -B scripts/bench_huber_regression.py \
 
 See [`results/HUBER_REGRESSION.md`](results/HUBER_REGRESSION.md).
 
+The weighted multi-output linear quantile lane independently evaluates a
+packed affine probe with a NumPy pinball oracle, then checks the release
+FortOpt L-BFGS-B continuation fit and records the explicit resident-CUDA
+refusal:
+
+```bash
+python -B scripts/bench_quantile_regression.py \
+  --fortml ../fortml --output results/quantile_regression.csv \
+  --report results/QUANTILE_REGRESSION.md
+```
+
+See [`results/QUANTILE_REGRESSION.md`](results/QUANTILE_REGRESSION.md).
+
 The weighted Bayesian-ridge lane compares the dense fixed-hyperparameter
 posterior mean/evidence and prediction with an independent NumPy
 conjugate-Gaussian oracle. It records the fitted alpha/lambda posterior

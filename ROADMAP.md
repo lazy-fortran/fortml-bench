@@ -941,6 +941,13 @@ a different workload, precision, device, or residency policy.
   The release record is `results/huber_regression.csv` with protocol in
   `results/HUBER_REGRESSION.md`; residual kinks and derivative-through-fit
   remain explicit boundaries.
+- [x] Add the weighted multi-output linear quantile-regression lane.
+  `scripts/bench_quantile_regression.py` independently evaluates the packed
+  affine pinball value and gradient with NumPy, then gates the release
+  FortOpt L-BFGS-B continuation fit and typed resident-CUDA refusal. The
+  release record is `results/quantile_regression.csv` with protocol in
+  `results/QUANTILE_REGRESSION.md`; exact pinball kinks and
+  derivative-through-fit remain explicit boundaries.
 - [x] Add the weighted ordinary-least-squares lane.
   `scripts/bench_weighted_ols.py` compares deterministic multi-output fitting
   and the packed coefficient checksum with an independent NumPy weighted
