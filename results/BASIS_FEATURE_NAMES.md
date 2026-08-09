@@ -22,7 +22,7 @@ python -B scripts/bench_basis_feature_names.py \
 | Independent labels and values | NumPy | Pass | 6 qualified labels, direct trigonometric/polynomial construction, and maximum error `0.000e+00` |
 | Fortran semantic-label gate | FortML / CPU | Pass | `test_basis_feature_names`, transactional duplicate refusal, and composition metadata |
 
-FortML revision: `1618c8db7ae3511e9114ead0874f4cdffd44f92b`. Benchmark revision: `642739377105858ad5fe00b38152ccd4cb32c660`. Python 3.14.6, NumPy 2.5.1, GNU Fortran `-O3`.
+FortML revision: `1618c8db7ae3511e9114ead0874f4cdffd44f92b`. Benchmark revision: `dc2004e247d57dc856f781681ebd6dc10c1cf725`. Python 3.14.6, NumPy 2.5.1, GNU Fortran `-O3`.
 
 This is a metadata and correctness lane. It does not claim resident GPU
 transform throughput. Structural pipeline persistence, sparse feature views,
