@@ -140,6 +140,19 @@ python -B scripts/bench_weighted_ols.py \
 
 See [`results/WEIGHTED_OLS.md`](results/WEIGHTED_OLS.md).
 
+The weighted MLP training lane compares the exact weighted affine MSE+L2
+value, gradient, minibatch accumulation recurrence, validation loss, and
+transactional malformed-weight refusal with an independent NumPy oracle. It
+also records all current CPU optimizer dispatches through the source test and
+keeps full resident CUDA training as an explicit refusal:
+
+```bash
+python -B scripts/bench_mlp_weighted_training.py \
+  --fortml ../fortml --output results/mlp_weighted_training.csv
+```
+
+See [`results/MLP_WEIGHTED_TRAINING.md`](results/MLP_WEIGHTED_TRAINING.md).
+
 The PINN structure-aware GP lane compares a named four-term physics objective
 and frozen-feature posterior mean with an independent NumPy oracle. It records
 hidden/structure defects and the typed CUDA refusal:

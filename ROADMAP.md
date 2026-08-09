@@ -549,6 +549,12 @@ a different workload, precision, device, or residency policy.
   checks both bounded FortOpt L-BFGS-B modes plus the typed CUDA refusal in
   `results/mlp_multilabel_objective.csv` and
   `results/MLP_MULTILABEL_OBJECTIVE.md`.
+- [x] Add weighted row semantics to the dense MLP trainer and regressor. The
+  independent affine NumPy oracle and release app check weighted MSE+L2
+  value/gradient, mass-aware minibatch accumulation, weighted validation,
+  malformed-weight transactionality, and the explicit resident-CUDA refusal
+  in `results/mlp_weighted_training.csv` and
+  `results/MLP_WEIGHTED_TRAINING.md`.
 - [x] Add fixed-input packed-parameter probability JVP/VJP products for the
   multiclass MLP classifier. The independent tanh/softmax replay checks all 21
   packed coordinates, central differences, and tangent/cotangent duality; the
