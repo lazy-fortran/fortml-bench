@@ -1,10 +1,10 @@
 # Transactional basis-pipeline cloning
 
 This lane covers the bounded host-side clone/reset contract for a fitted
-`basis_pipeline_t`. The fixture contains a degree-two polynomial map and one
+`basis_pipeline_t`. The fixture contains a degree-two polynomial map plus one
 radial map, for six output features. `clone` deep-copies stage state, fitted
 metadata, and the input schema. An invalid source is refused without changing
-an existing destination. CPU device dispatch uses the same deep copy; a
+an existing destination. CPU device dispatch uses the same deep copy, while a
 selected CUDA device returns `FORTNUM_NOT_IMPLEMENTED` and leaves the
 destination unchanged because a resident graph clone is not implemented.
 
@@ -17,9 +17,9 @@ clone's radial centre changes only the clone. The release gate is
 
 | Phase | Backend/device | Result | Evidence |
 | --- | --- | --- | --- |
-| Independent copy/mutation oracle | NumPy / CPU | Pass | Copy error `0.0`; clone-centre mutation effect `1.8951e-1` |
-| Repeated deep clone | FortML / CPU | Pass | 5,000/5,000 clones; `2.2963e-7` s per clone; output error `0.0` |
-| Resident graph clone | FortML / CUDA | Unavailable | Typed `FORTNUM_NOT_IMPLEMENTED`; destination preserved |
+| Independent copy/mutation oracle | NumPy / CPU | Pass | Copy error `0.0`, clone-centre mutation effect `1.8951e-1` |
+| Repeated deep clone | FortML / CPU | Pass | 5,000/5,000 clones, `2.2963e-7` s per clone, output error `0.0` |
+| Resident graph clone | FortML / CUDA | Unavailable | Typed `FORTNUM_NOT_IMPLEMENTED`, destination preserved |
 
 Raw rows are in [`basis_pipeline_clone.csv`](basis_pipeline_clone.csv). They
 pin FortML revision
