@@ -329,6 +329,26 @@ python -B scripts/bench_cuda_mlp_chain.py \
 See [`results/CUDA_MLP_CHAIN.md`](results/CUDA_MLP_CHAIN.md) for the oracle,
 transfer/residency contract, tolerances, and provenance.
 
+## Resident CUDA boosted-tree plan
+
+This lane checks a fixed two-tree additive ensemble against an independent
+NumPy leaf-walk oracle. It covers base score, learning rate, per-tree scales,
+strict split routing, learned NaN defaults, and zero fixed-routing input JVPs.
+The ordinary Fortran gate checks invalid-device handling, typed
+`FORTNUM_NOT_IMPLEMENTED` refusal, and sentinel preservation. Native CUDA runs
+only when `nvcc` and a CUDA device are available; unavailable hardware is
+recorded explicitly rather than timed as a host fallback.
+
+```bash
+python -B scripts/bench_cuda_boosted_tree.py \
+  --fortml ../fortml --output results/cuda_boosted_tree.csv \
+  --report results/CUDA_BOOSTED_TREE.md
+```
+
+See [`results/CUDA_BOOSTED_TREE.md`](results/CUDA_BOOSTED_TREE.md) for the
+independent oracle, resident model contract, boundary behavior, and pinned
+provenance.
+
 ## Power transformer
 
 This lane compares fixed-lambda Yeo--Johnson and Box--Cox transforms against
