@@ -196,6 +196,8 @@ def main() -> None:
         "The policy starts at 8, grows by 2 after two finite updates, and backs",
         "off by 0.5 after an overflow. The FP64 trainer row checks persisted",
         "dynamic state. FP32 and CUDA rows record typed capability boundaries.",
+        "Growth and overflow branches are discrete, so smooth HPO products are",
+        "not claimed across a branch change.",
         "",
         f"FortML revision: `{metadata['fortml_revision']}`  ",
         f"Benchmark revision: `{metadata['benchmark_revision']}`",
