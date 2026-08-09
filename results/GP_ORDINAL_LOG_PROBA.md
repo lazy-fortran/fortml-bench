@@ -16,12 +16,12 @@ FO_SCAN_FALLBACK=regex python3 -B scripts/bench_gp_ordinal_log_proba.py \
 
 The output columns retain `classes()` order and are finite even in normal-CDF
 tails.  The derivative rows use the exact chain rule for unclipped
-probabilities; a value at the finite floor has zero derivative.  CUDA is
+probabilities. A value at the finite floor has zero derivative. CUDA is
 reported as `unavailable` because the ordinal covariance and normal-CDF graph
 is not resident.  The API returns `FORTNUM_NOT_IMPLEMENTED` and never stages
 through the host.
 
 The CSV records source and benchmark revisions, independent-oracle error, and
 the release-test timing.  The lane is a correctness gate, not a claim of
-CUDA parity or cumulative-likelihood inference; those remain explicit
+CUDA parity or cumulative-likelihood inference, which remain explicit
 roadmap work.
