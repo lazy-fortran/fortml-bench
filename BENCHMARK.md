@@ -177,6 +177,26 @@ python -B scripts/bench_robust_gp_poisson_products.py \
 
 See [`results/ROBUST_GP_POISSON_PRODUCTS.md`](results/ROBUST_GP_POISSON_PRODUCTS.md).
 
+## Derivative-observation kernel catalog
+
+This lane audits the shared mixed-observation GP contract across RBF, ARD RBF,
+Matérn, periodic, local-periodic, rational-quadratic, cosine, polynomial,
+spectral-mixture, linear, constant, change-point, and composite kernels. The
+independent Fortran oracle compares analytic input gradients and mixed
+Hessians with central differences, then fits and predicts mixed
+value/first-derivative observations for every family. CUDA is recorded as a
+typed refusal until resident derivative-GP factorization is linked.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_gp_derivative_kernel_matrix.py \
+  --fortml ../fortml --output results/gp_derivative_kernel_matrix.csv \
+  --report results/GP_DERIVATIVE_KERNEL_MATRIX.md
+```
+
+See [`results/GP_DERIVATIVE_KERNEL_MATRIX.md`](results/GP_DERIVATIVE_KERNEL_MATRIX.md)
+for the catalog count, maximum oracle error, capability rows, and provenance.
+
 ## Fixed-latent Student-t GP likelihood products
 
 This lane checks the normalized Student-t observation density over stable
@@ -494,6 +514,24 @@ python -B scripts/bench_xgboost_cuda.py \
 See [`results/XGBOOST_CUDA.md`](results/XGBOOST_CUDA.md) for the independent
 CPU oracle, native or unavailable CUDA row, policy refusals, and provenance.
 
+## Transactional partial fit for all Naive Bayes variants
+
+This lane runs Bernoulli, Multinomial, Complement, and Categorical Naive Bayes
+through the shared two-batch transaction protocol. An independent NumPy replay
+checks sufficient-statistic equivalence; the Fortran behavioral gate checks
+predictions, malformed-batch rollback, and the typed CUDA refusal. Capability
+rows are not GPU timings.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_naive_bayes_partial_fit.py \
+  --fortml ../fortml --output results/naive_bayes_partial_fit.csv \
+  --report results/NAIVE_BAYES_PARTIAL_FIT.md
+```
+
+See [`results/NAIVE_BAYES_PARTIAL_FIT.md`](results/NAIVE_BAYES_PARTIAL_FIT.md)
+for the replay oracle, four variant rows, refusal statuses, and provenance.
+
 ## Power transformer
 
 This lane compares fixed-lambda Yeo--Johnson and Box--Cox transforms against
@@ -723,6 +761,24 @@ python -B scripts/bench_xgboost_multioutput_validation_metadata.py \
 
 See [`results/XGBOOST_MULTIOUTPUT_VALIDATION_METADATA.md`](results/XGBOOST_MULTIOUTPUT_VALIDATION_METADATA.md)
 for the scalar oracle and pinned provenance.
+
+## Full AdamW beta-logit outer HVP
+
+This lane checks the affine four-step AdamW trajectory over
+`(log_learning_rate, log_l2, log_weight_decay, logit_beta1, logit_beta2)`.
+An independent NumPy recurrence provides the value, directional JVP, five
+gradient components, and five outer-HVP components. FortML's analytic affine
+path is compared componentwise; nonlinear, multilayer, and CUDA requests stay
+typed refusals rather than finite-difference or host-fallback claims.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_adamw_beta_hypergradient.py \
+  --fortml ../fortml --output results/adamw_beta_hypergradient.csv
+```
+
+See [`results/ADAMW_BETA_HYPERGRADIENT.md`](results/ADAMW_BETA_HYPERGRADIENT.md)
+for the 24-row value/gradient/JVP/HVP gate and clean provenance.
 
 ## Five-coordinate mini-batch Adam hypergradients
 
