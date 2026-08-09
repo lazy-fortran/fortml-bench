@@ -291,3 +291,22 @@ Run:
 
 See results/QUANTILE_TRANSFORMER.md for the fixture, oracle errors, and
 provenance.
+
+## Resident CUDA dense MLP chain
+
+This lane checks a three-layer dense chain against an independent NumPy
+recurrence. It covers value, packed input/parameter JVP, packed input/parameter
+VJP, a central directional finite difference, and the reverse-mode adjoint
+identity. The Fortran gate checks ordinary-build typed refusal and sentinel
+preservation. Native CUDA is executed only when `nvcc` and a CUDA device are
+available; otherwise the CSV records an explicit typed refusal rather than a
+CPU GPU claim.
+
+```bash
+python -B scripts/bench_cuda_mlp_chain.py \
+  --fortml ../fortml --output results/cuda_mlp_chain.csv \
+  --report results/CUDA_MLP_CHAIN.md
+```
+
+See [`results/CUDA_MLP_CHAIN.md`](results/CUDA_MLP_CHAIN.md) for the oracle,
+transfer/residency contract, tolerances, and provenance.
