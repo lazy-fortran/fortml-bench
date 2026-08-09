@@ -28,6 +28,8 @@ N_VALIDATION = 3
 N_PARAMETERS = 5
 H = 2.0e-6
 REPETITIONS = 16
+HVP_FD_STEP = 2.0e-5
+HVP_ORACLE_TOLERANCE = 4.0e-5
 PARAMETERS = np.array([np.log(0.12), np.log(0.07), 0.78, np.log(0.03), 0.21])
 DIRECTION = np.array([0.31, -0.27, 0.17, -0.13, 0.19])
 FIELDS = (
@@ -119,9 +121,20 @@ def finite_difference_oracle(centered: bool) -> dict[str, Any]:
         gradient[index] = (trajectory(plus, centered) - trajectory(minus, centered)) / (2.0 * H)
     tangent = (trajectory(PARAMETERS + H * DIRECTION, centered)
         - trajectory(PARAMETERS - H * DIRECTION, centered)) / (2.0 * H)
+    def finite_difference_gradient(parameters: np.ndarray) -> np.ndarray:
+        result = np.empty(N_PARAMETERS)
+        for index in range(N_PARAMETERS):
+            plus = parameters.copy()
+            minus = parameters.copy()
+            plus[index] += H
+            minus[index] -= H
+            result[index] = (trajectory(plus, centered) - trajectory(minus, centered)) / (2.0 * H)
+        return result
+    hvp = (finite_difference_gradient(PARAMETERS + HVP_FD_STEP * DIRECTION)
+           - finite_difference_gradient(PARAMETERS - HVP_FD_STEP * DIRECTION)) / (2.0 * HVP_FD_STEP)
     elapsed = (time.perf_counter() - started) / REPETITIONS
     return {"value": value, "gradient": gradient, "tangent": tangent,
-            "seconds": elapsed}
+            "hvp": hvp, "seconds": elapsed}
 
 
 def base(details: dict[str, str], **values: Any) -> dict[str, Any]:
@@ -152,6 +165,12 @@ def numpy_rows(details: dict[str, str], expected: dict[str, Any], variant: str) 
                      max_abs_error=0.0,
                      oracle="independent central finite-difference directional product",
                      notes=f"direction={DIRECTION.tolist()}; h={H:g}"))
+    for index, value in enumerate(expected["hvp"], start=1):
+        rows.append(base(details, workload="rmsprop_hypergradient", phase="hvp_component",
+                         variant=variant, backend="numpy_oracle", status="pass",
+                         metric=f"hvp_{index}", value=float(value), max_abs_error=0.0,
+                         oracle="independent central finite-difference of outer gradient",
+                         notes=f"direction={DIRECTION.tolist()}; outer h={HVP_FD_STEP:g}"))
     return rows
 
 
@@ -160,7 +179,7 @@ def unavailable_rows(details: dict[str, str], device: str, status: str, notes: s
     return [base(details, workload="rmsprop_hypergradient", phase=phase,
                  variant=variant, backend="fortml", device=device, status=status,
                  oracle="FortML release-app protocol", notes=notes)
-            for phase in ("value_gradient", "jvp")]
+            for phase in ("value_gradient", "jvp", "hvp")]
 
 
 def run_fortml(fortml: Path, target: str, details: dict[str, str],
@@ -188,15 +207,22 @@ def run_fortml(fortml: Path, target: str, details: dict[str, str],
         actual_value = values[("value", 1)]
         actual_gradient = np.array([values[("gradient", index)] for index in range(1, 6)])
         actual_tangent = values[("jvp", 1)]
+        actual_hvp = np.array([values[("hvp", index)] for index in range(1, 6)])
         error = max(abs(actual_value - expected["value"]),
                     float(np.max(np.abs(actual_gradient - expected["gradient"]))),
                     abs(actual_tangent - expected["tangent"]))
-        if error > 3.0e-10:
-            raise RuntimeError(f"FortML RMSprop hypergradient oracle mismatch: {error:.3e}")
+        hvp_error = float(np.max(np.abs(actual_hvp - expected["hvp"])))
+        if error > 3.0e-10 or hvp_error > HVP_ORACLE_TOLERANCE:
+            raise RuntimeError(f"FortML RMSprop hypergradient oracle mismatch: "
+                               f"value-gradient={error:.3e}; hvp={hvp_error:.3e}")
         timing = next((float(line.split(",", 1)[1]) for line in run.stdout.splitlines()
                        if line.startswith("rmsprop_hypergradient_value_gradient,")), None)
         if timing is None:
             return unavailable_rows(details, "cpu", "unavailable", "release app emitted no timing row")
+        hvp_timing = next((float(line.split(",", 1)[1]) for line in run.stdout.splitlines()
+                           if line.startswith("rmsprop_hypergradient_hvp,")), None)
+        if hvp_timing is None:
+            return unavailable_rows(details, "cpu", "unavailable", "release app emitted no HVP timing row")
         rows = [base(details, workload="rmsprop_hypergradient", phase="value_gradient",
                      variant="centered_fixed", backend="fortml", status="pass",
                      seconds_per_operation=timing, metric="validation_mse", value=actual_value,
@@ -215,6 +241,13 @@ def run_fortml(fortml: Path, target: str, details: dict[str, str],
                          max_abs_error=abs(actual_tangent - expected["tangent"]),
                          oracle="independent NumPy trajectory and central-FD products",
                          notes=target))
+        rows.extend(base(details, workload="rmsprop_hypergradient", phase="hvp_component",
+                         variant="one_layer_affine", backend="fortml", status="pass",
+                         seconds_per_operation=hvp_timing, metric=f"hvp_{index}",
+                         value=float(actual_hvp[index - 1]),
+                         max_abs_error=abs(actual_hvp[index - 1] - expected["hvp"][index - 1]),
+                         oracle="independent NumPy trajectory and central-FD outer HVP",
+                         notes=target) for index in range(1, 6))
         return rows
 
 
