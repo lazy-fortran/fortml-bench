@@ -164,7 +164,7 @@ def main() -> None:
         "learning rate, per-tree scales, strict split routing, and a learned "
         "NaN default. The Fortran test checks ordinary-build typed refusal, "
         "invalid-device and output-preservation behavior. Native CUDA is run "
-        "only when both `nvcc` and `nvidia-smi` are available; no device is "
+        "only when both `nvcc` and `nvidia-smi` are available. No device is "
         "recorded as GPU timing evidence when unavailable.\n\n"
         "Run:\n\n```sh\n"
         "python3 scripts/bench_cuda_boosted_tree.py --fortml ../fortml \\\n"
