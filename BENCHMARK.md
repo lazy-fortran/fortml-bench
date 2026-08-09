@@ -377,13 +377,16 @@ python -B scripts/bench_mlp_trainable_state.py \
 See [`results/MLP_TRAINABLE_STATE.md`](results/MLP_TRAINABLE_STATE.md) for
 the independent oracle, release output, tolerances, and provenance.
 
-## Exact GP posterior covariance
+## Exact GP posterior covariance and hyperparameter products
 
 This lane compares `gp_regression_t%predict_covariance` with an independent
 NumPy dense solve for an RBF exact GP. It checks the full latent posterior
-matrix, symmetry, and agreement with the marginal variance path. CPU dispatch
-is the reference; selected CUDA returns the typed `FORTNUM_NOT_IMPLEMENTED`
-boundary until resident covariance and Cholesky kernels are linked.
+matrix, symmetry, and agreement with the marginal variance path. It also
+checks full-matrix kernel/log-noise JVP and VJP products against independent
+NumPy implicit-solve products, including the Frobenius cotangent reduction.
+CPU dispatch is the reference; selected CUDA returns the typed
+`FORTNUM_NOT_IMPLEMENTED` boundary for value and derivative products until
+resident covariance and Cholesky kernels are linked.
 
 ```bash
 python -B scripts/bench_gp_posterior_covariance.py \
