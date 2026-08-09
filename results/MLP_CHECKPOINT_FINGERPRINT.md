@@ -2,8 +2,8 @@
 
 This lane checks deterministic checkpoint identity with an independent decimal-token oracle and the FortML behavioral test. The release test covers formatted round-trip equality, optimizer-state and metadata mutation detection, invalid-state zero, and the CPU/CUDA boundary. CUDA is unavailable until a resident trainer exposes an explicit device-to-host snapshot.
 
-FortML revision: 2c7b503803c1db02d3dba625f85f1fcaac96a51b
-Benchmark revision: e4da1310daadf5006d744d7fc867616e9860824c
+FortML revision: 94378bbdc43183c5813467699847b6b3d171af2f
+Benchmark revision: f0950b07cc76fc8b5e90247d315ddfc5da05ca85+dirty
 
 | phase | status | metric | value | max abs error |
 | --- | --- | --- | ---: | ---: |

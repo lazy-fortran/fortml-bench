@@ -1102,6 +1102,54 @@ See [`results/CUDA_BOOSTED_TREE.md`](results/CUDA_BOOSTED_TREE.md) for the
 zero-error CPU oracle, native CUDA row, and typed boundary. The clean evidence
 is pinned by benchmark commit `186d186` and FortML revision `c50511c`.
 
+## Classifier-chain clone contract
+
+This lane checks transactional deep cloning of a fitted classifier chain,
+including the no-intercept variant, mutation isolation, probability and HVP
+replay, and typed CUDA clone/HVP boundaries against independent NumPy sigmoid
+chain and finite-difference oracles.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_classifier_chain.py \
+  --fortml ../fortml --output results/classifier_chain.csv
+```
+
+See [`results/CLASSIFIER_CHAIN.md`](results/CLASSIFIER_CHAIN.md) for the
+transactional clone evidence and refusal rows.
+
+## MLP checkpoint fingerprints
+
+This lane checks deterministic checkpoint identity, optimizer-state and
+metadata mutation detection, invalid-state handling, and the explicit
+non-resident CUDA snapshot boundary with an independent token-stream oracle.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_mlp_checkpoint_fingerprint.py \
+  --fortml ../fortml --output results/mlp_checkpoint_fingerprint.csv \
+  --report results/MLP_CHECKPOINT_FINGERPRINT.md
+```
+
+See [`results/MLP_CHECKPOINT_FINGERPRINT.md`](results/MLP_CHECKPOINT_FINGERPRINT.md)
+for the behavioral gate and typed device row.
+
+## Derivative-GP through-fit observation products
+
+This lane differentiates mixed value/derivative GP predictions with respect to
+training observations. Independent dense NumPy refits certify the JVP, VJP,
+variance tangent, and adjoint identity; CUDA remains a typed refusal until a
+resident derivative-GP solve graph exists.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_derivative_gp_fit_products.py \
+  --fortml ../fortml --output results/derivative_gp_fit_products.csv
+```
+
+See [`results/DERIVATIVE_GP_FIT_PRODUCTS.md`](results/DERIVATIVE_GP_FIT_PRODUCTS.md)
+for the refit oracle, focused Fortran gate, and device contract.
+
 ## Versioned result schema
 
 Release CSVs use the required provenance and correctness fields described in

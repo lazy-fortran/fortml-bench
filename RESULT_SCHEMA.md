@@ -38,7 +38,7 @@ python -B scripts/validate_result_schema.py \
 ```
 
 The validator also supports `--all` for an audit of historical rows. The
-2026-08-09 inventory contains 327 tracked CSVs: 182 pass the v1 release
+2026-08-09 inventory contains 329 tracked CSVs: 184 pass the v1 release
 schema and 145 remain legacy/non-release records. Those legacy files are kept
 as historical research data, but they are not release evidence and are not
 allowed to silently pass the release gate. See
