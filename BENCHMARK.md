@@ -199,3 +199,19 @@ python -B scripts/bench_lightgbm_multiclass_log_proba.py \
 
 See [`results/LIGHTGBM_MULTICLASS_LOG_PROBA.md`](results/LIGHTGBM_MULTICLASS_LOG_PROBA.md)
 for the fixture, derivative errors, and typed CUDA refusal.
+
+## Separable Hamiltonian leapfrog JVP
+
+This lane checks the exact parameter/state tangent of one separable
+velocity-Verlet step, the primal-map equivalence, and the typed refusal for a
+general nonseparable Hamiltonian. An independent NumPy harmonic-oscillator
+oracle checks the state tangent and canonical symplectic form before the
+Fortran gate.
+
+```bash
+python -B scripts/bench_symplectic_leapfrog_jvp.py \
+  --fortml ../fortml --output results/symplectic_leapfrog_jvp.csv
+```
+
+See [`results/SYMPLECTIC_LEAPFROG_JVP.md`](results/SYMPLECTIC_LEAPFROG_JVP.md)
+for the contract, provenance, and explicit CUDA boundary.
