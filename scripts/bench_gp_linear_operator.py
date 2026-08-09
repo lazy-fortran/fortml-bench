@@ -175,6 +175,10 @@ def main() -> None:
     actual = parse_app(run.stdout)
     rows: list[dict[str, Any]] = []
     oracle_name = "independent NumPy RBF operator covariance and central coefficient difference"
+    app_metric = {
+        "mean": "mean", "variance": "variance",
+        "mean_dot": "jvp_mean", "variance_dot": "jvp_variance",
+    }
     for metric in ("mean", "variance", "mean_dot", "variance_dot"):
         values = np.asarray(expected[metric])
         for index, value in enumerate(values, start=1):
@@ -184,7 +188,7 @@ def main() -> None:
                 metric=f"{metric}_{index}", value=float(value), max_abs_error=0.0,
                 oracle=oracle_name, notes="1D RBF; coefficients=[value,d/dx]",
             ))
-            key = (metric, index)
+            key = (app_metric[metric], index)
             if key not in actual:
                 raise RuntimeError(f"FortML app omitted {key}")
             error = abs(actual[key] - float(value))
