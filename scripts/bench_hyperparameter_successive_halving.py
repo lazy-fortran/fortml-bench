@@ -152,8 +152,8 @@ is CPU-owned. No host fallback is counted as resident GPU execution.
 Reproduce:
 
 ```bash
-.venv/bin/python -B scripts/bench_hyperparameter_successive_halving.py \
-  --fortml ../fortml --output results/hyperparameter_successive_halving.csv \
+.venv/bin/python -B scripts/bench_hyperparameter_successive_halving.py \\
+  --fortml ../fortml --output results/hyperparameter_successive_halving.csv \\
   --report results/HYPERPARAMETER_SUCCESSIVE_HALVING.md
 ```
 
