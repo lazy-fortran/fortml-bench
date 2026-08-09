@@ -506,6 +506,12 @@ a different workload, precision, device, or residency policy.
   lane. The independent softmax value/JVP/HVP oracle and FortOpt contract are
   recorded in `results/mlp_classifier_objective.csv`; no resident CUDA graph
   is implied.
+- [x] Add the weighted multilabel MLP objective adapter with direct and
+  positive log-L2 coordinates. The independent NumPy oracle checks packed
+  value, gradient, JVP, VJP, and mixed HVP products, and the release probe
+  checks both bounded FortOpt L-BFGS-B modes plus the typed CUDA refusal in
+  `results/mlp_multilabel_objective.csv` and
+  `results/MLP_MULTILABEL_OBJECTIVE.md`.
 - [x] Add fixed-input packed-parameter probability JVP/VJP products for the
   multiclass MLP classifier. The independent tanh/softmax replay checks all 21
   packed coordinates, central differences, and tangent/cotangent duality; the

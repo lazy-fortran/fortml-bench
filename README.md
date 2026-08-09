@@ -539,6 +539,18 @@ python -B scripts/bench_mlp_multilabel_classifier.py \
 
 See [`results/MLP_MULTILABEL_CLASSIFIER.md`](results/MLP_MULTILABEL_CLASSIFIER.md).
 
+The weighted multilabel MLP objective lane checks direct-L2 and positive
+log-L2 packed value, gradient, JVP, VJP, and mixed HVP products against a
+separate NumPy reduction. It also checks both bounded FortOpt L-BFGS-B
+coordinate modes and records the resident CUDA refusal:
+
+```bash
+FO_SCAN_FALLBACK=regex python -B scripts/bench_mlp_multilabel_objective.py \
+  --fortml ../fortml --output results/mlp_multilabel_objective.csv
+```
+
+See [`results/MLP_MULTILABEL_OBJECTIVE.md`](results/MLP_MULTILABEL_OBJECTIVE.md).
+
 The extended classification lane checks fitted standard/min-max scalers and
 binary Laplace GP logistic/probit inference against independent NumPy solves:
 
