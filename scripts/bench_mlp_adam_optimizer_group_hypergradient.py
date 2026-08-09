@@ -25,9 +25,11 @@ SCALES = np.array([0.7, 1.3], dtype=np.float64)
 FD_STEP = 2.0e-6
 REPETITIONS = 32
 TOLERANCE = 3.0e-8
-PARAMETERS = np.array([np.log(LR), np.log(L2), np.log(SCALES[0]),
-                       np.log(SCALES[1])], dtype=np.float64)
-DIRECTION = np.array([0.17, -0.13, 0.11, -0.09], dtype=np.float64)
+PARAMETERS = np.array([np.log(LR), np.log(L2),
+                       np.log(BETA1/(1.0-BETA1)),
+                       np.log(BETA2/(1.0-BETA2)),
+                       np.log(SCALES[0]), np.log(SCALES[1])], dtype=np.float64)
+DIRECTION = np.array([0.17, -0.13, 0.07, -0.05, 0.11, -0.09], dtype=np.float64)
 FIELDS = (
     "workload", "phase", "variant", "backend", "device", "status",
     "n_train", "n_validation", "n_parameters", "steps", "repetitions",
@@ -69,7 +71,9 @@ def fixture() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 
 
 def trajectory(parameters: np.ndarray) -> float:
-    lr, l2, weight_scale, bias_scale = np.exp(parameters)
+    lr, l2 = np.exp(parameters[:2])
+    beta1, beta2 = 1.0/(1.0+np.exp(-parameters[2:4]))
+    weight_scale, bias_scale = np.exp(parameters[4:6])
     x, y, vx, vy = fixture()
     theta = np.array([0.25, 0.1], dtype=np.float64)
     first = np.zeros(2, dtype=np.float64)
@@ -78,10 +82,10 @@ def trajectory(parameters: np.ndarray) -> float:
     for step in range(1, STEPS + 1):
         residual = theta[0]*x + theta[1] - y
         gradient = np.array([np.mean(residual*x), np.mean(residual)]) + l2*theta
-        first = BETA1*first + (1.0-BETA1)*gradient
-        second = BETA2*second + (1.0-BETA2)*gradient*gradient
-        direction = (first/(1.0-BETA1**step)) / (
-            np.sqrt(second/(1.0-BETA2**step)) + EPSILON)
+        first = beta1*first + (1.0-beta1)*gradient
+        second = beta2*second + (1.0-beta2)*gradient*gradient
+        direction = (first/(1.0-beta1**step)) / (
+            np.sqrt(second/(1.0-beta2**step)) + EPSILON)
         theta -= lr*scale*direction
     residual = theta[0]*vx + theta[1] - vy
     return 0.5*float(np.mean(residual*residual))
@@ -89,9 +93,9 @@ def trajectory(parameters: np.ndarray) -> float:
 
 def oracle() -> dict[str, Any]:
     value = trajectory(PARAMETERS)
-    gradient = np.empty(4, dtype=np.float64)
+    gradient = np.empty(6, dtype=np.float64)
     started = time.perf_counter()
-    for i in range(4):
+    for i in range(6):
         plus, minus = PARAMETERS.copy(), PARAMETERS.copy()
         plus[i] += FD_STEP
         minus[i] -= FD_STEP
@@ -109,7 +113,7 @@ def base(meta: dict[str, str], **values: Any) -> dict[str, Any]:
     row = {field: "" for field in FIELDS}
     row.update(meta)
     row.update({"variant": "fixed_full_batch_grouped_coupled_l2_adam", "device": "cpu",
-                "n_train": 4, "n_validation": 3, "n_parameters": 4,
+                "n_train": 4, "n_validation": 3, "n_parameters": 6,
                 "steps": STEPS, "repetitions": REPETITIONS,
                 "oracle": "independent NumPy grouped coupled-L2 Adam recurrence"})
     row.update(values)
@@ -121,12 +125,13 @@ def oracle_rows(meta: dict[str, str], expected: dict[str, Any]) -> list[dict[str
                  phase="value_gradient", backend="numpy_oracle", status="pass",
                  seconds_per_operation=expected["seconds"], metric="validation_mse",
                  value=expected["value"], max_abs_error=0.0,
-                 notes="packed=[log_lr,log_l2,log_multiplier_weight,log_multiplier_bias]"),
+                 notes="packed=[log_lr,log_l2,logit_beta1,logit_beta2,log_multiplier_weight,log_multiplier_bias]"),
             base(meta, workload="mlp_adam_optimizer_group_hypergradient", phase="jvp",
                  backend="numpy_oracle", status="pass", seconds_per_operation=expected["seconds"],
                  metric="directional_validation_mse_derivative", value=expected["tangent"],
                  max_abs_error=0.0, notes=f"direction={DIRECTION.tolist()}; h={FD_STEP:g}")]
-    names = ("log_learning_rate", "log_l2", "log_multiplier_weight", "log_multiplier_bias")
+    names = ("log_learning_rate", "log_l2", "logit_beta1", "logit_beta2",
+             "log_multiplier_weight", "log_multiplier_bias")
     rows.extend(base(meta, workload="mlp_adam_optimizer_group_hypergradient",
                      phase="gradient_component", backend="numpy_oracle", status="pass",
                      repetitions=1, metric=f"gradient_{name}", value=float(value),
@@ -148,8 +153,8 @@ def unavailable(meta: dict[str, str], device: str, note: str) -> list[dict[str, 
                      phase="gradient_component", backend="fortml", device=device,
                      status="unavailable", metric=f"gradient_{name}",
                      oracle="FortML release-app protocol", notes=note)
-               for name in ("log_learning_rate", "log_l2", "log_multiplier_weight",
-                            "log_multiplier_bias"))
+               for name in ("log_learning_rate", "log_l2", "logit_beta1", "logit_beta2",
+                            "log_multiplier_weight", "log_multiplier_bias"))
     return rows
 
 
@@ -178,13 +183,13 @@ def fortml_rows(fortml: Path, meta: dict[str, str], expected: dict[str, Any],
         if checked.returncode or not oracle_path.is_file():
             return unavailable(meta, "cpu", "release app emitted no complete oracle")
         actual = read_oracle(oracle_path)
-        required = {("value", 1), ("jvp", 1)} | {("gradient", i) for i in range(1, 5)}
+        required = {("value", 1), ("jvp", 1)} | {("gradient", i) for i in range(1, 7)}
         if set(actual) != required:
             raise RuntimeError("grouped Adam app omitted a complete product array")
         errors = [abs(actual[("value", 1)]-expected["value"]),
                   abs(actual[("jvp", 1)]-expected["tangent"])]
         errors.extend(abs(actual[("gradient", i)]-expected["gradient"][i-1])
-                      for i in range(1, 5))
+                      for i in range(1, 7))
         error = float(max(errors))
         if error > TOLERANCE:
             raise RuntimeError(f"grouped Adam oracle mismatch: {error:.3e}")
@@ -206,7 +211,8 @@ def fortml_rows(fortml: Path, meta: dict[str, str], expected: dict[str, Any],
                  backend="fortml", status="pass", metric="directional_validation_mse_derivative",
                  value=actual[("jvp", 1)], max_abs_error=error,
                  oracle="complete NumPy grouped Adam value/gradient/JVP array", notes=target)]
-    names = ("log_learning_rate", "log_l2", "log_multiplier_weight", "log_multiplier_bias")
+    names = ("log_learning_rate", "log_l2", "logit_beta1", "logit_beta2",
+             "log_multiplier_weight", "log_multiplier_bias")
     rows.extend(base(meta, workload="mlp_adam_optimizer_group_hypergradient",
                      phase="gradient_component", backend="fortml", status="pass",
                      repetitions=1, metric=f"gradient_{name}", value=actual[("gradient", i)],
@@ -247,7 +253,8 @@ def main() -> None:
     report.write_text(f"""# Grouped coupled-L2 Adam trajectory benchmark
 
 This lane compares FortML's fixed full-batch grouped Adam trajectory with an
-independent NumPy two-parameter recurrence.  Adam moment state is updated
+independent NumPy two-parameter recurrence over six packed hyperparameters.
+Adam moment state is updated
 before each group's post-update multiplier, matching `mlp_train`.
 
 Run it with:
