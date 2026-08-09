@@ -138,7 +138,7 @@ def vjp(x: np.ndarray, parameters: np.ndarray,
     return parameter_bar, x_bar
 
 
-def parse(stdout: str, path: Path) -> tuple[dict[str, float], np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+def parse(stdout: str, path: Path) -> tuple[dict[str, float], np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     timing: dict[str, float] = {}
     for line in stdout.splitlines():
         fields = line.strip().split(",")
@@ -146,6 +146,7 @@ def parse(stdout: str, path: Path) -> tuple[dict[str, float], np.ndarray, np.nda
             timing[fields[0]] = float(fields[-1])
     parameters = np.zeros(sum(N_FEATURES + output + 1 for output in range(N_OUTPUTS)))
     probabilities = np.zeros((N_SAMPLES, N_OUTPUTS))
+    clone_probabilities = np.zeros((N_SAMPLES, N_OUTPUTS))
     predicted = np.zeros((N_SAMPLES, N_OUTPUTS), dtype=np.int64)
     theta_hvp = np.zeros(N_PARAMETERS)
     x_hvp = np.zeros((N_SAMPLES, N_FEATURES))
@@ -158,15 +159,17 @@ def parse(stdout: str, path: Path) -> tuple[dict[str, float], np.ndarray, np.nda
                 parameters[index] = float(row["value"])
             elif quantity == "probability":
                 probabilities[index, column] = float(row["value"])
+            elif quantity == "clone_probability":
+                clone_probabilities[index, column] = float(row["value"])
             elif quantity == "prediction":
                 predicted[index, column] = int(float(row["value"]))
             elif quantity == "theta_hvp":
                 theta_hvp[index] = float(row["value"])
             elif quantity == "x_hvp":
                 x_hvp[index, column] = float(row["value"])
-    if set(timing) != {"classifier_chain_fit", "classifier_chain_predict", "classifier_chain_hvp"}:
+    if set(timing) != {"classifier_chain_fit", "classifier_chain_predict", "classifier_chain_hvp", "classifier_chain_clone"}:
         raise RuntimeError("release app omitted classifier-chain timings")
-    return timing, parameters, probabilities, predicted, theta_hvp, x_hvp
+    return timing, parameters, probabilities, clone_probabilities, predicted, theta_hvp, x_hvp
 
 
 def row(details: dict[str, str], **values: Any) -> dict[str, Any]:
@@ -201,17 +204,22 @@ def main() -> None:
                    check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     completed = subprocess.run(["fo", "exec", "--no-build", args.target], cwd=fortml,
                                env=environment, check=True, capture_output=True, text=True)
-    timing, parameters, observed_probabilities, observed_predicted, \
-        observed_theta_hvp, observed_x_hvp = parse(completed.stdout, observed_path)
+    timing, parameters, observed_probabilities, observed_clone_probabilities, \
+        observed_predicted, observed_theta_hvp, observed_x_hvp = parse(
+            completed.stdout, observed_path
+        )
     x, labels = fixture()
     expected_probabilities, expected_predicted = oracle(x, parameters)
     probability_error = float(np.max(np.abs(observed_probabilities - expected_probabilities)))
     prediction_error = float(np.max(np.abs(observed_predicted - expected_predicted)))
+    clone_error = float(np.max(np.abs(observed_clone_probabilities - expected_probabilities)))
     if probability_error > 5e-14 or prediction_error != 0.0:
         raise RuntimeError(
             f"classifier-chain oracle mismatch: probability={probability_error:.3e}, "
             f"prediction={prediction_error:.3e}"
         )
+    if clone_error > 5e-14:
+        raise RuntimeError(f"classifier-chain clone oracle mismatch: {clone_error:.3e}")
     x_dot, probabilities_bar, theta_dot = directions()
     h = 1.0e-5
     theta_bar_plus, x_bar_plus = vjp(
@@ -255,6 +263,13 @@ def main() -> None:
             max_abs_error=x_hvp_error,
             oracle="independent NumPy finite-difference reverse oracle",
             notes="joint parameter/input direction"),
+        row(details, workload="classifier_chain", phase="clone", backend="fortml",
+            device="cpu", status="pass", n_samples=N_SAMPLES, n_features=N_FEATURES,
+            n_outputs=N_OUTPUTS, seconds_per_operation=timing["classifier_chain_clone"],
+            metric="clone_probability_max_abs_error", value=clone_error,
+            max_abs_error=clone_error,
+            oracle="independent NumPy sigmoid-chain replay",
+            notes="deep-copied heads reproduce source probabilities"),
         row(details, workload="classifier_chain", phase="device_contract", backend="fortml",
             device="cuda", status="unavailable", n_samples=N_SAMPLES, n_features=N_FEATURES,
             n_outputs=N_OUTPUTS, metric="api_surface", value="unavailable", max_abs_error=0.0,
@@ -266,6 +281,12 @@ def main() -> None:
             value="unavailable", max_abs_error=0.0,
             oracle="device capability contract",
             notes="classifier-chain HVP CUDA path is a typed refusal"),
+        row(details, workload="classifier_chain", phase="clone_device_contract",
+            backend="fortml", device="cuda", status="unavailable", n_samples=N_SAMPLES,
+            n_features=N_FEATURES, n_outputs=N_OUTPUTS, metric="api_surface",
+            value="unavailable", max_abs_error=0.0,
+            oracle="device capability contract",
+            notes="classifier-chain clone CUDA path is a typed refusal"),
     ]
     with args.output.open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")
