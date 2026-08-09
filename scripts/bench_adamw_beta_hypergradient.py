@@ -38,6 +38,7 @@ BETA1 = 0.82
 BETA2 = 0.91
 EPSILON = 1.0e-8
 FD_STEP = 2.0e-6
+HVP_STEP = 1.0e-4
 REPETITIONS = 32
 ORACLE_TOLERANCE = 2.0e-6
 
@@ -141,26 +142,35 @@ def full_value(parameters: np.ndarray) -> float:
     return 0.5 * float(np.mean(residual * residual))
 
 
-def oracle() -> dict[str, Any]:
-    parameters = np.array([
-        np.log(LEARNING_RATE), np.log(L2), np.log(WEIGHT_DECAY),
-        logit(BETA1), logit(BETA2),
-    ], dtype=np.float64)
-    gradient = np.empty(5, dtype=np.float64)
+def finite_gradient(parameters: np.ndarray) -> np.ndarray:
+    """Independent scalar-oracle gradient used only by the benchmark."""
+    result = np.empty(5, dtype=np.float64)
     for index in range(5):
         plus = parameters.copy()
         minus = parameters.copy()
         plus[index] += FD_STEP
         minus[index] -= FD_STEP
-        gradient[index] = (full_value(plus) - full_value(minus)) / (2.0 * FD_STEP)
+        result[index] = (full_value(plus) - full_value(minus)) / (2.0 * FD_STEP)
+    return result
+
+
+def oracle() -> dict[str, Any]:
+    parameters = np.array([
+        np.log(LEARNING_RATE), np.log(L2), np.log(WEIGHT_DECAY),
+        logit(BETA1), logit(BETA2),
+    ], dtype=np.float64)
+    gradient = finite_gradient(parameters)
     direction = np.array([0.31, -0.27, 0.19, 0.13, -0.22], dtype=np.float64)
     jvp = ((full_value(parameters + FD_STEP * direction) -
             full_value(parameters - FD_STEP * direction)) / (2.0 * FD_STEP))
+    hvp = (finite_gradient(parameters + HVP_STEP * direction) -
+           finite_gradient(parameters - HVP_STEP * direction)) / (2.0 * HVP_STEP)
     value = full_value(parameters)
-    if not np.all(np.isfinite(gradient)) or not np.isfinite(value) or not np.isfinite(jvp):
+    if (not np.all(np.isfinite(gradient)) or not np.isfinite(value) or
+            not np.isfinite(jvp) or not np.all(np.isfinite(hvp))):
         raise RuntimeError("AdamW beta-logit NumPy oracle is nonfinite")
     return {"parameters": parameters, "value": value, "gradient": gradient,
-            "direction": direction, "jvp": float(jvp)}
+            "direction": direction, "jvp": float(jvp), "hvp": hvp}
 
 
 def oracle_rows(details: dict[str, str], expected: dict[str, Any]) -> list[dict[str, Any]]:
@@ -171,7 +181,8 @@ def oracle_rows(details: dict[str, str], expected: dict[str, Any]) -> list[dict[
     value_error = abs(checked["value"] - expected["value"])
     gradient_error = float(np.max(np.abs(checked["gradient"] - expected["gradient"])))
     jvp_error = abs(checked["jvp"] - expected["jvp"])
-    if max(value_error, gradient_error, jvp_error) != 0.0:
+    hvp_error = float(np.max(np.abs(checked["hvp"] - expected["hvp"])))
+    if max(value_error, gradient_error, jvp_error, hvp_error) != 0.0:
         raise RuntimeError("repeated AdamW beta-logit oracle is not deterministic")
     rows = [base(
         details, workload="mlp_adamw_beta_hypergradient", phase="value_gradient",
@@ -194,6 +205,13 @@ def oracle_rows(details: dict[str, str], expected: dict[str, Any]) -> list[dict[
         backend="numpy_oracle", status="pass", repetitions=1,
         metric=f"gradient_{name}", value=value, max_abs_error=0.0,
     ) for name, value in zip(names, expected["gradient"]))
+    rows.extend(base(
+        details, workload="mlp_adamw_beta_hypergradient", phase="hvp_component",
+        backend="numpy_oracle", status="pass", repetitions=1,
+        metric=f"hvp_{name}", value=value, max_abs_error=0.0,
+        notes=(f"direction={expected['direction'].tolist()}; gradient_fd_step={FD_STEP:g}; "
+               f"hvp_fd_step={HVP_STEP:g}"),
+    ) for name, value in zip(names, expected["hvp"]))
     return rows
 
 
@@ -213,6 +231,12 @@ def unavailable_rows(details: dict[str, str], note: str) -> list[dict[str, Any]]
         metric=f"gradient_{name}", oracle="FortML complete-array release-app protocol",
         notes=note,
     ) for name in ("log_learning_rate", "log_l2", "log_weight_decay", "logit_beta1", "logit_beta2"))
+    rows.extend(base(
+        details, workload="mlp_adamw_beta_hypergradient", phase="hvp_component",
+        backend="fortml", device="cpu", status="unavailable", repetitions="",
+        metric=f"hvp_{name}", oracle="FortML complete-array release-app protocol",
+        notes=note,
+    ) for name in ("log_learning_rate", "log_l2", "log_weight_decay", "logit_beta1", "logit_beta2"))
     return rows
 
 
@@ -226,7 +250,7 @@ def read_oracle(path: Path) -> dict[tuple[str, int], float]:
 
 def run_fortml(fortml: Path, target: str, details: dict[str, str],
                expected: dict[str, Any]) -> list[dict[str, Any]]:
-    """Require complete value/gradient/JVP output before retaining timing."""
+    """Require complete value/gradient/JVP/HVP output before retaining timing."""
     source = fortml / "app" / f"{target}.f90"
     if not source.is_file():
         return unavailable_rows(details, f"release target source is absent: {source.name}")
@@ -248,12 +272,15 @@ def run_fortml(fortml: Path, target: str, details: dict[str, str],
         if check.returncode != 0 or not oracle_path.is_file():
             return unavailable_rows(details, "release target did not emit its complete oracle")
         actual = read_oracle(oracle_path)
-        required = {("value", 1), ("jvp", 1)} | {("gradient", index) for index in range(1, 6)}
+        required = {("value", 1), ("jvp", 1)} | {("gradient", index) for index in range(1, 6)} | \
+            {("hvp", index) for index in range(1, 6)}
         if set(actual) != required:
-            raise RuntimeError("FortML AdamW beta app omitted a complete value/gradient/JVP array")
+            raise RuntimeError("FortML AdamW beta app omitted a complete value/gradient/JVP/HVP array")
         errors = [abs(actual[("value", 1)] - expected["value"]),
                   abs(actual[("jvp", 1)] - expected["jvp"])]
         errors.extend(abs(actual[("gradient", index)] - expected["gradient"][index - 1])
+                      for index in range(1, 6))
+        errors.extend(abs(actual[("hvp", index)] - expected["hvp"][index - 1])
                       for index in range(1, 6))
         error = float(max(errors))
         if error > ORACLE_TOLERANCE:
@@ -274,19 +301,25 @@ def run_fortml(fortml: Path, target: str, details: dict[str, str],
         details, workload="mlp_adamw_beta_hypergradient", phase="value_gradient",
         backend="fortml", status="pass", repetitions=REPETITIONS,
         seconds_per_operation=timing, metric="validation_mse", value=actual[("value", 1)],
-        max_abs_error=error, oracle="complete NumPy value/gradient/JVP arrays", notes=target,
+        max_abs_error=error, oracle="complete NumPy value/gradient/JVP/HVP arrays", notes=target,
     ), base(
         details, workload="mlp_adamw_beta_hypergradient", phase="jvp",
         backend="fortml", status="pass", repetitions=REPETITIONS,
         metric="directional_validation_mse_derivative", value=actual[("jvp", 1)],
-        max_abs_error=error, oracle="complete NumPy value/gradient/JVP arrays", notes=target,
+        max_abs_error=error, oracle="complete NumPy value/gradient/JVP/HVP arrays", notes=target,
     )]
     names = ("log_learning_rate", "log_l2", "log_weight_decay", "logit_beta1", "logit_beta2")
     rows.extend(base(
         details, workload="mlp_adamw_beta_hypergradient", phase="gradient_component",
         backend="fortml", status="pass", repetitions=1,
         metric=f"gradient_{name}", value=actual[("gradient", index)],
-        max_abs_error=error, oracle="complete NumPy value/gradient/JVP arrays", notes=target,
+        max_abs_error=error, oracle="complete NumPy value/gradient/JVP/HVP arrays", notes=target,
+    ) for index, name in enumerate(names, start=1))
+    rows.extend(base(
+        details, workload="mlp_adamw_beta_hypergradient", phase="hvp_component",
+        backend="fortml", status="pass", repetitions=1,
+        metric=f"hvp_{name}", value=actual[("hvp", index)],
+        max_abs_error=error, oracle="complete NumPy value/gradient/JVP/HVP arrays", notes=target,
     ) for index, name in enumerate(names, start=1))
     return rows
 
