@@ -254,3 +254,20 @@ python -B scripts/bench_second_derivative_gp_matern52_hyperparameters.py \
 See
 [`results/SECOND_DERIVATIVE_GP_MATERN52_HYPERPARAMETERS.md`](results/SECOND_DERIVATIVE_GP_MATERN52_HYPERPARAMETERS.md)
 for the independent oracle, provenance, tolerances, and timing rows.
+
+## Uniform empirical quantile transformer
+
+This lane checks the fitted per-feature order-statistic map, inverse
+interpolation, endpoint clamping, and the fixed-segment input JVP against an
+independent NumPy oracle. It records the CPU release timing and the explicit
+typed CUDA boundary. Normal-output quantiles and power transforms remain
+separate roadmap contracts.
+
+Run:
+
+    python -B scripts/bench_quantile_transformer.py \
+      --fortml ../fortml --output results/quantile_transformer.csv \
+      --report results/QUANTILE_TRANSFORMER.md
+
+See results/QUANTILE_TRANSFORMER.md for the fixture, oracle errors, and
+provenance.
