@@ -988,6 +988,6 @@ python -B scripts/validate_result_schema.py --all
 
 The complete inventory and migration policy are in
 [`RESULTS_INVENTORY.md`](RESULTS_INVENTORY.md). The `--all` command audits the
-146 retained legacy rows as well as release evidence, so it is expected to
+145 retained legacy rows as well as release evidence, so it is expected to
 return nonzero until those rows are rerun or quarantined. Release rows must
 pass without `--allow-dirty`.
