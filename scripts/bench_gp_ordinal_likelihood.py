@@ -128,6 +128,7 @@ def parse_app(stdout: str, details: dict[str, object], rows: list[dict[str, obje
         r"([0-9Ee+.-]+)$")
     observed: dict[tuple[str, str], tuple[float, float]] = {}
     devices: dict[str, str] = {}
+    refusal_code: int | None = None
     for line in stdout.splitlines():
         match = pattern.match(line.strip())
         if match:
@@ -137,6 +138,10 @@ def parse_app(stdout: str, details: dict[str, object], rows: list[dict[str, obje
                                 line.strip())
         if device_match:
             devices[device_match.group(1)] = device_match.group(2)
+        refusal_match = re.match(r"^ordinal_likelihood_device,cuda,refused,(\d+)$",
+                                 line.strip())
+        if refusal_match:
+            refusal_code = int(refusal_match.group(1))
     for kind in ("logistic", "probit"):
         for metric in ("value", "jvp", "vjp", "hvp"):
             if (kind, metric) not in observed:
@@ -152,11 +157,12 @@ def parse_app(stdout: str, details: dict[str, object], rows: list[dict[str, obje
                             seconds_per_operation=seconds, metric=f"{kind}_{metric}",
                             value=observed_value, max_abs_error=error,
                             oracle="independent NumPy ordered likelihood products"))
-    if devices != {"cpu": "T", "cuda": "F"}:
-        raise RuntimeError(f"unexpected ordinal device capabilities: {devices}")
+    if devices != {"cpu": "T", "cuda": "F"} or refusal_code != 3:
+        raise RuntimeError(
+            f"unexpected ordinal device capabilities: {devices}, code={refusal_code}")
     rows.append(row(details, phase="device_boundary", backend="fortml", device="cuda",
                     status="refused", metric="likelihood_kernel", value="nan",
-                    max_abs_error=0.0, oracle="explicit CPU-only capability",
+                    max_abs_error=0.0, oracle="FORTNUM_NOT_IMPLEMENTED",
                     notes="CUDA resident ordinal likelihood reduction is not linked"))
 
 
