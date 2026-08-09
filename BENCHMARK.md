@@ -158,8 +158,10 @@ for the fixture and reproducibility details.
 This lane checks the independent growth/backoff recurrence together with the
 trainer's allocation-free scale/check/unscale gradient products. The release
 app verifies exact finite round trips, detects a scale-induced IEEE overflow,
-and refuses the corresponding optimizer commit. FP32 and CUDA remain explicit
-typed capability boundaries until resident master-weight kernels are released.
+and refuses the corresponding optimizer commit. Its FP32 rows compare the
+binary64 master trajectory and schema-11 checkpoint metadata with an
+independent NumPy float32-boundary recurrence. FP16, BF16, and CUDA remain
+explicit typed capability boundaries.
 
 ```bash
 python -B scripts/bench_mlp_loss_scaling.py \

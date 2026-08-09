@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Correctness-gated MLP automatic loss-scaling benchmark.
+"""Correctness-gated MLP loss-scaling and FP32 master-weight benchmark.
 
-The NumPy recurrence is independent of FortML.  The release app reports the
-same growth and overflow transitions, the FP64 trainer state, and the typed
-FP32 boundary.  CUDA is recorded as unavailable because resident mixed-
-precision kernels are not part of the current contract.
+The NumPy recurrences are independent of FortML.  The release app reports the
+same growth and overflow transitions, the FP64 trainer state, the CPU FP32
+master-weight trajectory, and typed FP16/BF16 boundaries. CUDA is recorded as
+unavailable because resident mixed-precision kernels are not part of the
+current contract.
 """
 
 from __future__ import annotations
@@ -74,9 +75,27 @@ def app_values(output: str) -> dict[str, list[float]]:
         fields = [item.strip() for item in line.split(",")]
         if fields and fields[0] in {
                 "recurrence_overflow", "gradient_products", "gradient_overflow",
-                "gradient_overflow_commit", "fp64_training", "fp32_typed_refusal"}:
+                "gradient_overflow_commit", "fp64_training", "fp32_training",
+                "fp32_checkpoint", "fp16_typed_refusal", "bf16_typed_refusal"}:
             values[fields[0]] = [float(item) for item in fields[1:]]
     return values
+
+
+def independent_fp32_trajectory(steps: int = 3) -> np.ndarray:
+    """Round the forward and gradient boundary through NumPy float32."""
+    x = np.asarray([-1.0, 0.0, 1.0], dtype=np.float32)
+    target = np.asarray([-.25, .25, .75], dtype=np.float32)
+    theta = np.asarray([0.123456789012345, -0.234567890123456], dtype=np.float64)
+    for _ in range(steps):
+        forward_theta = theta.astype(np.float32).astype(np.float64)
+        residual = x.astype(np.float64)*forward_theta[0] + forward_theta[1]
+        residual -= target.astype(np.float64)
+        gradient = np.asarray(
+            [np.mean(residual*x.astype(np.float64)), np.mean(residual)],
+            dtype=np.float64,
+        ).astype(np.float32).astype(np.float64)
+        theta -= 0.05*gradient
+    return theta
 
 
 def row(metadata: dict[str, object], **values: object) -> dict[str, object]:
@@ -102,6 +121,8 @@ def main() -> None:
     report = args.report if args.report.is_absolute() else root / args.report
     report = report.resolve()
     expected = independent_recurrence()
+    expected_fp32 = independent_fp32_trajectory()
+    expected_fp32_checkpoint = independent_fp32_trajectory(2)
     ignored = (output, report, root / "results/mlp_loss_scaling.csv")
     metadata = {
         "workload": "mlp_loss_scaling",
@@ -149,7 +170,10 @@ def main() -> None:
     observed_gradient_overflow = parsed.get("gradient_overflow", [float("nan")]*2)
     observed_overflow_commit = parsed.get("gradient_overflow_commit", [float("nan")])
     observed_training = parsed.get("fp64_training", [float("nan")]*3)
-    observed_refusal = parsed.get("fp32_typed_refusal", [float("nan")])
+    observed_fp32 = parsed.get("fp32_training", [float("nan")]*6)
+    observed_checkpoint = parsed.get("fp32_checkpoint", [float("nan")]*2)
+    observed_fp16 = parsed.get("fp16_typed_refusal", [float("nan")])
+    observed_bf16 = parsed.get("bf16_typed_refusal", [float("nan")])
     errors = np.array([
         abs(observed_overflow[0] - expected["final_scale"]),
         abs(observed_overflow[1] - expected["overflow_count"]),
@@ -159,9 +183,18 @@ def main() -> None:
         abs(observed_gradient_overflow[0] - 1.0),
         abs(observed_overflow_commit[0] - 2.0),
         abs(observed_training[1] - 16.0),
-        abs(observed_refusal[0] - 3.0),
+        abs(observed_fp32[0] - 3.0),
+        abs(observed_fp32[1] - 2.0),
+        abs(observed_fp32[2] - 2.0),
+        abs(observed_fp32[4] - expected_fp32[0]),
+        abs(observed_fp32[5] - expected_fp32[1]),
+        abs(observed_checkpoint[0] - 2.0),
+        abs(observed_checkpoint[1] - expected_fp32_checkpoint[0]),
+        abs(observed_fp16[0] - 3.0),
+        abs(observed_bf16[0] - 3.0),
     ])
-    app_passed = app_status == "pass" and np.all(np.isfinite(errors)) and np.max(errors) == 0.0
+    app_passed = (app_status == "pass" and np.all(np.isfinite(errors)) and
+                  np.max(errors) <= 1.0e-12)
     rows.append(row(metadata, phase="release_app_recurrence", status="pass" if app_passed else app_status,
                     metric="final_scale", value=observed_overflow[0],
                     seconds_per_operation=elapsed, max_abs_error=float(np.max(errors)),
@@ -186,11 +219,28 @@ def main() -> None:
                     max_abs_error=abs(observed_overflow_commit[0] - 2.0),
                     oracle="non-finite scaled gradient is refused before optimizer commit",
                     notes="FORTNUM_CONVERGENCE_ERROR"))
-    rows.append(row(metadata, phase="fp32_typed_refusal", status=app_status,
-                    metric="status_code", value=observed_refusal[0],
-                    max_abs_error=abs(observed_refusal[0] - 3.0),
+    rows.append(row(metadata, phase="fp32_master_trajectory", status=app_status,
+                    metric="max_abs_error", value=max(
+                        abs(observed_fp32[4] - expected_fp32[0]),
+                        abs(observed_fp32[5] - expected_fp32[1]),
+                    ), max_abs_error=float(np.max(errors)),
+                    oracle="FortML FP32 master vector vs independent NumPy recurrence",
+                    notes=f"master_diff_from_forward={observed_fp32[3] if observed_fp32 else 'nan'}"))
+    rows.append(row(metadata, phase="fp32_checkpoint", status=app_status,
+                    metric="precision_kind", value=observed_checkpoint[0],
+                    max_abs_error=abs(observed_checkpoint[0] - 2.0),
+                    oracle="schema-11 checkpoint retains FP32 master metadata",
+                    notes=f"parameter_1_error={abs(observed_checkpoint[1] - expected_fp32_checkpoint[0])}"))
+    rows.append(row(metadata, phase="fp16_typed_refusal", status=app_status,
+                    metric="status_code", value=observed_fp16[0],
+                    max_abs_error=abs(observed_fp16[0] - 3.0),
                     oracle="FORTNUM_NOT_IMPLEMENTED before model mutation",
-                    notes="master weights and lower-precision resident kernels remain open"))
+                    notes="FP16 storage and kernels remain open"))
+    rows.append(row(metadata, phase="bf16_typed_refusal", status=app_status,
+                    metric="status_code", value=observed_bf16[0],
+                    max_abs_error=abs(observed_bf16[0] - 3.0),
+                    oracle="FORTNUM_NOT_IMPLEMENTED before model mutation",
+                    notes="BF16 storage and kernels remain open"))
     rows.append(row(metadata, phase="cuda_typed_refusal", device="cuda",
                     status="unavailable", metric="resident_loss_scaling", value="nan",
                     max_abs_error=0.0, oracle="typed CUDA boundary",
@@ -218,8 +268,10 @@ def main() -> None:
         "The lane compares the release app with an independent NumPy recurrence.",
         "The policy starts at 8, grows by 2 after two finite updates, and backs",
         "off by 0.5 after an overflow. The FP64 trainer row checks persisted",
-        "dynamic state and explicit scale/check/unscale gradient products. FP32",
-        "and CUDA rows record typed capability boundaries.",
+        "dynamic state and explicit scale/check/unscale gradient products. The",
+        "FP32 rows compare binary64 master parameters with an independently",
+        "rounded NumPy recurrence and check schema-11 checkpoint metadata.",
+        "FP16, BF16, and CUDA rows record typed capability boundaries.",
         "Growth and overflow branches are discrete, so smooth HPO products are",
         "not claimed across a branch change.",
         "",
