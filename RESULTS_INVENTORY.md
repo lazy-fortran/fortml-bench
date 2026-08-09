@@ -3,8 +3,8 @@
 The benchmark tree is now inventoried rather than treating every old CSV as a
 release claim. The 2026-08-09 audit found 318 tracked top-level result files:
 
-- 163 pass `scripts/validate_result_schema.py` without `--allow-dirty`.
-- 155 are legacy/non-release records with missing v1 fields, incomplete
+- 164 pass `scripts/validate_result_schema.py` without `--allow-dirty`.
+- 154 are legacy/non-release records with missing v1 fields, incomplete
   capability metadata, or dirty historical provenance.
 - The current release lanes are listed explicitly in `BENCHMARK.md` and are
   validated independently; a historical CSV is never promoted by filename
