@@ -14,9 +14,7 @@ multi-output tree state is not linked.
 Reproduce:
 
 ```bash
-.venv/bin/python -B scripts/bench_xgboost_multioutput_validation_metadata.py \
-  --fortml ../fortml --output results/xgboost_multioutput_validation_metadata.csv \
-  --report results/XGBOOST_MULTIOUTPUT_VALIDATION_METADATA.md
+.venv/bin/python -B scripts/bench_xgboost_multioutput_validation_metadata.py   --fortml ../fortml --output results/xgboost_multioutput_validation_metadata.csv   --report results/XGBOOST_MULTIOUTPUT_VALIDATION_METADATA.md
 ```
 
 Raw data: [`xgboost_multioutput_validation_metadata.csv`](xgboost_multioutput_validation_metadata.csv).
