@@ -68,6 +68,18 @@ def evaluate(x: np.ndarray, theta: np.ndarray) -> np.ndarray:
 def independent_oracle() -> tuple[float, float, float, float, float]:
     x, x_dot, theta, theta_dot = fixture()
     value = evaluate(x, theta)
+    reference = np.zeros_like(value)
+    frequency = np.array([0.8, 0.8], dtype=np.float64)
+    left = x[:, 0] < 0.0
+    right = x[:, 0] >= 0.0
+    reference[left, :2] = np.column_stack([
+        np.sin(frequency[0] * x[left, 1]),
+        np.cos(frequency[0] * x[left, 1]),
+    ])
+    reference[right, 2:] = np.column_stack([
+        np.sin(frequency[1] * x[right, 1]),
+        np.cos(frequency[1] * x[right, 1]),
+    ])
     h = 2.0e-6
     finite_difference = (evaluate(x + h * x_dot, theta + h * theta_dot) -
                          evaluate(x - h * x_dot, theta - h * theta_dot)) / (2.0 * h)
@@ -120,7 +132,7 @@ def independent_oracle() -> tuple[float, float, float, float, float]:
     x_hvp_fd = (x_bar_plus - x_bar_minus) / (2.0 * h)
     hvp_error = max(float(np.max(np.abs(theta_hvp - theta_hvp_fd))),
                     float(np.max(np.abs(x_hvp - x_hvp_fd))))
-    value_error = float(np.max(np.abs(value - evaluate(x, theta))))
+    value_error = float(np.max(np.abs(value - reference)))
     derivative_error = float(np.max(np.abs(tangent - finite_difference)))
     return value_error, derivative_error, float(adjoint_error), hvp_error, float(np.max(np.abs(value)))
 
