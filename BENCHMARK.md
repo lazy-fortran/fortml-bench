@@ -102,6 +102,23 @@ python -B scripts/bench_wave11_derivative_products.py \
 See [`results/WAVE11_DERIVATIVE_PRODUCTS.md`](results/WAVE11_DERIVATIVE_PRODUCTS.md)
 for the exact fixtures, independent oracles, and pinned revisions.
 
+## Wave 12 classification, GP, and checkpoint contracts
+
+This lane covers class-weighted LDA/QDA, exact multi-output ICM GP
+hyperparameter fitting through FortOpt L-BFGS-B, and weighted pending-microbatch
+state in MLP checkpoints. Independent NumPy moment and dense-covariance oracles
+are paired with the corresponding FortML behavioral tests. CUDA rows remain
+typed unavailable results until resident implementations exist.
+
+```bash
+FO_FC=gfortran FO_SCAN_FALLBACK=regex \
+python -B scripts/bench_wave12_parity.py \
+  --fortml ../fortml --output results/wave12_parity.csv
+```
+
+See [`results/WAVE12_PARITY.md`](results/WAVE12_PARITY.md) for fixtures,
+reproduction, and the evidence boundary.
+
 ## PCA-seeded linear MLP initializer
 
 This lane checks the centered thin-SVD reconstruction used to initialize a

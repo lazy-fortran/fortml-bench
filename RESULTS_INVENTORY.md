@@ -46,7 +46,8 @@ python -B scripts/validate_result_schema.py \
   results/gp_derivative_kernel_matrix.csv \
   results/naive_bayes_partial_fit.csv \
   results/basis_linear_regression.csv \
-  results/wave11_derivative_products.csv
+  results/wave11_derivative_products.csv \
+  results/wave12_parity.csv
 ```
 
 Use `--all` only when auditing migration debt. A failing historical row must
