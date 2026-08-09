@@ -1,7 +1,8 @@
 # Grouped coupled-L2 Adam trajectory benchmark
 
 This lane compares FortML's fixed full-batch grouped Adam trajectory with an
-independent NumPy two-parameter recurrence over six packed hyperparameters.
+independent NumPy two-parameter recurrence over six packed hyperparameters
+including unconstrained beta1 and beta2 logits.
 Adam moment state is updated
 before each group's post-update multiplier, matching `mlp_train`.
 

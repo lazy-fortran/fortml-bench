@@ -886,10 +886,12 @@ by benchmark commit `6874dc9` and FortML revision `c50511c`.
 ## Grouped coupled-L2 Adam trajectory hypergradients
 
 This lane checks the grouped full-batch Adam trajectory against an independent
-NumPy two-parameter recurrence. It covers the value, every packed gradient
-coordinate, and a directional JVP; each Adam moment update precedes the
-post-update weight/bias multipliers exactly as in `mlp_train`. The CUDA row is
-an explicit typed refusal until resident Adam moment derivatives exist.
+NumPy two-parameter recurrence with six packed coordinates: log learning rate,
+log L2, beta1 and beta2 logits, and two post-update group multipliers. It covers
+the value, every packed gradient coordinate, and a directional JVP. Each Adam
+moment update precedes the post-update weight/bias multipliers exactly as in
+`mlp_train`. The CUDA row is an explicit typed refusal until resident Adam
+moment derivatives exist.
 
 ```bash
 FO_FC=gfortran FO_SCAN_FALLBACK=regex \
