@@ -100,6 +100,19 @@ python -B scripts/bench_huber_regression.py \
 
 See [`results/HUBER_REGRESSION.md`](results/HUBER_REGRESSION.md).
 
+The weighted Bayesian-ridge lane compares the dense fixed-hyperparameter
+posterior mean/evidence and prediction with an independent NumPy
+conjugate-Gaussian oracle. It records the fitted alpha/lambda posterior
+metadata and the typed CUDA refusal:
+
+```bash
+python -B scripts/bench_bayesian_ridge.py \
+  --fortml ../fortml --output results/bayesian_ridge.csv \
+  --report results/BAYESIAN_RIDGE.md
+```
+
+See [`results/BAYESIAN_RIDGE.md`](results/BAYESIAN_RIDGE.md).
+
 The cross-validation scoring lane independently derives contiguous K-fold fold
 scores, weights, parameter gradients, and FortOpt orientation before accepting
 the Fortran release-app timing. It records a typed CUDA control-plane refusal:

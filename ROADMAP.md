@@ -894,6 +894,13 @@ a different workload, precision, device, or residency policy.
   The release record is `results/huber_regression.csv` with protocol in
   `results/HUBER_REGRESSION.md`; residual kinks and derivative-through-fit
   remain explicit boundaries.
+- [x] Add the weighted Bayesian-ridge posterior lane.
+  `scripts/bench_bayesian_ridge.py` compares dense multi-output posterior
+  evidence and prediction with an independent NumPy conjugate-Gaussian oracle,
+  records alpha/lambda and precision metadata, and gates the typed CUDA
+  refusal. The release record is `results/bayesian_ridge.csv` with protocol in
+  `results/BAYESIAN_RIDGE.md`; evidence optimisation, ARD, and
+  derivative-through-fit remain separate gaps.
 - [x] Add transactional multi-output XGBoost and LightGBM regression adapters.
   `scripts/bench_xgboost_multioutput.py` computes an independent NumPy
   two-output one-tree Newton-stump oracle and checks matrix predictions,
