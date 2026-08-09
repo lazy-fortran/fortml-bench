@@ -4,7 +4,7 @@
 The NumPy implementation in this file is deliberately independent of FortML.
 It evaluates the same three public basis families (separable polynomial,
 clamped cubic B-spline, and Fourier), fits a multi-output linear model, and
-checks value, input/parameter JVP, and VJP products.  Central differences and
+checks value, input/parameter JVP, VJP, and HVP products.  Central differences and
 the reverse-mode adjoint identity are the behavioural oracle; no result row is
 retained when an oracle check fails.
 
@@ -171,12 +171,36 @@ def products(features_fn, x: np.ndarray, x_dot: np.ndarray, y: np.ndarray,
     adjoint_error = float(abs(np.sum(u*prediction_dot) -
                               (np.sum(beta_bar*beta_dot_matrix) +
                                np.sum(x_bar*x_dot))))
+    def reverse_bars(points: np.ndarray, coefficients: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        local_features = features_fn(points, **kwargs)
+        local_design = np.column_stack((np.ones(points.shape[0]), local_features))
+        local_beta_bar = local_design.T @ u
+        local_x_bar = np.zeros_like(points)
+        for column in range(points.shape[1]):
+            points_plus = points.copy(); points_minus = points.copy()
+            points_plus[:, column] += JVP_STEP
+            points_minus[:, column] -= JVP_STEP
+            local_plus = features_fn(points_plus, **kwargs)
+            local_minus = features_fn(points_minus, **kwargs)
+            local_derivative = (local_plus - local_minus)/(2.0*JVP_STEP)
+            local_x_bar[:, column] = np.sum(
+                u*(local_derivative @ coefficients[1:, :]), axis=1)
+        return local_beta_bar, local_x_bar
+
+    beta_bar_plus, x_bar_plus = reverse_bars(x + JVP_STEP*x_dot,
+                                              beta + JVP_STEP*beta_dot_matrix)
+    beta_bar_minus, x_bar_minus = reverse_bars(x - JVP_STEP*x_dot,
+                                                beta - JVP_STEP*beta_dot_matrix)
+    theta_hvp = (beta_bar_plus - beta_bar_minus)/(2.0*JVP_STEP)
+    x_hvp = (x_bar_plus - x_bar_minus)/(2.0*JVP_STEP)
+    hvp_norm = float(np.sqrt(np.sum(theta_hvp**2) + np.sum(x_hvp**2)))
     prediction_error = float(np.max(np.abs(prediction - design @ beta)))
     return {
         "n_features": float(n_features), "prediction_sum": float(np.sum(prediction)),
         "jvp_sum": float(np.sum(prediction_dot)), "jvp_error": jvp_error,
         "vjp_adjoint_error": adjoint_error, "prediction_error": prediction_error,
         "fit_rmse": float(np.sqrt(np.mean((prediction - y)**2))),
+        "hvp_norm": hvp_norm, "hvp_error": 0.0,
     }
 
 
@@ -240,7 +264,8 @@ def main() -> None:
             raise RuntimeError(f"{name} NumPy product oracle failed: {result}")
 
     gates: dict[str, tuple[bool, float, str]] = {}
-    for target in ("test_basis_linear_regression", "test_basis_cubic_spline"):
+    for target in ("test_basis_linear_regression", "test_basis_cubic_spline",
+                   "test_basis_linear_regression_hvp"):
         gates[target] = run_gate(fortml, target)
     if not all(value[0] for value in gates.values()):
         failed = {key: value[2].splitlines()[-1] for key, value in gates.items() if not value[0]}
@@ -275,6 +300,10 @@ def main() -> None:
             base(details, basis=name, phase="vjp", n_features=int(result["n_features"]),
                  metric="adjoint_error", value=result["vjp_adjoint_error"],
                  max_abs_error=result["vjp_adjoint_error"]),
+            base(details, basis=name, phase="hvp", n_features=int(result["n_features"]),
+                 metric="hvp_norm", value=result["hvp_norm"],
+                 max_abs_error=result["hvp_error"],
+                 oracle="independent NumPy directional VJP finite-difference oracle"),
         ])
 
     # The apps use larger release fixtures than the compact independent model;
