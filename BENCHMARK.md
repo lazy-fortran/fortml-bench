@@ -393,3 +393,19 @@ python -B scripts/bench_gp_posterior_covariance.py \
 
 See [`results/GP_POSTERIOR_COVARIANCE.md`](results/GP_POSTERIOR_COVARIANCE.md)
 for the fixture, oracle checks, timings, and pinned provenance.
+
+## Transactional basis-pipeline cloning
+
+This lane checks the host-side clone/reset seam for a fitted polynomial-plus-
+radial basis pipeline. An independent NumPy oracle verifies equal copied
+outputs and that changing a clone's radial centre does not mutate the source.
+The release test also checks transactional invalid-source behavior, CPU device
+dispatch, and a typed CUDA refusal that leaves the destination unchanged.
+
+```bash
+python -B scripts/bench_basis_pipeline_clone.py \
+  --fortml ../fortml --output results/basis_pipeline_clone.csv
+```
+
+See [`results/BASIS_PIPELINE_CLONE.md`](results/BASIS_PIPELINE_CLONE.md) for
+the fixture, independent oracle, timing, and device-boundary evidence.
