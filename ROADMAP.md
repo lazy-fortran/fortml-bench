@@ -556,6 +556,11 @@ a different workload, precision, device, or residency policy.
   derivative, adjoint, separable-symplectic, and typed split-integrator-refusal
   gate in `results/hamiltonian_general.csv`; CUDA/OpenACC remains explicitly
   unavailable until a resident implicit-integrator graph exists.
+- [x] Add the scalar Lagrangian MLP lane. `scripts/bench_lagrangian_mlp.py`
+  compares value, state gradient, velocity-Hessian mass, and Euler--Lagrange
+  residual with an independent analytic NumPy tanh-MLP oracle and records the
+  typed CUDA refusal in `results/lagrangian_mlp.csv`; singular-Hessian,
+  gauge, and differentiable-integrator extensions remain explicit boundaries.
 - [x] Add the canonical symplectic-form residual lane. An independent
   velocity-Verlet Jacobian oracle checks the defect, value/JVP/VJP products,
   reusable physics-constraint bridge, and typed CUDA refusal in

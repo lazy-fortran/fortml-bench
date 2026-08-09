@@ -1264,6 +1264,20 @@ See [`results/HAMILTONIAN_GENERAL.md`](results/HAMILTONIAN_GENERAL.md). The
 CUDA/OpenACC row remains explicitly unavailable until a resident model,
 derivative, and implicit-integrator graph exists.
 
+The scalar Lagrangian MLP lane checks `L(q,v)`, its state gradient, the
+velocity-Hessian mass matrix, and the Euler--Lagrange residual against an
+independent NumPy analytic tanh-MLP Hessian oracle. A singular-Hessian and
+resident-CUDA refusal are explicit:
+
+```bash
+python3 -B scripts/bench_lagrangian_mlp.py \
+  --fortml ../fortml --output results/lagrangian_mlp.csv \
+  --report results/LAGRANGIAN_MLP.md
+```
+
+See [`results/LAGRANGIAN_MLP.md`](results/LAGRANGIAN_MLP.md). Gauge terms,
+explicit time dependence, and differentiable integrators remain open.
+
 The matched multinomial softmax and multiclass neural-classifier lane uses an
 independent NumPy damped-Newton/Adam oracle, scikit-learn and optional resident
 PyTorch context rows, and an explicit FortML app protocol. Missing FortML
