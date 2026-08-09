@@ -2,7 +2,7 @@
 
 `sequential_basis_pipeline_t%clone` now deep-copies a fitted multi-stage basis
 composition, including each stage's parameters, names, fitted state, and input
-schema. The copy is built transactionally; an invalid source leaves an
+schema. The copy is built transactionally. An invalid source leaves an
 existing destination unchanged. CPU device dispatch uses the same deep copy,
 while a selected CUDA device returns `FORTNUM_NOT_IMPLEMENTED` until a
 resident graph plan exists.
@@ -24,7 +24,7 @@ Raw rows are in [`sequential_pipeline_clone.csv`](sequential_pipeline_clone.csv)
 The clean rows pin FortML revision `082845b7f790b8ccd9e9a8995db2a8955baeab65`,
 benchmark revision `31a197067d9a810546fb5c561cd5a0f7b0eb6ccb`, GNU Fortran
 `-O2`, Python `3.14.6`, and NumPy `2.5.1`. The timing-refresh commit is
-`691cfaf`; it changes no correctness result.
+`691cfaf`. It changes no correctness result.
 
 The lane covers sequential clone/reset only. Fan-out/residual graph cloning,
 serialized graph migration, sparse graph layouts, and resident accelerator
