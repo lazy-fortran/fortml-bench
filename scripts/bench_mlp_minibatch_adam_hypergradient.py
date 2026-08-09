@@ -16,11 +16,17 @@ from typing import Any
 import numpy as np
 
 N_TRAIN, N_VALIDATION, EPOCHS, BATCH_SIZE = 7, 3, 3, 3
-N_PARAMETERS, LEARNING_RATE, L2 = 2, 0.08, 0.035
+N_PARAMETERS, LEARNING_RATE, L2 = 5, 0.08, 0.035
 BETA1, BETA2, EPSILON = 0.84, 0.93, 0.025
 SHUFFLE_SEED, FD_STEP, REPETITIONS = 43, 2.0e-6, 16
-PARAMETERS = np.log([LEARNING_RATE, L2])
-DIRECTION = np.array([0.27, -0.19])
+PARAMETERS = np.array([
+    np.log(LEARNING_RATE),
+    np.log(L2),
+    np.log(BETA1 / (1.0 - BETA1)),
+    np.log(BETA2 / (1.0 - BETA2)),
+    np.log(EPSILON),
+])
+DIRECTION = np.array([0.27, -0.19, 0.13, -0.11, 0.07])
 ORACLE_TOLERANCE = 3.0e-10
 FIELDS = (
     "workload", "phase", "variant", "backend", "device", "status",
@@ -71,7 +77,9 @@ def loss_gradient(theta: np.ndarray, x: np.ndarray, target: np.ndarray, l2: floa
 
 def trajectory(parameters: np.ndarray) -> float:
     train_x, train_target, validation_x, validation_target = fixture()
-    learning_rate, l2 = np.exp(parameters)
+    learning_rate, l2 = np.exp(parameters[:2])
+    beta1, beta2 = 1.0 / (1.0 + np.exp(-parameters[2:4]))
+    epsilon = np.exp(parameters[4])
     theta = np.array([0.21, -0.06], dtype=np.float64)
     first = np.zeros(2, dtype=np.float64)
     second = np.zeros(2, dtype=np.float64)
@@ -82,11 +90,11 @@ def trajectory(parameters: np.ndarray) -> float:
             indices = order[start:start + BATCH_SIZE]
             gradient = loss_gradient(theta, train_x[indices], train_target[indices], l2)
             step += 1
-            first = BETA1 * first + (1.0 - BETA1) * gradient
-            second = BETA2 * second + (1.0 - BETA2) * gradient * gradient
-            first_hat = first / (1.0 - BETA1**step)
-            second_hat = second / (1.0 - BETA2**step)
-            theta -= learning_rate * first_hat / (np.sqrt(np.maximum(second_hat, 0.0)) + EPSILON)
+            first = beta1 * first + (1.0 - beta1) * gradient
+            second = beta2 * second + (1.0 - beta2) * gradient * gradient
+            first_hat = first / (1.0 - beta1**step)
+            second_hat = second / (1.0 - beta2**step)
+            theta -= learning_rate * first_hat / (np.sqrt(second_hat) + epsilon)
     residual = validation_x[:, 0] * theta[0] + theta[1] - validation_target[:, 0]
     return 0.5 * float(np.mean(residual * residual))
 
@@ -117,14 +125,14 @@ def base(details: dict[str, str], **values: Any) -> dict[str, Any]:
 
 
 def unavailable(details: dict[str, str], device: str, status: str, notes: str) -> list[dict[str, Any]]:
+    phases = [("value_gradient", "validation_mse")]
+    phases.extend(("gradient_component", f"gradient_{index}")
+                  for index in range(1, N_PARAMETERS + 1))
+    phases.append(("jvp", "directional_validation_mse_derivative"))
     return [base(details, workload="mlp_minibatch_adam_hypergradient", phase=phase,
                  variant="fixed_seeded_shuffle", backend="fortml", device=device,
                  status=status, metric=metric, oracle="FortML release-app protocol",
-                 notes=notes)
-            for phase, metric in (("value_gradient", "validation_mse"),
-                                  ("gradient_component", "gradient_1"),
-                                  ("gradient_component", "gradient_2"),
-                                  ("jvp", "directional_validation_mse_derivative"))]
+                 notes=notes) for phase, metric in phases]
 
 
 def read_oracle(path: Path) -> dict[tuple[str, int], float]:
@@ -153,7 +161,7 @@ def main() -> None:
                  seconds_per_operation=expected["seconds"], metric="validation_mse",
                  value=expected["value"], max_abs_error=0.0,
                  oracle="independent NumPy coupled-L2 Adam recurrence with central-FD products",
-                 notes="packed=[log_lr,log_l2]; epochs=3; batch=3; LCG shuffle seed=43")]
+                 notes="packed=[log_lr,log_l2,logit_beta1,logit_beta2,log_epsilon]; epochs=3; batch=3; LCG shuffle seed=43")]
     for index, value in enumerate(expected["gradient"], 1):
         rows.append(base(details, workload="mlp_minibatch_adam_hypergradient", phase="gradient_component",
                          variant="fixed_seeded_shuffle", backend="numpy_oracle", status="pass",
@@ -213,7 +221,7 @@ def main() -> None:
                                              metric="validation_mse", value=actual[("value", 1)],
                                              max_abs_error=error,
                                              oracle="independent NumPy Adam trajectory and central-FD products",
-                                             notes="three products checked"))
+                                             notes="value, five gradients, and JVP checked"))
                             rows.extend(base(details, workload="mlp_minibatch_adam_hypergradient",
                                              phase="gradient_component", variant="fixed_seeded_shuffle",
                                              backend="fortml", status="pass", metric=f"gradient_{i}",
