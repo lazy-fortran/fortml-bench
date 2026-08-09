@@ -294,7 +294,7 @@ CUDA remains an explicit resident-graph refusal:
 
 ```bash
 FO_SCAN_FALLBACK=regex python -B scripts/bench_derivative_gp_matern_hvp.py \
-  --fortml ../fortml-gp-matern-derivative \
+  --fortml ../fortml \
   --output results/derivative_gp_matern_hvp.csv
 ```
 

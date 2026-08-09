@@ -15,6 +15,6 @@ used.
 
 ```bash
 FO_SCAN_FALLBACK=regex python3 -B scripts/bench_derivative_gp_matern_hvp.py \
-  --fortml ../fortml-gp-matern-derivative \
+  --fortml ../fortml \
   --output results/derivative_gp_matern_hvp.csv
 ```
