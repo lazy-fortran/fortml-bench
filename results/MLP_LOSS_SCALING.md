@@ -6,7 +6,7 @@ off by 0.5 after an overflow. The FP64 trainer row checks persisted
 dynamic state. FP32 and CUDA rows record typed capability boundaries.
 
 FortML revision: `f1c8ac26c1510ce07dde5a8fd85c2c6aa12a0bd7`  
-Benchmark revision: `7343f613cc2a64ecab6d650d6a6f4403922e55af+dirty`
+Benchmark revision: `7a7135ec5a3e7b2e50c1ac08a2d079dfe0b16a28`
 
 | phase | status | metric | value | max abs error |
 | --- | --- | --- | ---: | ---: |
