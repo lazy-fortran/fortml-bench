@@ -35,12 +35,12 @@ fixture. The Python harness checks this before recording timings.
 
 The staged, contribution, slice, and persistence rows are correctness-gated
 against independent tree-walk oracles in
-`fortml/test/test_lightgbm_staged_slice.f90`; the warm-start row compares its
+`fortml/test/test_lightgbm_staged_slice.f90`. The warm-start row compares its
 complete staged output with an independently fresh-fitted eight-tree model in
 `fortml/test/test_lightgbm_warm_start.f90`.
 The CUDA row is correctness-gated by
 `fortml/test/test_lightgbm_cuda_dispatch.f90` against an independent one-split
-Newton tree oracle; when native CUDA is present it also checks resident
+Newton tree oracle. When native CUDA is present it also checks resident
 prediction parity against the CPU model. CPU rows are release timings only and
 are not GPU evidence. NaN, categorical, GOSS, EFB, distributed, persistence,
 and resident-CUDA training/explanation policies remain explicit follow-up
