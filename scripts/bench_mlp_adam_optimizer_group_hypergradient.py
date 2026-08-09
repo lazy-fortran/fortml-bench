@@ -138,7 +138,8 @@ def oracle_rows(meta: dict[str, str], expected: dict[str, Any]) -> list[dict[str
 def unavailable(meta: dict[str, str], device: str, note: str) -> list[dict[str, Any]]:
     rows = [base(meta, workload="mlp_adam_optimizer_group_hypergradient",
                  phase="value_gradient", backend="fortml", device=device,
-                 status="unavailable", oracle="FortML release-app protocol", notes=note),
+                 status="unavailable", metric="validation_mse",
+                 oracle="FortML release-app protocol", notes=note),
             base(meta, workload="mlp_adam_optimizer_group_hypergradient", phase="jvp",
                  backend="fortml", device=device, status="unavailable",
                  metric="directional_validation_mse_derivative",
