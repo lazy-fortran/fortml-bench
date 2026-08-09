@@ -113,6 +113,17 @@ python -B scripts/bench_quantile_regression.py \
 
 See [`results/QUANTILE_REGRESSION.md`](results/QUANTILE_REGRESSION.md).
 
+The positive-constrained linear lane independently replays the weighted
+projected-gradient multi-output fit, fixed-state prediction, JVP, and VJP
+products with NumPy, then records the resident-CUDA refusal:
+
+```bash
+python -B scripts/bench_positive_linear_regression.py \
+  --fortml ../fortml --output results/positive_linear_regression.csv
+```
+
+See [`results/POSITIVE_LINEAR_REGRESSION.md`](results/POSITIVE_LINEAR_REGRESSION.md).
+
 The weighted Bayesian-ridge lane compares the dense fixed-hyperparameter
 posterior mean/evidence and prediction with an independent NumPy
 conjugate-Gaussian oracle. It records the fitted alpha/lambda posterior

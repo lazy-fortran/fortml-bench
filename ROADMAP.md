@@ -948,6 +948,12 @@ a different workload, precision, device, or residency policy.
   release record is `results/quantile_regression.csv` with protocol in
   `results/QUANTILE_REGRESSION.md`; exact pinball kinks and
   derivative-through-fit remain explicit boundaries.
+- [x] Add the positive-constrained weighted multi-output linear-regression
+  lane. `scripts/bench_positive_linear_regression.py` replays the deterministic
+  projected-gradient fit and fixed-state prediction/JVP/VJP products against
+  an independent NumPy oracle, then records the typed resident-CUDA refusal in
+  `results/positive_linear_regression.csv` with protocol in
+  `results/POSITIVE_LINEAR_REGRESSION.md`.
 - [x] Add the weighted ordinary-least-squares lane.
   `scripts/bench_weighted_ols.py` compares deterministic multi-output fitting
   and the packed coefficient checksum with an independent NumPy weighted
