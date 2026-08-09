@@ -628,6 +628,13 @@ a different workload, precision, device, or residency policy.
   `results/gp_sparse_likelihood_noise.csv`, with protocol in
   `results/GP_SPARSE_LIKELIHOOD_NOISE.md`; the resident inducing CUDA path
   remains an explicit unavailable row.
+- [x] Add the fixed-state Student-t process likelihood lane. The independent
+  NumPy Cholesky density reconstructs the RBF covariance and checks the
+  `log(nu - 2)` JVP/VJP/HVP against central differences; the FortML gate adds
+  transactional-update and device-contract checks. The raw evidence is
+  `results/student_t_likelihood.csv`, documented in
+  `results/STUDENT_T_LIKELIHOOD.md`; likelihood fitting and refit derivatives
+  are explicitly out of scope and CUDA remains a typed unavailable row.
 - [x] Add the shared binary GP likelihood value/JVP/VJP lane for logistic and
   probit signed margins, including a stable negative-tail oracle and an
   independent adjoint check. The raw record is `results/gp_likelihood.csv`;

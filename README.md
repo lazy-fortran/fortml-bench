@@ -275,6 +275,19 @@ FO_SCAN_FALLBACK=regex python -B scripts/bench_student_t_process.py \
 
 See [`results/STUDENT_T_PROCESS.md`](results/STUDENT_T_PROCESS.md).
 
+The Student-t likelihood lane checks the fixed-state
+`theta = log(nu - 2)` coordinate against an independently assembled NumPy
+Cholesky marginal density and central differences. It records JVP/VJP/HVP
+products and the typed CUDA refusal; it does not claim likelihood fitting or
+derivatives through refitting:
+
+```bash
+FO_SCAN_FALLBACK=regex python -B scripts/bench_student_t_likelihood.py \
+  --fortml ../fortml --output results/student_t_likelihood.csv
+```
+
+See [`results/STUDENT_T_LIKELIHOOD.md`](results/STUDENT_T_LIKELIHOOD.md).
+
 The RBF order-three derivative-observation lane checks mixed value and
 derivative observations through third order, query input JVP/VJP products,
 and the packed log-variance/log-lengthscale/log-noise likelihood HVP.  A
