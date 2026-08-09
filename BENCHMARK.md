@@ -232,3 +232,25 @@ python -B scripts/bench_basis_feature_names.py \
 
 See [`results/BASIS_FEATURE_NAMES.md`](results/BASIS_FEATURE_NAMES.md) for
 the fixture and provenance.
+
+## Matérn-5/2 second-derivative GP hyperproducts
+
+This lane checks the bounded one-dimensional exact GP with mixed value,
+first-derivative, and second-derivative observations. The independent NumPy
+oracle assembles the order-four Matérn-5/2 covariance, central-differences the
+prediction and query functional, and checks likelihood gradients and HVPs over
+the packed variance, lengthscale, and noise coordinates. The release app adds
+CPU timings for prediction, input JVP/VJP, and both hyperproducts. Selected
+CUDA is recorded as a typed refusal until resident derivative covariance and
+factorization kernels are linked.
+
+```bash
+python -B scripts/bench_second_derivative_gp_matern52_hyperparameters.py \
+  --fortml ../fortml \
+  --output results/second_derivative_gp_matern52_hyperparameters.csv \
+  --report results/SECOND_DERIVATIVE_GP_MATERN52_HYPERPARAMETERS.md
+```
+
+See
+[`results/SECOND_DERIVATIVE_GP_MATERN52_HYPERPARAMETERS.md`](results/SECOND_DERIVATIVE_GP_MATERN52_HYPERPARAMETERS.md)
+for the independent oracle, provenance, tolerances, and timing rows.
